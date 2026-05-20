@@ -396,7 +396,7 @@ function ProcessosPage() {
                 <tr
                   key={r.numero}
                   onClick={() =>
-                    navigate({ to: "/processos", search: { processo: r.numero } as never })
+                    void r
                   }
                   className={`cursor-pointer transition-colors hover:bg-blue-50 ${
                     idx % 2 === 1 ? "bg-gray-50/60" : "bg-white"
