@@ -455,48 +455,44 @@ function ProcessosPage() {
                 <Th label="Analista Responsável" k="analista" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Revisor" k="revisor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {pageRows.map((r, idx) => (
-                <tr
-                  key={r.numero}
-                  className={`transition-colors hover:bg-blue-50 ${
-                    idx % 2 === 1 ? "bg-gray-50/60" : "bg-white"
-                  }`}
-                >
-                  <td className="px-3 py-2.5 text-foreground">{r.orgao}</td>
-                  <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
-                  <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
-                  <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
-                  <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
-                  <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
-                  <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
-                  <td className="px-3 py-2.5">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
-                    >
-                      {r.situacao}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
-                  <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
-                  <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
-                  <td className="px-3 py-2.5">
-                    <Link
-                      to="/analises/$id"
-                      params={{ id: r.numero }}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-[#1A56DB] px-2.5 py-1.5 text-xs font-medium text-white hover:bg-[#1A56DB]/90"
-                    >
-                      <SearchIcon className="h-3.5 w-3.5" /> Analisar
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {pageRows.map((r) => {
+                const isSel = selectedId === r.numero;
+                return (
+                  <tr
+                    key={r.numero}
+                    onClick={() => setSelectedId(isSel ? null : r.numero)}
+                    className={`cursor-pointer transition-colors ${
+                      isSel
+                        ? "bg-blue-100 hover:bg-blue-100"
+                        : "bg-white hover:bg-blue-50"
+                    }`}
+                  >
+                    <td className="px-3 py-2.5 text-foreground">{r.orgao}</td>
+                    <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
+                    <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
+                    <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
+                    <td className="px-3 py-2.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
+                      >
+                        {r.situacao}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
+                    <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
+                    <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
+                  </tr>
+                );
+              })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={11} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -536,6 +532,137 @@ function ProcessosPage() {
           </div>
         </div>
       </div>
+
+      {/* Barra de ações fixa */}
+      {selectedRow && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0D1B2A] bg-[#0D1B2A] shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.3)]">
+          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-6 py-3">
+            <div className="text-sm text-white/90">
+              Processo selecionado:{" "}
+              <span className="font-mono font-semibold text-white">
+                {selectedRow.numero}
+              </span>
+              <span className="mx-2 text-white/40">•</span>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SIT_BADGE[selectedRow.situacao]}`}
+              >
+                {selectedRow.situacao}
+              </span>
+            </div>
+            <div className="flex flex-wrap justify-end gap-2">
+              {selectedRow.situacao === "Disponível" ? (
+                <Button
+                  onClick={handleCriar}
+                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                >
+                  <Plus className="h-4 w-4" /> Criar
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleVisualizar}
+                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                >
+                  <Eye className="h-4 w-4" /> Visualizar
+                </Button>
+              )}
+              <Button
+                onClick={handleReabrir}
+                disabled={selectedRow.situacao !== "Concluído"}
+                className="gap-2 bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90 disabled:opacity-40"
+              >
+                <RotateCcw className="h-4 w-4" /> Reabrir
+              </Button>
+              <Button
+                onClick={() => setConfirmReinit(true)}
+                disabled={
+                  selectedRow.situacao !== "Em Análise" &&
+                  selectedRow.situacao !== "Concluído"
+                }
+                className="gap-2 bg-[#EA580C] text-white hover:bg-[#EA580C]/90 disabled:opacity-40"
+              >
+                <RefreshCw className="h-4 w-4" /> Reinicializar
+              </Button>
+              <Button
+                onClick={openAlterar}
+                className="gap-2 bg-[#6B7280] text-white hover:bg-[#6B7280]/90"
+              >
+                <UserCog className="h-4 w-4" /> Alterar Responsável
+              </Button>
+              <Button
+                disabled={selectedRow.situacao !== "Concluído"}
+                className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 disabled:opacity-40"
+              >
+                <FileText className="h-4 w-4" /> Relatório Conclusão Análise
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reinicializar */}
+      <Dialog open={confirmReinit} onOpenChange={setConfirmReinit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reinicializar análise</DialogTitle>
+            <DialogDescription>
+              Deseja reinicializar esta análise? Todos os dados preenchidos
+              serão apagados.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmReinit(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmReinitAction}
+              className="bg-[#EA580C] text-white hover:bg-[#EA580C]/90"
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Alterar Responsável */}
+      <Dialog open={alterarOpen} onOpenChange={setAlterarOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Analista Responsável</DialogTitle>
+            <DialogDescription>
+              Selecione o novo analista responsável pelo processo{" "}
+              {selectedRow?.numero}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Analista
+            </Label>
+            <Select value={novoAnalista} onValueChange={setNovoAnalista}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {ANALISTAS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAlterarOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={saveAlterar}
+              className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
