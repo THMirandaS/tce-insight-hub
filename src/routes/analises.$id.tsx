@@ -225,7 +225,7 @@ function AnaliseDetalhePage() {
 }
 
 
-const MAX = 4000;
+const MAX = 10000;
 
 function ResponsavelContent({
   processo,
