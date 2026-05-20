@@ -258,7 +258,7 @@ function AnaliseDetalhePage() {
           </div>
         </header>
 
-        <section className="min-w-0 flex-1 px-6 py-6 pb-28">
+        <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
