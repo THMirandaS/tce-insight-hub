@@ -348,14 +348,6 @@ function ResponsaveisTable() {
     setEditingId(r.id);
     setDraft({ ...r });
   };
-  const cancelEdit = () => {
-    if (draft && !rows.find((r) => r.id === draft.id)) {
-      // never was committed — discard
-    }
-    setEditingId(null);
-    setDraft(null);
-    setRows((rs) => rs.filter((r) => r.gestor !== "" || r.id !== draft?.id));
-  };
   const confirmEdit = () => {
     if (!draft) return;
     const existing = rows.find((r) => r.id === draft.id);
