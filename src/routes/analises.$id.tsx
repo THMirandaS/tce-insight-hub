@@ -979,6 +979,236 @@ function PlaceholderContent({ label }: { label: string }) {
   );
 }
 
+// ============================================================
+// Considerações Gerais
+// ============================================================
+
+const CONSID_TRANSITO_JULGADO = false;
+const CONSID_SITUACAO_CONCLUIDA = false;
+const CONSID_USUARIO_AUTORIZADO = true;
+const CONSID_READ_ONLY =
+  CONSID_TRANSITO_JULGADO ||
+  CONSID_SITUACAO_CONCLUIDA ||
+  !CONSID_USUARIO_AUTORIZADO;
+
+const CONSID_EXERCICIO_ATUAL = "2025";
+const CONSID_EXERCICIO_ANTERIOR = "2024";
+
+const CONSID_TEXTO_BASE =
+  "Texto base institucional do órgão, cadastrado na geração do primeiro processo. Apresenta a natureza jurídica, finalidade e principais atribuições do órgão, servindo como referência inicial para todas as análises das Prestações de Contas Estaduais subsequentes.";
+
+const CONSID_TEXTO_ANTERIOR =
+  "As presentes considerações referem-se à análise das contas anuais do exercício de 2024, prestadas nos termos da Instrução Normativa vigente. O órgão demonstrou regularidade nos principais indicadores de gestão fiscal e orçamentária, com ressalvas pontuais devidamente registradas nos itens específicos desta análise.";
+
+type ConsidHistorico = {
+  ts: string;
+  usuario: string;
+  exercicio: string;
+  acao: string;
+};
+
+const CONSID_HISTORICO_INICIAL: ConsidHistorico[] = [
+  { ts: "12/03/2025 14:22", usuario: "Auditor 02", exercicio: "2024", acao: "Edição do texto" },
+  { ts: "08/02/2024 09:10", usuario: "Auditor 01", exercicio: "2023", acao: "Salvamento inicial" },
+];
+
+function ConsidGeraisContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const [texto, setTexto] = useState(CONSID_TEXTO_ANTERIOR);
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historico] = useState<ConsidHistorico[]>(CONSID_HISTORICO_INICIAL);
+  const restantes = MAX - texto.length;
+  const readOnly = CONSID_READ_ONLY;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {CONSID_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      {!readOnly && (
+        <div className="mb-5 flex items-start gap-3 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-yellow-700" />
+          <p>
+            Texto pré-preenchido com base no exercício anterior (
+            {CONSID_EXERCICIO_ANTERIOR}). Revise e salve para registrar as
+            Considerações Gerais de {CONSID_EXERCICIO_ATUAL}.
+          </p>
+        </div>
+      )}
+
+      <h2 className="mb-4 text-center text-lg font-semibold text-foreground">
+        <span className="border-b-2 border-[#0D1B2A] pb-1">
+          Considerações Gerais:
+        </span>
+      </h2>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold text-foreground">
+          Texto base do órgão (somente leitura)
+        </Label>
+        <div className="rounded-md border border-border bg-[#F4F5F7] p-3 text-sm text-foreground">
+          {CONSID_TEXTO_BASE}
+        </div>
+        <p className="text-xs italic text-muted-foreground">
+          Este texto foi cadastrado na geração do processo e pode ser editado
+          pelo auditor responsável ou administrador.
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-sm font-semibold text-foreground">
+            Considerações Gerais — Exercício atual (editável)
+          </Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => setHistoryOpen(true)}
+            title="Histórico de Alterações"
+            aria-label="Histórico de Alterações"
+            className="h-8 w-8"
+          >
+            <History className="h-4 w-4" />
+          </Button>
+        </div>
+        <textarea
+          value={texto}
+          onChange={(e) => {
+            if (readOnly) return;
+            setTexto(e.target.value.slice(0, MAX));
+          }}
+          readOnly={readOnly}
+          maxLength={MAX}
+          rows={12}
+          className={`block w-full resize-y overflow-y-auto rounded-md border border-border p-3 text-sm text-foreground shadow-inner outline-none focus:border-[#1A56DB] focus:ring-1 focus:ring-[#1A56DB] ${
+            readOnly ? "cursor-not-allowed bg-[#F4F5F7]" : "bg-white"
+          }`}
+          placeholder="Digite aqui as considerações gerais do exercício atual..."
+        />
+        <div className="flex justify-end text-xs text-muted-foreground">
+          {restantes.toLocaleString("pt-BR")} caracteres restantes
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-start gap-2">
+        <Checkbox
+          id="consid-incluir"
+          checked={incluir}
+          disabled={readOnly}
+          onCheckedChange={(v) => setIncluir(Boolean(v))}
+          className="mt-0.5"
+        />
+        <label
+          htmlFor="consid-incluir"
+          className={`text-sm text-foreground ${
+            readOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+          }`}
+        >
+          O texto complementar deverá constar no relatório de conclusão do
+          processo.
+        </label>
+      </div>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Registro de auditoria das edições das Considerações Gerais —{" "}
+              {orgao}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Data/Hora
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Usuário
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Exercício
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {historico.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-6 text-center text-muted-foreground"
+                    >
+                      Nenhuma alteração registrada.
+                    </td>
+                  </tr>
+                ) : (
+                  historico.map((h, i) => (
+                    <tr
+                      key={i}
+                      className={i % 2 === 1 ? "bg-gray-50/60" : "bg-white"}
+                    >
+                      <td className="px-3 py-2 align-top whitespace-nowrap">
+                        {h.ts}
+                      </td>
+                      <td className="px-3 py-2 align-top whitespace-nowrap">
+                        {h.usuario}
+                      </td>
+                      <td className="px-3 py-2 align-top whitespace-nowrap">
+                        {h.exercicio}
+                      </td>
+                      <td className="px-3 py-2 align-top">{h.acao}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
