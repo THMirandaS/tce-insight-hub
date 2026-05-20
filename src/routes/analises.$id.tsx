@@ -16,6 +16,10 @@ import {
   History,
   Info,
   ShieldAlert,
+  AlertCircle,
+  Activity,
+  Circle,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -68,6 +72,33 @@ const GROUPS: SubGroup[] = [
   { key: "pce", label: "PCE", items: PCE_ITEMS },
 ];
 
+type SubmenuStatus =
+  | "nao-iniciado"
+  | "em-andamento"
+  | "concluido"
+  | "em-correcao"
+  | "corrigido"
+  | "revisado";
+
+type Perfil = "Auditor" | "Revisor" | "Coordenador";
+
+const STATUS_META: Record<
+  SubmenuStatus,
+  { label: string; Icon: typeof AlertCircle; className: string; pillBg: string }
+> = {
+  "nao-iniciado":   { label: "Não Iniciado", Icon: AlertCircle,  className: "text-gray-400",   pillBg: "bg-gray-100 text-gray-700" },
+  "em-andamento":   { label: "Em Andamento", Icon: Activity,     className: "text-[#1A56DB]",  pillBg: "bg-blue-50 text-[#1A56DB]" },
+  "concluido":      { label: "Concluído",    Icon: CheckCircle2, className: "text-green-600",  pillBg: "bg-green-50 text-green-700" },
+  "corrigido":      { label: "Corrigido",    Icon: CheckCircle2, className: "text-green-600",  pillBg: "bg-green-50 text-green-700" },
+  "em-correcao":    { label: "Em Correção",  Icon: AlertTriangle,className: "text-amber-500",  pillBg: "bg-amber-50 text-amber-700" },
+  "revisado":       { label: "Revisado",     Icon: Circle,       className: "text-purple-600", pillBg: "bg-purple-50 text-purple-700" },
+};
+
+function StatusIcon({ status }: { status: SubmenuStatus }) {
+  const { Icon, className } = STATUS_META[status];
+  return <Icon className={`h-4 w-4 shrink-0 ${className}`} aria-label={STATUS_META[status].label} />;
+}
+
 function AnaliseDetalhePage() {
   const { id } = Route.useParams();
   const [active, setActive] = useState<string>("anteriores");
@@ -78,6 +109,59 @@ function AnaliseDetalhePage() {
   });
   const contentRef = useRef<HTMLElement | null>(null);
 
+  // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
+  const [perfil] = useState<Perfil>("Coordenador");
+
+  // Status por submenu PCE (persistido ao navegar entre submenus)
+  const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
+    () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
+  );
+  const [legendOpen, setLegendOpen] = useState(false);
+
+  const currentStatus: SubmenuStatus | null =
+    statuses[active] !== undefined ? statuses[active] : null;
+
+  function openSubmenu(key: string) {
+    setActive(key);
+    setStatuses((p) =>
+      p[key] === "nao-iniciado" ? { ...p, [key]: "em-andamento" } : p
+    );
+  }
+
+  function handleSalvar() {
+    if (currentStatus === null) return;
+    setStatuses((p) => {
+      const s = p[active];
+      if (s === "em-andamento") return { ...p, [active]: "concluido" };
+      if (s === "em-correcao") return { ...p, [active]: "corrigido" };
+      return p;
+    });
+  }
+
+  function handleCorrecao() {
+    if (currentStatus === null) return;
+    setStatuses((p) =>
+      p[active] === "concluido" || p[active] === "corrigido" || p[active] === "revisado"
+        ? { ...p, [active]: "em-correcao" }
+        : p
+    );
+  }
+
+  function handleConcluir() {
+    if (currentStatus === null) return;
+    setStatuses((p) => ({ ...p, [active]: "concluido" }));
+  }
+
+  function handleMarcarRevisado() {
+    if (currentStatus === null) return;
+    setStatuses((p) =>
+      p[active] === "corrigido" || p[active] === "concluido"
+        ? { ...p, [active]: "revisado" }
+        : p
+    );
+  }
+
+  const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
   const row = useMemo(
     () => ALL_ROWS.find((r) => r.numero === id),
@@ -210,17 +294,20 @@ function AnaliseDetalhePage() {
                     <ul className="mb-2 space-y-0.5 border-l border-white/10 pl-2">
                       {g.items.map((it) => {
                         const isActive = active === it.key;
+                        const st = statuses[it.key];
                         return (
                           <li key={it.key}>
                             <button
                               type="button"
-                              onClick={() => setActive(it.key)}
-                              className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                              onClick={() => openSubmenu(it.key)}
+                              title={`Status: ${STATUS_META[st].label}`}
+                              className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
                                 isActive
                                   ? "bg-[#1A56DB] font-medium text-white"
                                   : "text-white/80 hover:bg-white/10 hover:text-white"
                               }`}
                             >
+                              <StatusIcon status={st} />
                               <span className="truncate">{it.label}</span>
 
                             </button>
@@ -238,8 +325,52 @@ function AnaliseDetalhePage() {
 
       {/* Coluna principal */}
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Legenda de Status (recolhível) */}
+        <div className="sticky top-0 z-40 border-b border-border bg-white">
+          <div className="px-6 py-2">
+            <button
+              type="button"
+              onClick={() => setLegendOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-[#0D1B2A] hover:bg-gray-100"
+              aria-expanded={legendOpen}
+            >
+              {legendOpen ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+              Legenda de Status
+            </button>
+            {legendOpen && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 px-2 pb-2">
+                {(
+                  [
+                    "nao-iniciado",
+                    "em-andamento",
+                    "concluido",
+                    "corrigido",
+                    "em-correcao",
+                    "revisado",
+                  ] as SubmenuStatus[]
+                ).map((s) => {
+                  const { Icon, className, label } = STATUS_META[s];
+                  return (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1.5 text-xs text-[#0D1B2A]"
+                    >
+                      <Icon className={`h-4 w-4 ${className}`} />
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Cabeçalho fixo do processo */}
-        <header className="sticky top-0 z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
+        <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
             <Link
               to="/analises"
@@ -255,6 +386,17 @@ function AnaliseDetalhePage() {
             <InfoCell label="Relator" value={relator} />
             <Divider />
             <InfoCell label="Auditor" value="Auditor 01" />
+            {currentStatus && (
+              <>
+                <Divider />
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_META[currentStatus].pillBg}`}
+                >
+                  <StatusIcon status={currentStatus} />
+                  {STATUS_META[currentStatus].label}
+                </span>
+              </>
+            )}
           </div>
         </header>
 
@@ -291,22 +433,34 @@ function AnaliseDetalhePage() {
                 <>
                   <Button
                     type="button"
+                    onClick={handleSalvar}
                     className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
                   >
                     <Save className="h-4 w-4" /> Salvar
                   </Button>
                   <Button
                     type="button"
+                    onClick={handleCorrecao}
                     className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
                   >
                     <AlertTriangle className="h-4 w-4" /> Correção
                   </Button>
                   <Button
                     type="button"
+                    onClick={handleConcluir}
                     className="gap-2 bg-green-600 text-white hover:bg-green-700"
                   >
                     <CheckCircle2 className="h-4 w-4" /> Concluir
                   </Button>
+                  {podeRevisar && currentStatus === "corrigido" && (
+                    <Button
+                      type="button"
+                      onClick={handleMarcarRevisado}
+                      className="gap-2 bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                      <Eye className="h-4 w-4" /> Marcar como Revisado
+                    </Button>
+                  )}
                 </>
               )}
             <Button
