@@ -950,15 +950,7 @@ function DemaisContent({ orgao }: { orgao: string }) {
               </div>
 
               {p.resumoIA && (
-                <div className="mt-4 rounded-md border border-[#1A56DB] bg-[#EFF6FF] p-4">
-                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#1A56DB] px-2.5 py-1 text-xs font-semibold text-white">
-                    <Sparkles className="h-3.5 w-3.5" fill="currentColor" />
-                    Resumo IA
-                  </div>
-                  <p className="text-sm leading-relaxed text-[#0D1B2A]">
-                    {p.resumoIA}
-                  </p>
-                </div>
+                <ResumoIA texto={p.resumoIA} processo={p.numero} orgao={orgao} />
               )}
             </article>
           ))}
