@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,21 +84,31 @@ function AnaliseDetalhePage() {
             <ul className="py-2">
               {GROUPS.map((g) => {
                 const open = expanded[g.key];
+                const isGroupActive = g.items.length === 0 && active === g.key;
                 return (
                   <li key={g.key} className="px-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }))
-                      }
-                      className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[#0D1B2A] hover:bg-blue-50"
+                      onClick={() => {
+                        if (g.items.length === 0) {
+                          setActive(g.key);
+                        } else {
+                          setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }));
+                        }
+                      }}
+                      className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+                        isGroupActive
+                          ? "bg-[#1A56DB] text-white hover:bg-[#1A56DB]"
+                          : "text-[#0D1B2A] hover:bg-blue-50"
+                      }`}
                     >
                       <span>{g.label}</span>
-                      {open ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
+                      {g.items.length > 0 &&
+                        (open ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        ))}
                     </button>
                     {open && g.items.length > 0 && (
                       <ul className="mb-2 space-y-0.5 border-l border-border pl-2">
@@ -142,9 +153,15 @@ function AnaliseDetalhePage() {
         <section className="min-w-0 flex-1">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
+          ) : active === "anteriores" ? (
+            <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : (
             <PlaceholderContent
-              label={PCE_ITEMS.find((i) => i.key === active)?.label ?? ""}
+              label={
+                GROUPS.find((g) => g.key === active)?.label ??
+                PCE_ITEMS.find((i) => i.key === active)?.label ??
+                ""
+              }
             />
           )}
         </section>
@@ -153,24 +170,28 @@ function AnaliseDetalhePage() {
       {/* Rodapé fixo de ações */}
       <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-[1600px] flex-wrap justify-end gap-2 px-6 py-3">
-          <Button
-            type="button"
-            className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
-          >
-            <Save className="h-4 w-4" /> Salvar
-          </Button>
-          <Button
-            type="button"
-            className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
-          >
-            <AlertTriangle className="h-4 w-4" /> Correção
-          </Button>
-          <Button
-            type="button"
-            className="gap-2 bg-green-600 text-white hover:bg-green-700"
-          >
-            <CheckCircle2 className="h-4 w-4" /> Concluir
-          </Button>
+          {active !== "anteriores" && (
+            <>
+              <Button
+                type="button"
+                className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
+              >
+                <Save className="h-4 w-4" /> Salvar
+              </Button>
+              <Button
+                type="button"
+                className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
+              >
+                <AlertTriangle className="h-4 w-4" /> Correção
+              </Button>
+              <Button
+                type="button"
+                className="gap-2 bg-green-600 text-white hover:bg-green-700"
+              >
+                <CheckCircle2 className="h-4 w-4" /> Concluir
+              </Button>
+            </>
+          )}
           <Button
             type="button"
             className="gap-2 bg-[#0D1B2A] text-white hover:bg-[#0D1B2A]/90"
@@ -289,6 +310,155 @@ function ResponsavelContent({
     </>
   );
 }
+
+type ConclusaoTipo = "aprovacao" | "ressalvas" | "rejeicao";
+
+type ProcessoAnterior = {
+  numero: string;
+  conclusao: ConclusaoTipo;
+  conclusaoLabel: string;
+  incoformidades: string[];
+  resumoIA?: string;
+};
+
+const ANTERIORES: ProcessoAnterior[] = [
+  {
+    numero: "0003/2024",
+    conclusao: "aprovacao",
+    conclusaoLabel: "Aprovação",
+    incoformidades: [
+      "Não foram encontradas incoformidades para o referido processo.",
+    ],
+  },
+  {
+    numero: "0002/2023",
+    conclusao: "ressalvas",
+    conclusaoLabel: "Aprovação com ressalvas",
+    incoformidades: [
+      "Inconsistências em dotações orçamentárias do exercício.",
+      "Pendências na execução de restos a pagar processados.",
+      "Divergências menores no controle interno do órgão.",
+    ],
+    resumoIA:
+      "O processo apresentou ressalvas relacionadas a inconsistências em dotações orçamentárias e pendências em restos a pagar. A análise indicou que, apesar das falhas pontuais, não houve comprometimento material das contas, sendo recomendada a aprovação com ressalvas e o monitoramento das pendências no exercício seguinte.",
+  },
+  {
+    numero: "0001/2022",
+    conclusao: "rejeicao",
+    conclusaoLabel: "Rejeição",
+    incoformidades: [
+      "Ausência de controle interno efetivo no exercício.",
+      "Incoformidades graves em créditos autorizados.",
+      "Despesas sem cobertura orçamentária regular.",
+      "Restos a pagar inscritos sem disponibilidade financeira.",
+    ],
+    resumoIA:
+      "O exercício analisado apresentou irregularidades graves, com destaque para a ausência de controle interno e incoformidades em créditos autorizados. Foram identificadas despesas sem cobertura orçamentária e inscrição irregular de restos a pagar, configurando comprometimento material da gestão e fundamentando a rejeição das contas.",
+  },
+];
+
+function badgeClasses(tipo: ConclusaoTipo) {
+  switch (tipo) {
+    case "aprovacao":
+      return "bg-green-100 text-green-800 border border-green-300";
+    case "ressalvas":
+      return "bg-yellow-100 text-yellow-800 border border-yellow-300";
+    case "rejeicao":
+      return "bg-red-100 text-red-800 border border-red-300";
+  }
+}
+
+function AnterioresContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <div className="mb-6 text-center">
+        <h2 className="text-lg font-semibold text-foreground">
+          <span className="border-b-2 border-[#0D1B2A] pb-1">
+            PCE's Anteriores
+          </span>
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Decisões dos últimos 3 anos
+        </p>
+      </div>
+
+      <div className="space-y-5">
+        {ANTERIORES.map((p) => (
+          <article
+            key={p.numero}
+            className="rounded-lg border border-border bg-white p-5 shadow-sm"
+          >
+            <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+              <h3 className="text-base font-semibold text-foreground">
+                Processo: {p.numero}
+              </h3>
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeClasses(
+                  p.conclusao
+                )}`}
+              >
+                {p.conclusaoLabel}
+              </span>
+            </header>
+
+            <div className="space-y-2">
+              <div className="text-sm font-semibold text-foreground">
+                Incoformidades:
+              </div>
+              {p.conclusao === "aprovacao" ? (
+                <p className="text-sm text-muted-foreground">
+                  {p.incoformidades[0]}
+                </p>
+              ) : (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+                  {p.incoformidades.map((m, i) => (
+                    <li key={i}>{m}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {p.resumoIA && (
+              <div className="mt-4 rounded-md border border-[#1A56DB] bg-[#EFF6FF] p-4">
+                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#1A56DB] px-2.5 py-1 text-xs font-semibold text-white">
+                  <Sparkles className="h-3.5 w-3.5" fill="currentColor" />
+                  Resumo IA
+                </div>
+                <p className="text-sm leading-relaxed text-[#0D1B2A]">
+                  {p.resumoIA}
+                </p>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
+
 
 function PlaceholderContent({ label }: { label: string }) {
   return (
