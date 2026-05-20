@@ -998,7 +998,23 @@ const CONSID_TEXTO_BASE =
   "Texto base institucional do órgão, cadastrado na geração do primeiro processo. Apresenta a natureza jurídica, finalidade e principais atribuições do órgão, servindo como referência inicial para todas as análises das Prestações de Contas Estaduais subsequentes.";
 
 const CONSID_TEXTO_ANTERIOR =
-  "As presentes considerações referem-se à análise das contas anuais do exercício de 2024, prestadas nos termos da Instrução Normativa vigente. O órgão demonstrou regularidade nos principais indicadores de gestão fiscal e orçamentária, com ressalvas pontuais devidamente registradas nos itens específicos desta análise.";
+  `O IPSEMG — Instituto de Previdência dos Servidores de Minas Gerais é uma autarquia estadual criada pela Lei Estadual nº 4.862, de 1966, com personalidade jurídica própria e autonomia administrativa e financeira. Tem como missão institucional gerir o Regime Próprio de Previdência Social — RPPS dos servidores públicos do Estado de Minas Gerais, assegurando a concessão e manutenção de aposentadorias, pensões por morte, auxílios e demais benefícios previdenciários previstos na legislação vigente.
+
+O Instituto é supervisionado pela Secretaria de Estado de Planejamento e Gestão — SEPLAG e está sujeito ao controle externo do Tribunal de Contas do Estado de Minas Gerais — TCE-MG, nos termos da Constituição Estadual e da legislação aplicável ao setor público. Sua estrutura organizacional é composta por uma Diretoria Executiva, Conselho de Administração, Conselho Fiscal e Comitê de Investimentos, cada qual com atribuições e responsabilidades definidas no Estatuto institucional.
+
+No que se refere ao quadro de beneficiários, o IPSEMG atende aproximadamente 130.000 servidores ativos, 95.000 aposentados e 25.000 pensionistas, totalizando cerca de 250.000 pessoas vinculadas ao regime próprio de previdência estadual. Este contingente representa um dos maiores regimes próprios de previdência do país, exigindo gestão técnica especializada e rigoroso controle atuarial para garantir o equilíbrio financeiro e atuarial de longo prazo do fundo.
+
+A base legal que rege o funcionamento do Instituto compreende, entre outros normativos, a Lei Complementar Estadual nº 64/2002, que dispõe sobre o Regime Próprio de Previdência Social dos servidores do Estado, a Lei Federal nº 9.717/1998, que estabelece regras gerais para a organização e funcionamento dos regimes próprios de previdência social, e as Resoluções do Conselho Nacional de Previdência Social — CNPS aplicáveis à gestão previdenciária pública.
+
+Em relação à estrutura de financiamento, o IPSEMG é custeado por contribuições dos servidores ativos, no percentual estabelecido em lei, e por contribuições patronais do Estado de Minas Gerais, além dos rendimentos obtidos com a aplicação das reservas previdenciárias nos mercados financeiro e de capitais, observadas as diretrizes fixadas pelo Conselho Monetário Nacional para entidades de previdência pública.
+
+A carteira de investimentos do fundo previdenciário é gerida com foco na segurança, liquidez e rentabilidade, priorizando títulos públicos federais, fundos de investimento de renda fixa e demais ativos permitidos pela regulamentação vigente. O Comitê de Investimentos do Instituto é responsável pela definição das políticas de alocação e pelo monitoramento contínuo dos ativos, com reporte periódico ao Conselho de Administração e aos órgãos de controle competentes.
+
+No âmbito da gestão administrativa, o Instituto mantém sistemas informatizados integrados para o cadastro de beneficiários, controle de concessões, folha de pagamento de benefícios e controle orçamentário e financeiro, buscando permanente modernização tecnológica para aprimorar a qualidade dos serviços prestados aos segurados e dependentes vinculados ao regime próprio de previdência estadual.
+
+O IPSEMG também desenvolve ações de educação previdenciária voltadas aos servidores públicos estaduais, promovendo o conhecimento sobre direitos e deveres previdenciários, planejamento para aposentadoria e orientação sobre os benefícios disponíveis, contribuindo para a valorização do servidor público e para a sustentabilidade do regime previdenciário no longo prazo.
+
+Historicamente, o Instituto tem demonstrado comprometimento com as boas práticas de governança pública, transparência na divulgação de informações e tempestividade no atendimento às demandas dos órgãos de controle, fatores que contribuem para a credibilidade institucional e para a confiança dos segurados na solidez e continuidade do regime próprio de previdência social do Estado de Minas Gerais.`;
 
 type ConsidHistorico = {
   ts: string;
