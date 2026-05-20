@@ -460,6 +460,165 @@ function AnterioresContent({
 }
 
 
+
+type DemaisSituacao = "analise" | "concluido" | "correcao";
+
+type DemaisProcesso = {
+  numero: string;
+  tipo: string;
+  dataAbertura: string;
+  situacao: DemaisSituacao;
+  situacaoLabel: string;
+  incoformidades: string[];
+  resumoIA?: string;
+};
+
+const DEMAIS_DATA_INICIO = "09/11/2024";
+const DEMAIS_DATA_FIM = "27/10/2024";
+
+const DEMAIS: DemaisProcesso[] = [
+  {
+    numero: "1208600",
+    tipo: "Auditoria Operacional",
+    dataAbertura: "15/10/2024",
+    situacao: "analise",
+    situacaoLabel: "Em Análise",
+    incoformidades: [],
+  },
+  {
+    numero: "1207320",
+    tipo: "Inspeção Ordinária",
+    dataAbertura: "03/07/2024",
+    situacao: "concluido",
+    situacaoLabel: "Concluído",
+    incoformidades: [
+      "Falhas no controle de benefícios",
+      "Atraso no envio de demonstrativos",
+    ],
+    resumoIA:
+      "Resumo das incoformidades encontradas na inspeção ordinária realizada no órgão, destacando as falhas no controle de benefícios previdenciários e o atraso recorrente no envio de demonstrativos exigidos pela fiscalização.",
+  },
+  {
+    numero: "1206890",
+    tipo: "Auditoria de Conformidade",
+    dataAbertura: "12/03/2024",
+    situacao: "concluido",
+    situacaoLabel: "Concluído",
+    incoformidades: [
+      "Divergências em registros contábeis",
+      "Ausência de documentação comprobatória",
+    ],
+    resumoIA:
+      "Resumo das divergências contábeis e ausências documentais identificadas na auditoria de conformidade do órgão previdenciário, indicando necessidade de fortalecimento dos controles internos e da guarda de documentação suporte.",
+  },
+];
+
+function situacaoBadge(s: DemaisSituacao) {
+  switch (s) {
+    case "analise":
+      return "bg-blue-100 text-blue-800 border border-blue-300";
+    case "concluido":
+      return "bg-green-100 text-green-800 border border-green-300";
+    case "correcao":
+      return "bg-yellow-100 text-yellow-800 border border-yellow-300";
+  }
+}
+
+function DemaisContent({ orgao }: { orgao: string }) {
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Demais Processos
+      </h1>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Processos abertos entre {DEMAIS_DATA_INICIO} e {DEMAIS_DATA_FIM}
+      </p>
+      <p className="mt-1 text-center text-xs text-muted-foreground">
+        Órgão: <span className="font-medium text-foreground">{orgao}</span>
+      </p>
+
+      <div className="my-6 border-t border-border" />
+
+      {DEMAIS.length === 0 ? (
+        <div className="flex min-h-[300px] items-center justify-center text-center text-sm text-muted-foreground">
+          Nenhum processo encontrado no período de consolidação.
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {DEMAIS.map((p) => (
+            <article
+              key={p.numero}
+              className="rounded-lg border border-border bg-white p-5 shadow-sm"
+            >
+              <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Nº Processo: {p.numero}
+                  </h3>
+                  <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                    {p.tipo}
+                  </span>
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${situacaoBadge(
+                    p.situacao
+                  )}`}
+                >
+                  {p.situacaoLabel}
+                </span>
+              </header>
+
+              <div className="mb-3 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
+                <div>
+                  <span className="font-semibold text-foreground">Tipo:</span>{" "}
+                  <span className="text-muted-foreground">{p.tipo}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">
+                    Data de abertura:
+                  </span>{" "}
+                  <span className="text-muted-foreground">
+                    {p.dataAbertura}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2 border-t border-border pt-3">
+                <div className="text-sm font-semibold text-foreground">
+                  Incoformidades encontradas:
+                </div>
+                {p.incoformidades.length === 0 ? (
+                  <p className="text-sm italic text-muted-foreground">
+                    Sem incoformidades registradas até o momento.
+                  </p>
+                ) : (
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+                    {p.incoformidades.map((m, i) => (
+                      <li key={i}>{m}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {p.resumoIA && (
+                <div className="mt-4 rounded-md border border-[#1A56DB] bg-[#EFF6FF] p-4">
+                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#1A56DB] px-2.5 py-1 text-xs font-semibold text-white">
+                    <Sparkles className="h-3.5 w-3.5" fill="currentColor" />
+                    Resumo IA
+                  </div>
+                  <p className="text-sm leading-relaxed text-[#0D1B2A]">
+                    {p.resumoIA}
+                  </p>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function PlaceholderContent({ label }: { label: string }) {
   return (
     <div className="flex h-full min-h-[400px] items-center justify-center rounded-lg border border-dashed border-border bg-gray-50/60 p-8 text-center">
