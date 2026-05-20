@@ -199,8 +199,36 @@ function ProcessosPage() {
     () =>
       PERFIL === "Coordenador"
         ? ALL_ROWS
-        : ALL_ROWS.filter((r) => r.analista === USUARIO_AUDITOR),
-    []
+function ProcessosPage() {
+  const navigate = useNavigate();
+  const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
+  const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
+  const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [overrides, setOverrides] = useState<
+    Record<string, { situacao?: Situacao; analista?: string }>
+  >({});
+  const [confirmReinit, setConfirmReinit] = useState(false);
+  const [alterarOpen, setAlterarOpen] = useState(false);
+  const [novoAnalista, setNovoAnalista] = useState<string>("");
+
+  const applyOverride = (r: Row): Row => {
+    const o = overrides[r.numero];
+    if (!o) return r;
+    return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}), ...(o.analista ? { analista: o.analista } : {}) };
+  };
+
+  const base = useMemo(
+    () =>
+      (PERFIL === "Coordenador"
+        ? ALL_ROWS
+        : ALL_ROWS.filter((r) => r.analista === USUARIO_AUDITOR)
+      ).map(applyOverride),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overrides]
   );
 
   const filtered = useMemo(() => {
@@ -235,6 +263,11 @@ function ProcessosPage() {
   const start = (currentPage - 1) * perPage;
   const pageRows = sorted.slice(start, start + perPage);
 
+  const selectedRow = useMemo(
+    () => (selectedId ? base.find((r) => r.numero === selectedId) ?? null : null),
+    [selectedId, base]
+  );
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -263,6 +296,43 @@ function ProcessosPage() {
         ? p.exercicios.filter((x) => x !== a)
         : [...p.exercicios, a],
     }));
+
+  const setSituacao = (id: string, s: Situacao) =>
+    setOverrides((p) => ({ ...p, [id]: { ...p[id], situacao: s } }));
+
+  const handleCriar = () => {
+    if (!selectedRow) return;
+    setSituacao(selectedRow.numero, "Em Análise");
+    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+  };
+  const handleVisualizar = () => {
+    if (!selectedRow) return;
+    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+  };
+  const handleReabrir = () => {
+    if (!selectedRow || selectedRow.situacao !== "Concluído") return;
+    setSituacao(selectedRow.numero, "Em Análise");
+  };
+  const confirmReinitAction = () => {
+    if (selectedRow) setSituacao(selectedRow.numero, "Disponível");
+    setConfirmReinit(false);
+  };
+  const openAlterar = () => {
+    if (!selectedRow) return;
+    setNovoAnalista(selectedRow.analista);
+    setAlterarOpen(true);
+  };
+  const saveAlterar = () => {
+    if (selectedRow && novoAnalista) {
+      setOverrides((p) => ({
+        ...p,
+        [selectedRow.numero]: { ...p[selectedRow.numero], analista: novoAnalista },
+      }));
+    }
+    setAlterarOpen(false);
+  };
+
+
 
   return (
     <main className="mx-auto max-w-[1600px] px-6 py-8">
