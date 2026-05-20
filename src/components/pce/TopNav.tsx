@@ -2,11 +2,12 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ShieldCheck, LayoutDashboard, FileStack, FolderOpen, BarChart3, UserCircle2 } from "lucide-react";
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/autuacao", label: "Autuação", icon: FileStack },
-  { to: "/processos", label: "Processos", icon: FolderOpen },
-  { to: "/analises", label: "Análises", icon: BarChart3 },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, enabled: true },
+  { to: "/autuacao", label: "Autuação", icon: FileStack, enabled: true },
+  { to: "/processos", label: "Processos", icon: FolderOpen, enabled: false },
+  { to: "/analises", label: "Análises", icon: BarChart3, enabled: false },
 ] as const;
+
 
 export function TopNav({ perfil = "Coordenador", user = "Carla M. Tavares" }: { perfil?: string; user?: string }) {
   const { pathname } = useLocation();
