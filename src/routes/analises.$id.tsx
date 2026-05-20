@@ -151,6 +151,8 @@ function AnaliseDetalhePage() {
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
+          ) : active === "demais" ? (
+            <DemaisContent orgao={orgao} />
           ) : (
             <PlaceholderContent
               label={
@@ -161,6 +163,7 @@ function AnaliseDetalhePage() {
             />
           )}
         </section>
+
 
         {/* Rodapé fixo de ações */}
         <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
