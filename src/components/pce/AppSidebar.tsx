@@ -38,7 +38,9 @@ export function AppSidebar({
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
 
-  const width = collapsed ? "w-[68px]" : "w-[220px]";
+  const forcedCollapsed = /^\/analises\/[^/]+/.test(pathname);
+  const isCollapsed = collapsed || forcedCollapsed;
+  const width = isCollapsed ? "w-[68px]" : "w-[220px]";
 
   return (
     <aside
