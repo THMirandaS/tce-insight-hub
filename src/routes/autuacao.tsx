@@ -202,7 +202,7 @@ function AutuacaoPage() {
                       aria-label="Selecionar todos"
                     />
                   </TableHead>
-                  {["Município","Exercício","Tipo de Análise","Data Disponibilização","Último Analista","Atribuir Analista","Situação"].map((h) => (
+                  {["Órgão","Exercício","Tipo de Análise","Data Disponibilização","Último Analista para o Órgão","Atribuir Analista","Situação"].map((h) => (
                     <TableHead key={h} className="text-sidebar-foreground font-semibold">{h}</TableHead>
                   ))}
                 </TableRow>
@@ -218,10 +218,11 @@ function AutuacaoPage() {
                       <Checkbox
                         checked={selected.has(r.id)}
                         onCheckedChange={() => toggleOne(r.id)}
-                        aria-label={`Selecionar ${r.municipio}`}
+                        aria-label={`Selecionar ${r.orgao}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium text-foreground">{r.municipio}</TableCell>
+                    <TableCell className="font-medium text-foreground">{r.orgao}</TableCell>
+
                     <TableCell>{r.exercicio}</TableCell>
                     <TableCell>{r.tipo}</TableCell>
                     <TableCell>{r.data}</TableCell>
