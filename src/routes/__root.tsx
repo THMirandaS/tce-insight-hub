@@ -4,12 +4,14 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { AppSidebar } from "@/components/pce/AppSidebar";
 
 
 function NotFoundComponent() {
@@ -112,10 +114,21 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { pathname } = useLocation();
+  const hideChrome = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      {hideChrome ? (
+        <Outlet />
+      ) : (
+        <div className="flex min-h-screen w-full bg-background">
+          <AppSidebar />
+          <div className="flex-1 min-w-0">
+            <Outlet />
+          </div>
+        </div>
+      )}
       <Toaster />
     </QueryClientProvider>
   );
