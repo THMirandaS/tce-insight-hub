@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
-  Zap,
   FileText,
   Save,
   AlertTriangle,
@@ -111,14 +110,7 @@ function AnaliseDetalhePage() {
                               }`}
                             >
                               <span className="truncate">{it.label}</span>
-                              {it.hasActions && (
-                                <Zap
-                                  className={`h-4 w-4 shrink-0 ${
-                                    isActive ? "text-yellow-300" : "text-yellow-400"
-                                  }`}
-                                  fill="currentColor"
-                                />
-                              )}
+
                             </button>
                           </li>
                         );
