@@ -84,7 +84,7 @@ const SITUACOES = [
 ] as const;
 type Situacao = (typeof SITUACOES)[number];
 
-const TIPOS = ["Análise Inicial", "Análise Consolidada", "Análise Complementar"];
+const TIPOS = ["Análise Inicial", "Análise Documental"];
 const EXERCICIOS = ["2021", "2022", "2023", "2024", "2025"];
 
 const PROC_BASE = [
