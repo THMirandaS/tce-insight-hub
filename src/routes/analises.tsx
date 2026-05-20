@@ -139,7 +139,7 @@ function makeRows(): Row[] {
   return rows;
 }
 
-const ALL_ROWS = makeRows();
+export const ALL_ROWS = makeRows();
 
 const SIT_BADGE: Record<Situacao, string> = {
   "Disponível": "bg-gray-200 text-gray-800",
