@@ -325,8 +325,52 @@ function AnaliseDetalhePage() {
 
       {/* Coluna principal */}
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Legenda de Status (recolhível) */}
+        <div className="sticky top-0 z-40 border-b border-border bg-white">
+          <div className="px-6 py-2">
+            <button
+              type="button"
+              onClick={() => setLegendOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-[#0D1B2A] hover:bg-gray-100"
+              aria-expanded={legendOpen}
+            >
+              {legendOpen ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+              Legenda de Status
+            </button>
+            {legendOpen && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 px-2 pb-2">
+                {(
+                  [
+                    "nao-iniciado",
+                    "em-andamento",
+                    "concluido",
+                    "corrigido",
+                    "em-correcao",
+                    "revisado",
+                  ] as SubmenuStatus[]
+                ).map((s) => {
+                  const { Icon, className, label } = STATUS_META[s];
+                  return (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1.5 text-xs text-[#0D1B2A]"
+                    >
+                      <Icon className={`h-4 w-4 ${className}`} />
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Cabeçalho fixo do processo */}
-        <header className="sticky top-0 z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
+        <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
             <Link
               to="/analises"
@@ -342,6 +386,17 @@ function AnaliseDetalhePage() {
             <InfoCell label="Relator" value={relator} />
             <Divider />
             <InfoCell label="Auditor" value="Auditor 01" />
+            {currentStatus && (
+              <>
+                <Divider />
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_META[currentStatus].pillBg}`}
+                >
+                  <StatusIcon status={currentStatus} />
+                  {STATUS_META[currentStatus].label}
+                </span>
+              </>
+            )}
           </div>
         </header>
 
