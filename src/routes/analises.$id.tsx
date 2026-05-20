@@ -1354,13 +1354,10 @@ function ReceitasContent({
 
   const [fonteXCodigo] = useState<string>("1.001.000");
   const [fonteXValor, setFonteXValor] = useState<number>(545_054_000);
-  const [valorFonteX, setValorFonteX] = useState<number>(545_054_000);
 
   const [fonteYCodigo] = useState<string>("1.002.000");
   const [fonteYValor, setFonteYValor] = useState<number>(256_496_000);
-  const [valorFonteY, setValorFonteY] = useState<number>(256_496_000);
 
-  const [insuficiencia, setInsuficiencia] = useState<number>(12_500_000);
   const [empenhadas, setEmpenhadas] = useState<number>(789_050_000);
 
   const [texto, setTexto] = useState("");
@@ -1369,9 +1366,11 @@ function ReceitasContent({
   const [historico] = useState<ReceitasHistorico[]>(RECEITAS_HISTORICO_INICIAL);
 
   const pctRealizacao = previsao > 0 ? (efetiva / previsao) * 100 : 0;
-  const totalFontes = valorFonteX + valorFonteY;
-  const pctFonteX = totalFontes > 0 ? (valorFonteX / totalFontes) * 100 : 0;
-  const pctFonteY = totalFontes > 0 ? (valorFonteY / totalFontes) * 100 : 0;
+  const pctFonteX = efetiva > 0 ? (fonteXValor / efetiva) * 100 : 0;
+  const pctFonteY = efetiva > 0 ? (fonteYValor / efetiva) * 100 : 0;
+
+  const insuficiencia = empenhadas - efetiva;
+  const insuficienciaDisplay = Math.max(0, insuficiencia);
 
   const realizacaoCor =
     pctRealizacao >= 90 ? "text-green-700" : "text-red-700";
