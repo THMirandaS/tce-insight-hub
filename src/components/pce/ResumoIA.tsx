@@ -77,7 +77,7 @@ export function ResumoIA({ texto, processo, orgao, trechoDestacado }: Props) {
  * Documento fictício — conteúdo paginado
  * ========================================================= */
 
-type Pagina = { titulo: string; render: (highlight: string) => JSX.Element };
+type Pagina = { titulo: string; render: (highlight: string) => React.ReactNode };
 
 function getPaginas(processo: string, orgao: string): Pagina[] {
   return [
