@@ -13,8 +13,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AutuacaoRouteImport } from './routes/autuacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 import { Route as AnalisesIdRouteImport } from './routes/analises.$id'
+import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -36,20 +36,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalisesIdRoute = AnalisesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AnalisesRoute,
+} as any)
 const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
   id: '/analise/responsavel',
   path: '/analise/responsavel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnalisesIdRoute = AnalisesIdRouteImport.update({
-  id: '/analises/$id',
-  path: '/analises/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/analises': typeof AnalisesRoute
+  '/analises': typeof AnalisesRouteWithChildren
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
@@ -57,7 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/analises': typeof AnalisesRoute
+  '/analises': typeof AnalisesRouteWithChildren
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
@@ -66,7 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/analises': typeof AnalisesRoute
+  '/analises': typeof AnalisesRouteWithChildren
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
@@ -101,11 +101,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnalisesRoute: typeof AnalisesRoute
+  AnalisesRoute: typeof AnalisesRouteWithChildren
   AutuacaoRoute: typeof AutuacaoRoute
   DashboardRoute: typeof DashboardRoute
   AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
-  AnalisesIdRoute: typeof AnalisesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -138,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analises/$id': {
+      id: '/analises/$id'
+      path: '/$id'
+      fullPath: '/analises/$id'
+      preLoaderRoute: typeof AnalisesIdRouteImport
+      parentRoute: typeof AnalisesRoute
+    }
     '/analise/responsavel': {
       id: '/analise/responsavel'
       path: '/analise/responsavel'
@@ -145,23 +151,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnaliseResponsavelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analises/$id': {
-      id: '/analises/$id'
-      path: '/analises/$id'
-      fullPath: '/analises/$id'
-      preLoaderRoute: typeof AnalisesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
+interface AnalisesRouteChildren {
+  AnalisesIdRoute: typeof AnalisesIdRoute
+}
+
+const AnalisesRouteChildren: AnalisesRouteChildren = {
+  AnalisesIdRoute: AnalisesIdRoute,
+}
+
+const AnalisesRouteWithChildren = AnalisesRoute._addFileChildren(
+  AnalisesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnalisesRoute: AnalisesRoute,
+  AnalisesRoute: AnalisesRouteWithChildren,
   AutuacaoRoute: AutuacaoRoute,
   DashboardRoute: DashboardRoute,
   AnaliseResponsavelRoute: AnaliseResponsavelRoute,
-  AnalisesIdRoute: AnalisesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
