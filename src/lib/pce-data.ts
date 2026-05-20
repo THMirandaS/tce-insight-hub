@@ -29,20 +29,20 @@ export const ORGAOS = [
 ];
 
 export const RELATORES = [
-  "Cons. A. Mendes",
-  "Cons. B. Oliveira",
-  "Cons. C. Ferreira",
-  "Cons. D. Souza",
-  "Cons. E. Lima",
+  "CONS. JOÃO DA SILVA",
+  "CONS. EM EXERC. PEDRO SOUZA",
+  "CONS. SUBST. CARLOS OLIVEIRA",
+  "CONS. ANTONIO SANTOS",
+  "CONS. EM EXERC. PAULO FERREIRA",
 ];
 
 export const AUDITORES = [
-  "M. Andrade",
-  "P. Cardoso",
-  "R. Nogueira",
-  "S. Vieira",
-  "T. Barbosa",
-  "L. Cunha",
+  "Analista 01",
+  "Analista 02",
+  "Analista 03",
+  "Analista 04",
+  "Analista 05",
+  "Analista 06",
 ];
 
 export const situacaoData = [
