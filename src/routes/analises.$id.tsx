@@ -9,10 +9,25 @@ import {
   ChevronRight,
   Sparkles,
   ArrowLeft,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Plus,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 
 export const Route = createFileRoute("/analises/$id")({
@@ -240,34 +255,7 @@ function ResponsavelContent({
         <span className="border-b-2 border-[#0D1B2A] pb-1">Responsáveis:</span>
       </h2>
 
-      <div className="overflow-hidden rounded-lg border border-border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-[#0D1B2A] text-white">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide">
-                Gestor
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide">
-                Período
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="bg-white">
-              <td className="px-4 py-2.5">Gestor 01</td>
-              <td className="px-4 py-2.5 text-muted-foreground">
-                01/01/2025 a 31/10/2025
-              </td>
-            </tr>
-            <tr className="bg-gray-50/60">
-              <td className="px-4 py-2.5">Gestor 01</td>
-              <td className="px-4 py-2.5 text-muted-foreground">
-                01/11/2025 a 31/12/2025
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ResponsaveisTable />
 
       <p className="mt-2 text-xs italic text-muted-foreground">
         Dados buscados automaticamente via integração com IA na consolidação.
@@ -307,6 +295,375 @@ function ResponsavelContent({
           processo.
         </label>
       </div>
+    </>
+  );
+}
+
+type Responsavel = {
+  id: string;
+  gestor: string;
+  inicio: string; // yyyy-mm-dd
+  fim: string;
+};
+
+type AuditEntry = {
+  ts: string;
+  usuario: string;
+  acao: "Inclusão" | "Edição" | "Exclusão";
+  detalhe: string;
+};
+
+const USUARIO_ATUAL = "Auditor 01";
+
+function toBR(iso: string) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function nowStamp() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function ResponsaveisTable() {
+  const [rows, setRows] = useState<Responsavel[]>([
+    { id: "r1", gestor: "Gestor 01", inicio: "2025-01-01", fim: "2025-10-31" },
+    { id: "r2", gestor: "Gestor 01", inicio: "2025-11-01", fim: "2025-12-31" },
+  ]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Responsavel | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Responsavel | null>(null);
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const log = (e: Omit<AuditEntry, "ts" | "usuario">) =>
+    setAudit((a) => [
+      { ts: nowStamp(), usuario: USUARIO_ATUAL, ...e },
+      ...a,
+    ]);
+
+  const startEdit = (r: Responsavel) => {
+    setEditingId(r.id);
+    setDraft({ ...r });
+  };
+  const confirmEdit = () => {
+    if (!draft) return;
+    const existing = rows.find((r) => r.id === draft.id);
+    const isNew = !existing || (existing.gestor === "" && existing.inicio === "");
+    setRows((rs) =>
+      rs.map((r) => (r.id === draft.id ? { ...draft } : r))
+    );
+    if (isNew) {
+      log({
+        acao: "Inclusão",
+        detalhe: `${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+      });
+    } else if (existing) {
+      log({
+        acao: "Edição",
+        detalhe: `De: ${existing.gestor} (${toBR(existing.inicio)} a ${toBR(existing.fim)}) → Para: ${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+      });
+    }
+    setEditingId(null);
+    setDraft(null);
+  };
+  const addNew = () => {
+    const id = `r${Date.now()}`;
+    const novo: Responsavel = { id, gestor: "", inicio: "", fim: "" };
+    setRows((rs) => [...rs, novo]);
+    setEditingId(id);
+    setDraft(novo);
+  };
+  const doDelete = () => {
+    if (!confirmDelete) return;
+    setRows((rs) => rs.filter((r) => r.id !== confirmDelete.id));
+    log({
+      acao: "Exclusão",
+      detalhe: `${confirmDelete.gestor} (${toBR(confirmDelete.inicio)} a ${toBR(confirmDelete.fim)})`,
+    });
+    setConfirmDelete(null);
+  };
+
+  return (
+    <>
+      <div className="mb-3 flex items-center justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setHistoryOpen(true)}
+          title="Histórico de Alterações"
+          aria-label="Histórico de Alterações"
+          className="h-9 w-9"
+        >
+          <History className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          onClick={addNew}
+          disabled={editingId !== null}
+          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+        >
+          <Plus className="h-4 w-4" /> Incluir Responsável
+        </Button>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-border">
+        <table className="w-full table-fixed text-sm">
+          <colgroup>
+            <col style={{ width: "45%" }} />
+            <col style={{ width: "40%" }} />
+            <col style={{ width: "15%" }} />
+          </colgroup>
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                Gestor
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                Período
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={3}
+                  className="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
+                  Nenhum responsável cadastrado.
+                </td>
+              </tr>
+            )}
+            {rows.map((r, idx) => {
+              const isEditing = editingId === r.id && draft;
+              const zebra = idx % 2 === 1 ? "bg-gray-50/60" : "bg-white";
+              return (
+                <tr key={r.id} className={zebra}>
+                  {isEditing ? (
+                    <>
+                      <td className="px-4 py-3 align-middle">
+                        <Input
+                          value={draft!.gestor}
+                          onChange={(e) =>
+                            setDraft({ ...draft!, gestor: e.target.value })
+                          }
+                          placeholder="Nome do gestor"
+                          className="h-9"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="date"
+                            value={draft!.inicio}
+                            onChange={(e) =>
+                              setDraft({ ...draft!, inicio: e.target.value })
+                            }
+                            className="h-9"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            a
+                          </span>
+                          <Input
+                            type="date"
+                            value={draft!.fim}
+                            onChange={(e) =>
+                              setDraft({ ...draft!, fim: e.target.value })
+                            }
+                            className="h-9"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={confirmEdit}
+                            disabled={
+                              !draft!.gestor.trim() ||
+                              !draft!.inicio ||
+                              !draft!.fim
+                            }
+                            className="h-8 w-8 bg-green-600 text-white hover:bg-green-700"
+                            title="Confirmar"
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={() => {
+                              // remove if it was a brand-new empty row
+                              setRows((rs) =>
+                                rs.filter(
+                                  (x) =>
+                                    !(x.id === r.id && x.gestor === "" && x.inicio === "")
+                                )
+                              );
+                              setEditingId(null);
+                              setDraft(null);
+                            }}
+                            className="h-8 w-8"
+                            title="Cancelar"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="px-4 py-3 align-middle">{r.gestor}</td>
+                      <td className="px-4 py-3 align-middle text-muted-foreground">
+                        {toBR(r.inicio)} a {toBR(r.fim)}
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => startEdit(r)}
+                            disabled={editingId !== null}
+                            className="h-8 w-8 text-[#1A56DB] hover:bg-blue-50 hover:text-[#1A56DB]"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setConfirmDelete(r)}
+                            disabled={editingId !== null}
+                            className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal de confirmação de exclusão */}
+      <Dialog
+        open={!!confirmDelete}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir responsável</DialogTitle>
+            <DialogDescription>
+              Deseja excluir este responsável?
+            </DialogDescription>
+          </DialogHeader>
+          {confirmDelete && (
+            <div className="rounded-md border border-border bg-gray-50 p-3 text-sm">
+              <div>
+                <span className="font-semibold">Gestor:</span>{" "}
+                {confirmDelete.gestor}
+              </div>
+              <div>
+                <span className="font-semibold">Período:</span>{" "}
+                {toBR(confirmDelete.inicio)} a {toBR(confirmDelete.fim)}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={doDelete}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Registro de auditoria das ações realizadas na tabela de
+              responsáveis.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Data/Hora
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Usuário
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Ação
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase">
+                    Detalhe
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {audit.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-6 text-center text-muted-foreground"
+                    >
+                      Nenhuma alteração registrada.
+                    </td>
+                  </tr>
+                ) : (
+                  audit.map((a, i) => (
+                    <tr key={i} className={i % 2 === 1 ? "bg-gray-50/60" : "bg-white"}>
+                      <td className="px-3 py-2 align-top whitespace-nowrap">{a.ts}</td>
+                      <td className="px-3 py-2 align-top whitespace-nowrap">{a.usuario}</td>
+                      <td className="px-3 py-2 align-top whitespace-nowrap">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            a.acao === "Inclusão"
+                              ? "bg-green-100 text-green-800"
+                              : a.acao === "Edição"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {a.acao}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 align-top">{a.detalhe}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
