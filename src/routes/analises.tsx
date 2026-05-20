@@ -37,7 +37,7 @@ export const Route = createFileRoute("/analises")({
 type Perfil = "Coordenador" | "Auditor";
 
 const PERFIL: Perfil = "Coordenador";
-const USUARIO_AUDITOR = "Eduardo Paulo Virginíssimo";
+const USUARIO_AUDITOR = "Analista 01";
 
 const ORGAOS = [
   "Secretaria de Estado de Fazenda (SEF)",
@@ -58,25 +58,20 @@ const ORGAOS = [
 ];
 
 const ANALISTAS = [
-  "Eduardo Paulo Virginíssimo",
-  "Wanderson Alves Teixeira",
-  "Maria Mônica Teixeira Siman Salema",
-  "Sílvio Oliveira do Amaral Ferreira",
-  "Theones Alves Nogueira",
-  "Michele de Lana Ferreira",
-  "Cláudia de Ávila Pinto Coelho Fagundes",
-  "Glauber Neves Trindade Filho",
-  "Stela Maris Pimenta Ribeiro",
+  "Analista 01", "Analista 02", "Analista 03", "Analista 04", "Analista 05",
+  "Analista 06", "Analista 07", "Analista 08", "Analista 09",
 ];
 
-const REVISORES = ANALISTAS;
+const REVISORES = [
+  "Revisor 01", "Revisor 02", "Revisor 03",
+];
 
 const RELATORES = [
-  "CONS. GILBERTO DINIZ",
-  "CONS. EM EXERC. LICURGO MOURÃO",
-  "CONS. SUBST. TELMO PASSARELI",
-  "CONS. ALENCAR DA SILVEIRA JR",
-  "CONS. EM EXERC. ADONIAS MONTEIRO",
+  "CONS. JOÃO DA SILVA",
+  "CONS. EM EXERC. PEDRO SOUZA",
+  "CONS. SUBST. CARLOS OLIVEIRA",
+  "CONS. ANTONIO SANTOS",
+  "CONS. EM EXERC. PAULO FERREIRA",
 ];
 
 const SITUACOES = [
