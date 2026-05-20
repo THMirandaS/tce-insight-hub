@@ -294,17 +294,20 @@ function AnaliseDetalhePage() {
                     <ul className="mb-2 space-y-0.5 border-l border-white/10 pl-2">
                       {g.items.map((it) => {
                         const isActive = active === it.key;
+                        const st = statuses[it.key];
                         return (
                           <li key={it.key}>
                             <button
                               type="button"
-                              onClick={() => setActive(it.key)}
-                              className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                              onClick={() => openSubmenu(it.key)}
+                              title={`Status: ${STATUS_META[st].label}`}
+                              className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
                                 isActive
                                   ? "bg-[#1A56DB] font-medium text-white"
                                   : "text-white/80 hover:bg-white/10 hover:text-white"
                               }`}
                             >
+                              <StatusIcon status={st} />
                               <span className="truncate">{it.label}</span>
 
                             </button>
