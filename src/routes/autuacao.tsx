@@ -142,7 +142,7 @@ function AutuacaoPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNav perfil="Coordenador" />
+      
       <main className="mx-auto max-w-[1600px] px-6 py-6 space-y-5">
         <div className="flex items-end justify-between flex-wrap gap-3">
           <div>
