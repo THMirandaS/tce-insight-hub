@@ -20,10 +20,22 @@ export const Route = createFileRoute("/autuacao")({
   component: AutuacaoPage,
 });
 
-const MUNICIPIOS = [
-  "Abadia dos Dourados", "Abaeté", "Abre Campo", "Acaiaca", "Açucena",
-  "Água Boa", "Água Comprida", "Aguanil", "Águas Formosas", "Águas Vermelhas",
-  "Aiuruoca", "Almenara", "Alto Rio Doce", "Alvorada de Minas", "Amparo do Serra",
+const ORGAOS = [
+  "Secretaria de Estado de Fazenda (SEF)",
+  "Secretaria de Estado de Saúde (SES)",
+  "Secretaria de Estado de Educação (SEE)",
+  "Secretaria de Estado de Infraestrutura (SEINFRA)",
+  "Secretaria de Estado de Segurança Pública (SSP)",
+  "Secretaria de Estado de Meio Ambiente (SEMAD)",
+  "Fundação João Pinheiro (FJP)",
+  "Instituto Estadual de Florestas (IEF)",
+  "IPSEMG — Instituto de Previdência dos Servidores de MG",
+  "FHEMIG — Fundação Hospitalar do Estado de MG",
+  "CEMIG — Companhia Energética de MG",
+  "COPASA — Companhia de Saneamento de MG",
+  "BDMG — Banco de Desenvolvimento de MG",
+  "Defensoria Pública do Estado de MG",
+  "Tribunal de Justiça de MG (TJMG)",
 ];
 
 const ANALISTAS = [
@@ -34,7 +46,7 @@ type Situacao = "Disponível para autuar" | "Em processo de consolidação" | "A
 
 type Row = {
   id: string;
-  municipio: string;
+  orgao: string;
   exercicio: string;
   tipo: string;
   data: string;
@@ -50,12 +62,12 @@ const SITUACOES: Situacao[] = [
 ];
 
 function makeRows(): Row[] {
-  return MUNICIPIOS.map((m, i) => {
+  return ORGAOS.map((m, i) => {
     const day = String((i % 28) + 1).padStart(2, "0");
     const month = String(((i % 6) + 1)).padStart(2, "0");
     return {
       id: `${i}`,
-      municipio: m,
+      orgao: m,
       exercicio: "2025",
       tipo: "Análise Inicial",
       data: `${day}/${month}/2025`,
@@ -65,6 +77,7 @@ function makeRows(): Row[] {
     };
   });
 }
+
 
 function situacaoBadge(s: Situacao) {
   const map: Record<Situacao, string> = {
@@ -156,7 +169,7 @@ function AutuacaoPage() {
                   <X className="h-4 w-4" />
                 </button>
                 <span className="text-sm font-medium">
-                  {count} município(s) selecionado(s)
+                  {count} órgão(s) selecionado(s)
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -189,7 +202,7 @@ function AutuacaoPage() {
                       aria-label="Selecionar todos"
                     />
                   </TableHead>
-                  {["Município","Exercício","Tipo de Análise","Data Disponibilização","Último Analista","Atribuir Analista","Situação"].map((h) => (
+                  {["Órgão","Exercício","Tipo de Análise","Data Disponibilização","Último Analista para o Órgão","Atribuir Analista","Situação"].map((h) => (
                     <TableHead key={h} className="text-sidebar-foreground font-semibold">{h}</TableHead>
                   ))}
                 </TableRow>
@@ -205,10 +218,11 @@ function AutuacaoPage() {
                       <Checkbox
                         checked={selected.has(r.id)}
                         onCheckedChange={() => toggleOne(r.id)}
-                        aria-label={`Selecionar ${r.municipio}`}
+                        aria-label={`Selecionar ${r.orgao}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium text-foreground">{r.municipio}</TableCell>
+                    <TableCell className="font-medium text-foreground">{r.orgao}</TableCell>
+
                     <TableCell>{r.exercicio}</TableCell>
                     <TableCell>{r.tipo}</TableCell>
                     <TableCell>{r.data}</TableCell>
