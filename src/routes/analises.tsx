@@ -188,18 +188,6 @@ const EMPTY_FILTERS: Filters = {
 type SortKey = keyof Row;
 
 function ProcessosPage() {
-  const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
-  const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
-  const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-
-  const base = useMemo(
-    () =>
-      PERFIL === "Coordenador"
-        ? ALL_ROWS
-function ProcessosPage() {
   const navigate = useNavigate();
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
