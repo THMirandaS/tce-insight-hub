@@ -39,7 +39,8 @@ const ORGAOS = [
 ];
 
 const ANALISTAS = [
-  "M. Andrade", "P. Cardoso", "R. Nogueira", "S. Vieira", "T. Barbosa", "L. Cunha",
+  "Analista 01", "Analista 02", "Analista 03", "Analista 04", "Analista 05",
+  "Analista 06", "Analista 07", "Analista 08", "Analista 09",
 ];
 
 type Situacao = "Disponível para autuar" | "Em processo de consolidação" | "Análise consolidada";
