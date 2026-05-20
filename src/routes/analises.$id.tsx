@@ -83,21 +83,31 @@ function AnaliseDetalhePage() {
             <ul className="py-2">
               {GROUPS.map((g) => {
                 const open = expanded[g.key];
+                const isGroupActive = g.items.length === 0 && active === g.key;
                 return (
                   <li key={g.key} className="px-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }))
-                      }
-                      className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[#0D1B2A] hover:bg-blue-50"
+                      onClick={() => {
+                        if (g.items.length === 0) {
+                          setActive(g.key);
+                        } else {
+                          setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }));
+                        }
+                      }}
+                      className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+                        isGroupActive
+                          ? "bg-[#1A56DB] text-white hover:bg-[#1A56DB]"
+                          : "text-[#0D1B2A] hover:bg-blue-50"
+                      }`}
                     >
                       <span>{g.label}</span>
-                      {open ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
+                      {g.items.length > 0 &&
+                        (open ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        ))}
                     </button>
                     {open && g.items.length > 0 && (
                       <ul className="mb-2 space-y-0.5 border-l border-border pl-2">
