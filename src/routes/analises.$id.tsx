@@ -63,94 +63,92 @@ function AnaliseDetalhePage() {
   const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      {/* Cabeçalho fixo do processo */}
-      <header className="sticky top-0 z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
-          <InfoCell label="Processo" value={processoLabel} />
-          <Divider />
-          <InfoCell label="Órgão" value={orgao} />
-          <Divider />
-          <InfoCell label="Relator" value={relator} />
-          <Divider />
-          <InfoCell label="Auditor" value="Auditor 01" />
-        </div>
-      </header>
+    <div className="flex min-h-screen bg-white">
+      {/* Submenu lateral PCE (dark) */}
+      <aside className="sticky top-0 z-20 flex h-screen w-[220px] shrink-0 flex-col overflow-y-auto bg-[#0D1B2A] text-white">
+        <nav className="flex-1">
+          <ul className="py-2">
+            {GROUPS.map((g) => {
+              const open = expanded[g.key];
+              const isGroupActive = g.items.length === 0 && active === g.key;
+              return (
+                <li key={g.key} className="px-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (g.items.length === 0) {
+                        setActive(g.key);
+                      } else {
+                        setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }));
+                      }
+                    }}
+                    className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+                      isGroupActive
+                        ? "bg-[#1A56DB] text-white hover:bg-[#1A56DB]"
+                        : "text-white/85 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <span>{g.label}</span>
+                    {g.items.length > 0 &&
+                      (open ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      ))}
+                  </button>
+                  {open && g.items.length > 0 && (
+                    <ul className="mb-2 space-y-0.5 border-l border-white/10 pl-2">
+                      {g.items.map((it) => {
+                        const isActive = active === it.key;
+                        return (
+                          <li key={it.key}>
+                            <button
+                              type="button"
+                              onClick={() => setActive(it.key)}
+                              className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                                isActive
+                                  ? "bg-[#1A56DB] font-medium text-white"
+                                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                              }`}
+                            >
+                              <span className="truncate">{it.label}</span>
+                              {it.hasActions && (
+                                <Zap
+                                  className={`h-4 w-4 shrink-0 ${
+                                    isActive ? "text-yellow-300" : "text-yellow-400"
+                                  }`}
+                                  fill="currentColor"
+                                />
+                              )}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
 
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 gap-6 px-6 py-6 pb-28">
-        {/* Submenu lateral */}
-        <aside className="w-[260px] shrink-0">
-          <nav className="rounded-lg border border-border bg-card shadow-sm">
-            <ul className="py-2">
-              {GROUPS.map((g) => {
-                const open = expanded[g.key];
-                const isGroupActive = g.items.length === 0 && active === g.key;
-                return (
-                  <li key={g.key} className="px-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (g.items.length === 0) {
-                          setActive(g.key);
-                        } else {
-                          setExpanded((p) => ({ ...p, [g.key]: !p[g.key] }));
-                        }
-                      }}
-                      className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
-                        isGroupActive
-                          ? "bg-[#1A56DB] text-white hover:bg-[#1A56DB]"
-                          : "text-[#0D1B2A] hover:bg-blue-50"
-                      }`}
-                    >
-                      <span>{g.label}</span>
-                      {g.items.length > 0 &&
-                        (open ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        ))}
-                    </button>
-                    {open && g.items.length > 0 && (
-                      <ul className="mb-2 space-y-0.5 border-l border-border pl-2">
-                        {g.items.map((it) => {
-                          const isActive = active === it.key;
-                          return (
-                            <li key={it.key}>
-                              <button
-                                type="button"
-                                onClick={() => setActive(it.key)}
-                                className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                                  isActive
-                                    ? "bg-[#1A56DB] font-medium text-white"
-                                    : "text-foreground hover:bg-blue-50"
-                                }`}
-                              >
-                                <span className="truncate">{it.label}</span>
-                                {it.hasActions && (
-                                  <Zap
-                                    className={`h-4 w-4 shrink-0 ${
-                                      isActive
-                                        ? "text-yellow-300"
-                                        : "text-yellow-500"
-                                    }`}
-                                    fill="currentColor"
-                                  />
-                                )}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-        </aside>
+      {/* Coluna principal */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Cabeçalho fixo do processo */}
+        <header className="sticky top-0 z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
+            <InfoCell label="Processo" value={processoLabel} />
+            <Divider />
+            <InfoCell label="Órgão" value={orgao} />
+            <Divider />
+            <InfoCell label="Relator" value={relator} />
+            <Divider />
+            <InfoCell label="Auditor" value="Auditor 01" />
+          </div>
+        </header>
 
-        {/* Conteúdo */}
-        <section className="min-w-0 flex-1">
+        <section className="min-w-0 flex-1 px-6 py-6 pb-28">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "anteriores" ? (
@@ -165,41 +163,41 @@ function AnaliseDetalhePage() {
             />
           )}
         </section>
-      </div>
 
-      {/* Rodapé fixo de ações */}
-      <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap justify-end gap-2 px-6 py-3">
-          {active !== "anteriores" && (
-            <>
-              <Button
-                type="button"
-                className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
-              >
-                <Save className="h-4 w-4" /> Salvar
-              </Button>
-              <Button
-                type="button"
-                className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
-              >
-                <AlertTriangle className="h-4 w-4" /> Correção
-              </Button>
-              <Button
-                type="button"
-                className="gap-2 bg-green-600 text-white hover:bg-green-700"
-              >
-                <CheckCircle2 className="h-4 w-4" /> Concluir
-              </Button>
-            </>
-          )}
-          <Button
-            type="button"
-            className="gap-2 bg-[#0D1B2A] text-white hover:bg-[#0D1B2A]/90"
-          >
-            <FileText className="h-4 w-4" /> Gerar PDF
-          </Button>
-        </div>
-      </footer>
+        {/* Rodapé fixo de ações */}
+        <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
+          <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
+            {active !== "anteriores" && (
+              <>
+                <Button
+                  type="button"
+                  className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
+                >
+                  <Save className="h-4 w-4" /> Salvar
+                </Button>
+                <Button
+                  type="button"
+                  className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
+                >
+                  <AlertTriangle className="h-4 w-4" /> Correção
+                </Button>
+                <Button
+                  type="button"
+                  className="gap-2 bg-green-600 text-white hover:bg-green-700"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Concluir
+                </Button>
+              </>
+            )}
+            <Button
+              type="button"
+              className="gap-2 bg-[#0D1B2A] text-white hover:bg-[#0D1B2A]/90"
+            >
+              <FileText className="h-4 w-4" /> Gerar PDF
+            </Button>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
