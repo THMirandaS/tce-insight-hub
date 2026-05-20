@@ -1354,13 +1354,10 @@ function ReceitasContent({
 
   const [fonteXCodigo] = useState<string>("1.001.000");
   const [fonteXValor, setFonteXValor] = useState<number>(545_054_000);
-  const [valorFonteX, setValorFonteX] = useState<number>(545_054_000);
 
   const [fonteYCodigo] = useState<string>("1.002.000");
   const [fonteYValor, setFonteYValor] = useState<number>(256_496_000);
-  const [valorFonteY, setValorFonteY] = useState<number>(256_496_000);
 
-  const [insuficiencia, setInsuficiencia] = useState<number>(12_500_000);
   const [empenhadas, setEmpenhadas] = useState<number>(789_050_000);
 
   const [texto, setTexto] = useState("");
@@ -1369,9 +1366,11 @@ function ReceitasContent({
   const [historico] = useState<ReceitasHistorico[]>(RECEITAS_HISTORICO_INICIAL);
 
   const pctRealizacao = previsao > 0 ? (efetiva / previsao) * 100 : 0;
-  const totalFontes = valorFonteX + valorFonteY;
-  const pctFonteX = totalFontes > 0 ? (valorFonteX / totalFontes) * 100 : 0;
-  const pctFonteY = totalFontes > 0 ? (valorFonteY / totalFontes) * 100 : 0;
+  const pctFonteX = efetiva > 0 ? (fonteXValor / efetiva) * 100 : 0;
+  const pctFonteY = efetiva > 0 ? (fonteYValor / efetiva) * 100 : 0;
+
+  const insuficiencia = empenhadas - efetiva;
+  const insuficienciaDisplay = Math.max(0, insuficiencia);
 
   const realizacaoCor =
     pctRealizacao >= 90 ? "text-green-700" : "text-red-700";
@@ -1458,16 +1457,6 @@ function ReceitasContent({
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-semibold">
-              Valor Fonte {fonteXCodigo}:
-            </Label>
-            <MoneyInput
-              value={valorFonteX}
-              onChange={setValorFonteX}
-              readOnly={readOnly}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">
               % Fonte {fonteXCodigo}:
             </Label>
             <Input
@@ -1496,16 +1485,6 @@ function ReceitasContent({
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-semibold">
-              Valor Fonte {fonteYCodigo}:
-            </Label>
-            <MoneyInput
-              value={valorFonteY}
-              onChange={setValorFonteY}
-              readOnly={readOnly}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">
               % Fonte {fonteYCodigo}:
             </Label>
             <Input
@@ -1521,11 +1500,15 @@ function ReceitasContent({
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-sm font-semibold">Insuficiência de recursos</Label>
-          <MoneyInput
-            value={insuficiencia}
-            onChange={setInsuficiencia}
-            readOnly={readOnly}
-            highlight={insuficiencia > 0 ? "red" : null}
+          <Input
+            readOnly
+            value={fmtBRL(insuficienciaDisplay)}
+            className={`bg-[#F4F5F7] font-semibold ${insuficiencia > 0 ? "text-red-700" : ""}`}
+            title={
+              insuficiencia > 0
+                ? "Atenção: despesas superam a arrecadação efetiva."
+                : "Não há insuficiência de recursos. A arrecadação superou as despesas empenhadas."
+            }
           />
         </div>
         <div className="space-y-1.5">
@@ -1537,6 +1520,11 @@ function ReceitasContent({
           />
         </div>
       </div>
+
+      <p className="mt-3 text-xs italic text-muted-foreground">
+        As fontes exibidas representam as duas maiores arrecadações do órgão.
+        Podem existir outras fontes não exibidas nesta tela.
+      </p>
 
       {/* Resumo IA */}
       <div className="mt-6">
