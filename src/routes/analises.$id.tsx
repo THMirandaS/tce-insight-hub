@@ -311,10 +311,12 @@ function AnaliseDetalhePage() {
               )}
             <Button
               type="button"
+              onClick={handleGerarPDF}
               className="gap-2 bg-[#0D1B2A] text-white hover:bg-[#0D1B2A]/90"
             >
               <FileText className="h-4 w-4" /> Gerar PDF
             </Button>
+
           </div>
         </footer>
       </div>
