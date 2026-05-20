@@ -29,6 +29,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
+import { ResumoIA } from "@/components/pce/ResumoIA";
 
 export const Route = createFileRoute("/analises/$id")({
   component: AnaliseDetalhePage,
