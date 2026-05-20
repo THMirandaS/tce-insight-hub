@@ -152,9 +152,15 @@ function AnaliseDetalhePage() {
         <section className="min-w-0 flex-1">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
+          ) : active === "anteriores" ? (
+            <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : (
             <PlaceholderContent
-              label={PCE_ITEMS.find((i) => i.key === active)?.label ?? ""}
+              label={
+                GROUPS.find((g) => g.key === active)?.label ??
+                PCE_ITEMS.find((i) => i.key === active)?.label ??
+                ""
+              }
             />
           )}
         </section>
@@ -163,24 +169,28 @@ function AnaliseDetalhePage() {
       {/* Rodapé fixo de ações */}
       <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-[1600px] flex-wrap justify-end gap-2 px-6 py-3">
-          <Button
-            type="button"
-            className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
-          >
-            <Save className="h-4 w-4" /> Salvar
-          </Button>
-          <Button
-            type="button"
-            className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
-          >
-            <AlertTriangle className="h-4 w-4" /> Correção
-          </Button>
-          <Button
-            type="button"
-            className="gap-2 bg-green-600 text-white hover:bg-green-700"
-          >
-            <CheckCircle2 className="h-4 w-4" /> Concluir
-          </Button>
+          {active !== "anteriores" && (
+            <>
+              <Button
+                type="button"
+                className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
+              >
+                <Save className="h-4 w-4" /> Salvar
+              </Button>
+              <Button
+                type="button"
+                className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
+              >
+                <AlertTriangle className="h-4 w-4" /> Correção
+              </Button>
+              <Button
+                type="button"
+                className="gap-2 bg-green-600 text-white hover:bg-green-700"
+              >
+                <CheckCircle2 className="h-4 w-4" /> Concluir
+              </Button>
+            </>
+          )}
           <Button
             type="button"
             className="gap-2 bg-[#0D1B2A] text-white hover:bg-[#0D1B2A]/90"
