@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  
   ArrowLeft,
   Pencil,
   Trash2,
@@ -15,6 +14,8 @@ import {
   X,
   Plus,
   History,
+  Info,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
