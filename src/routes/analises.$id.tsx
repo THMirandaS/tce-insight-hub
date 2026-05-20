@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Sparkles,
+  
   ArrowLeft,
   Pencil,
   Trash2,
