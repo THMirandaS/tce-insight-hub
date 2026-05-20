@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   Zap,
@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,7 +45,7 @@ const GROUPS: SubGroup[] = [
 
 function AnaliseDetalhePage() {
   const { id } = Route.useParams();
-  const [active, setActive] = useState<string>("responsavel");
+  const [active, setActive] = useState<string>("anteriores");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     anteriores: false,
     demais: false,
@@ -56,11 +57,9 @@ function AnaliseDetalhePage() {
     [id]
   );
 
-  const processoLabel = row
-    ? `${row.numero}/${row.exercicio}`
-    : `${id}`;
+  const processoLabel = id;
   const orgao = row?.orgao ?? "—";
-  const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
+  const relator = "CONS. JOÃO DA SILVA";
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -138,6 +137,13 @@ function AnaliseDetalhePage() {
         {/* Cabeçalho fixo do processo */}
         <header className="sticky top-0 z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
+            <Link
+              to="/analises"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-semibold text-[#0D1B2A] shadow-sm hover:bg-gray-50"
+            >
+              <ArrowLeft className="h-4 w-4" /> Voltar
+            </Link>
+            <Divider />
             <InfoCell label="Processo" value={processoLabel} />
             <Divider />
             <InfoCell label="Órgão" value={orgao} />
