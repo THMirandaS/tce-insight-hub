@@ -25,24 +25,30 @@ export function TopNav({ perfil = "Coordenador", user = "Carla M. Tavares" }: { 
         </div>
 
         <nav className="hidden md:flex items-center gap-1">
-          {NAV.map(({ to, label, icon: Icon }) => {
+          {NAV.map(({ to, label, icon: Icon, enabled }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
+            const cls = `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              active
+                ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            } ${!enabled ? "opacity-50 cursor-not-allowed" : ""}`;
+            if (!enabled) {
+              return (
+                <span key={to} className={cls} aria-disabled>
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </span>
+              );
+            }
             return (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                }`}
-              >
+              <Link key={to} to={to} className={cls}>
                 <Icon className="h-4 w-4" />
                 {label}
               </Link>
             );
           })}
         </nav>
+
 
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline-flex items-center rounded-full bg-sidebar-primary/15 px-2.5 py-1 text-xs font-semibold text-sidebar-primary ring-1 ring-sidebar-primary/30">
