@@ -27,7 +27,7 @@ const NAV: NavItem[] = [
 ];
 
 export function AppSidebar({
-  user = "Carla M. Tavares",
+  user = "Coordenador 01",
   perfil = "Coordenador",
 }: {
   user?: string;
