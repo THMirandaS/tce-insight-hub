@@ -3,7 +3,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   FileStack,
-  FolderOpen,
   Search,
   ShieldCheck,
   LogOut,
@@ -24,7 +23,6 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/autuacao", label: "Autuação", icon: FileStack, roles: ["Coordenador"] },
-  { to: "/processos", label: "Processos", icon: FolderOpen },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 
