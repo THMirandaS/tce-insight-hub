@@ -9,17 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProcessosRouteImport } from './routes/processos'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AutuacaoRouteImport } from './routes/autuacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
 import { Route as IndexRouteImport } from './routes/index'
 
-const ProcessosRoute = ProcessosRouteImport.update({
-  id: '/processos',
-  path: '/processos',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -46,14 +40,12 @@ export interface FileRoutesByFullPath {
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/processos': typeof ProcessosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/processos': typeof ProcessosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,14 +53,13 @@ export interface FileRoutesById {
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/processos': typeof ProcessosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analises' | '/autuacao' | '/dashboard' | '/processos'
+  fullPaths: '/' | '/analises' | '/autuacao' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analises' | '/autuacao' | '/dashboard' | '/processos'
-  id: '__root__' | '/' | '/analises' | '/autuacao' | '/dashboard' | '/processos'
+  to: '/' | '/analises' | '/autuacao' | '/dashboard'
+  id: '__root__' | '/' | '/analises' | '/autuacao' | '/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,18 +67,10 @@ export interface RootRouteChildren {
   AnalisesRoute: typeof AnalisesRoute
   AutuacaoRoute: typeof AutuacaoRoute
   DashboardRoute: typeof DashboardRoute
-  ProcessosRoute: typeof ProcessosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/processos': {
-      id: '/processos'
-      path: '/processos'
-      fullPath: '/processos'
-      preLoaderRoute: typeof ProcessosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -124,7 +107,6 @@ const rootRouteChildren: RootRouteChildren = {
   AnalisesRoute: AnalisesRoute,
   AutuacaoRoute: AutuacaoRoute,
   DashboardRoute: DashboardRoute,
-  ProcessosRoute: ProcessosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
