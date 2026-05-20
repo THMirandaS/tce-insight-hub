@@ -9,10 +9,25 @@ import {
   ChevronRight,
   Sparkles,
   ArrowLeft,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Plus,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 
 export const Route = createFileRoute("/analises/$id")({
