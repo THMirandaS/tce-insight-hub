@@ -12,8 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AutuacaoRouteImport } from './routes/autuacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
-import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -30,53 +30,64 @@ const AnalisesRoute = AnalisesRouteImport.update({
   path: '/analises',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
-  id: '/analise/responsavel',
-  path: '/analise/responsavel',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
+  id: '/analise/responsavel',
+  path: '/analise/responsavel',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
-  '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
-  '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
-  '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analises' | '/analise/responsavel' | '/autuacao' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/analises'
+    | '/autuacao'
+    | '/dashboard'
+    | '/analise/responsavel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analises' | '/analise/responsavel' | '/autuacao' | '/dashboard'
-  id: '__root__' | '/' | '/analises' | '/analise/responsavel' | '/autuacao' | '/dashboard'
+  to: '/' | '/analises' | '/autuacao' | '/dashboard' | '/analise/responsavel'
+  id:
+    | '__root__'
+    | '/'
+    | '/analises'
+    | '/autuacao'
+    | '/dashboard'
+    | '/analise/responsavel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalisesRoute: typeof AnalisesRoute
-  AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
   AutuacaoRoute: typeof AutuacaoRoute
   DashboardRoute: typeof DashboardRoute
+  AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -102,18 +113,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalisesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analise/responsavel': {
-      id: '/analise/responsavel'
-      path: '/analise/responsavel'
-      fullPath: '/analise/responsavel'
-      preLoaderRoute: typeof AnaliseResponsavelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analise/responsavel': {
+      id: '/analise/responsavel'
+      path: '/analise/responsavel'
+      fullPath: '/analise/responsavel'
+      preLoaderRoute: typeof AnaliseResponsavelRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -122,9 +133,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalisesRoute: AnalisesRoute,
-  AnaliseResponsavelRoute: AnaliseResponsavelRoute,
   AutuacaoRoute: AutuacaoRoute,
   DashboardRoute: DashboardRoute,
+  AnaliseResponsavelRoute: AnaliseResponsavelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
