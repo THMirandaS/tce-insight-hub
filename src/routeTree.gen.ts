@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AutuacaoRouteImport } from './routes/autuacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -34,18 +35,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
+  id: '/analise/responsavel',
+  path: '/analise/responsavel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,25 @@ export interface FileRoutesById {
   '/analises': typeof AnalisesRoute
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
+  '/analise/responsavel': typeof AnaliseResponsavelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analises' | '/autuacao' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/analises'
+    | '/autuacao'
+    | '/dashboard'
+    | '/analise/responsavel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analises' | '/autuacao' | '/dashboard'
-  id: '__root__' | '/' | '/analises' | '/autuacao' | '/dashboard'
+  to: '/' | '/analises' | '/autuacao' | '/dashboard' | '/analise/responsavel'
+  id:
+    | '__root__'
+    | '/'
+    | '/analises'
+    | '/autuacao'
+    | '/dashboard'
+    | '/analise/responsavel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +87,7 @@ export interface RootRouteChildren {
   AnalisesRoute: typeof AnalisesRoute
   AutuacaoRoute: typeof AutuacaoRoute
   DashboardRoute: typeof DashboardRoute
+  AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analise/responsavel': {
+      id: '/analise/responsavel'
+      path: '/analise/responsavel'
+      fullPath: '/analise/responsavel'
+      preLoaderRoute: typeof AnaliseResponsavelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,7 +135,18 @@ const rootRouteChildren: RootRouteChildren = {
   AnalisesRoute: AnalisesRoute,
   AutuacaoRoute: AutuacaoRoute,
   DashboardRoute: DashboardRoute,
+  AnaliseResponsavelRoute: AnaliseResponsavelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
