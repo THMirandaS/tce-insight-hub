@@ -72,6 +72,33 @@ const GROUPS: SubGroup[] = [
   { key: "pce", label: "PCE", items: PCE_ITEMS },
 ];
 
+type SubmenuStatus =
+  | "nao-iniciado"
+  | "em-andamento"
+  | "concluido"
+  | "em-correcao"
+  | "corrigido"
+  | "revisado";
+
+type Perfil = "Auditor" | "Revisor" | "Coordenador";
+
+const STATUS_META: Record<
+  SubmenuStatus,
+  { label: string; Icon: typeof AlertCircle; className: string; pillBg: string }
+> = {
+  "nao-iniciado":   { label: "Não Iniciado", Icon: AlertCircle,  className: "text-gray-400",   pillBg: "bg-gray-100 text-gray-700" },
+  "em-andamento":   { label: "Em Andamento", Icon: Activity,     className: "text-[#1A56DB]",  pillBg: "bg-blue-50 text-[#1A56DB]" },
+  "concluido":      { label: "Concluído",    Icon: CheckCircle2, className: "text-green-600",  pillBg: "bg-green-50 text-green-700" },
+  "corrigido":      { label: "Corrigido",    Icon: CheckCircle2, className: "text-green-600",  pillBg: "bg-green-50 text-green-700" },
+  "em-correcao":    { label: "Em Correção",  Icon: AlertTriangle,className: "text-amber-500",  pillBg: "bg-amber-50 text-amber-700" },
+  "revisado":       { label: "Revisado",     Icon: Circle,       className: "text-purple-600", pillBg: "bg-purple-50 text-purple-700" },
+};
+
+function StatusIcon({ status }: { status: SubmenuStatus }) {
+  const { Icon, className } = STATUS_META[status];
+  return <Icon className={`h-4 w-4 shrink-0 ${className}`} aria-label={STATUS_META[status].label} />;
+}
+
 function AnaliseDetalhePage() {
   const { id } = Route.useParams();
   const [active, setActive] = useState<string>("anteriores");
@@ -82,6 +109,59 @@ function AnaliseDetalhePage() {
   });
   const contentRef = useRef<HTMLElement | null>(null);
 
+  // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
+  const [perfil] = useState<Perfil>("Coordenador");
+
+  // Status por submenu PCE (persistido ao navegar entre submenus)
+  const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
+    () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
+  );
+  const [legendOpen, setLegendOpen] = useState(false);
+
+  const currentStatus: SubmenuStatus | null =
+    statuses[active] !== undefined ? statuses[active] : null;
+
+  function openSubmenu(key: string) {
+    setActive(key);
+    setStatuses((p) =>
+      p[key] === "nao-iniciado" ? { ...p, [key]: "em-andamento" } : p
+    );
+  }
+
+  function handleSalvar() {
+    if (currentStatus === null) return;
+    setStatuses((p) => {
+      const s = p[active];
+      if (s === "em-andamento") return { ...p, [active]: "concluido" };
+      if (s === "em-correcao") return { ...p, [active]: "corrigido" };
+      return p;
+    });
+  }
+
+  function handleCorrecao() {
+    if (currentStatus === null) return;
+    setStatuses((p) =>
+      p[active] === "concluido" || p[active] === "corrigido" || p[active] === "revisado"
+        ? { ...p, [active]: "em-correcao" }
+        : p
+    );
+  }
+
+  function handleConcluir() {
+    if (currentStatus === null) return;
+    setStatuses((p) => ({ ...p, [active]: "concluido" }));
+  }
+
+  function handleMarcarRevisado() {
+    if (currentStatus === null) return;
+    setStatuses((p) =>
+      p[active] === "corrigido" || p[active] === "concluido"
+        ? { ...p, [active]: "revisado" }
+        : p
+    );
+  }
+
+  const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
   const row = useMemo(
     () => ALL_ROWS.find((r) => r.numero === id),
