@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   ArrowUp,
@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/analises")({
-  component: ProcessosPage,
+  component: AnalisesRouteShell,
 });
 
 type Perfil = "Coordenador" | "Auditor";
@@ -186,6 +186,16 @@ const EMPTY_FILTERS: Filters = {
 };
 
 type SortKey = keyof Row;
+
+function AnalisesRouteShell() {
+  const { pathname } = useLocation();
+
+  if (pathname !== "/analises") {
+    return <Outlet />;
+  }
+
+  return <ProcessosPage />;
+}
 
 function ProcessosPage() {
   const navigate = useNavigate();
