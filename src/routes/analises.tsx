@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   ArrowUp,
@@ -179,7 +179,6 @@ const EMPTY_FILTERS: Filters = {
 type SortKey = keyof Row;
 
 function ProcessosPage() {
-  const navigate = useNavigate();
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
