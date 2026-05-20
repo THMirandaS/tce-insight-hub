@@ -67,6 +67,8 @@ function AnaliseDetalhePage() {
     demais: false,
     pce: true,
   });
+  const contentRef = useRef<HTMLElement | null>(null);
+
 
   const row = useMemo(
     () => ALL_ROWS.find((r) => r.numero === id),
