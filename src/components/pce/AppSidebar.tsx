@@ -38,7 +38,9 @@ export function AppSidebar({
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
 
-  const width = collapsed ? "w-[68px]" : "w-[220px]";
+  const forcedCollapsed = /^\/analises\/[^/]+/.test(pathname);
+  const isCollapsed = collapsed || forcedCollapsed;
+  const width = isCollapsed ? "w-[68px]" : "w-[220px]";
 
   return (
     <aside
@@ -49,7 +51,7 @@ export function AppSidebar({
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#1A56DB]">
           <ShieldCheck className="h-5 w-5" />
         </div>
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="leading-tight min-w-0">
             <p className="truncate text-sm font-semibold">PCE</p>
             <p className="truncate text-[11px] text-white/60">
@@ -68,7 +70,7 @@ export function AppSidebar({
               <li key={to}>
                 <Link
                   to={to}
-                  title={collapsed ? label : undefined}
+                  title={isCollapsed ? label : undefined}
                   className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-[#1A56DB] text-white shadow-sm"
@@ -76,7 +78,7 @@ export function AppSidebar({
                   }`}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span className="truncate">{label}</span>}
+                  {!isCollapsed && <span className="truncate">{label}</span>}
                 </Link>
               </li>
             );
@@ -86,9 +88,9 @@ export function AppSidebar({
 
       {/* Footer */}
       <div className="border-t border-white/5 p-3 space-y-2">
-        <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : ""}`}>
+        <div className={`flex items-center gap-2 ${isCollapsed ? "justify-center" : ""}`}>
           <UserCircle2 className="h-8 w-8 shrink-0 text-[#00C2CB]" />
-          {!collapsed && (
+          {!isCollapsed && (
             <div className="min-w-0 leading-tight">
               <p className="truncate text-sm font-medium">{user}</p>
               <p className="truncate text-[11px] text-white/60">Perfil: {perfil}</p>
@@ -100,30 +102,32 @@ export function AppSidebar({
           to="/"
           title="Sair"
           className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white ${
-            collapsed ? "justify-center" : ""
+            isCollapsed ? "justify-center" : ""
           }`}
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sair</span>}
+          {!isCollapsed && <span>Sair</span>}
         </Link>
 
-        <button
-          type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white ${
-            collapsed ? "justify-center" : ""
-          }`}
-          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="h-4 w-4" />
-              <span>Recolher</span>
-            </>
-          )}
-        </button>
+        {!forcedCollapsed && (
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white ${
+              isCollapsed ? "justify-center" : ""
+            }`}
+            aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4" />
+                <span>Recolher</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
     </aside>
   );
