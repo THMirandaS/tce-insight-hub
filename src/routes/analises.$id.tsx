@@ -1457,16 +1457,6 @@ function ReceitasContent({
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-semibold">
-              Valor Fonte {fonteXCodigo}:
-            </Label>
-            <MoneyInput
-              value={valorFonteX}
-              onChange={setValorFonteX}
-              readOnly={readOnly}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">
               % Fonte {fonteXCodigo}:
             </Label>
             <Input
@@ -1495,16 +1485,6 @@ function ReceitasContent({
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-semibold">
-              Valor Fonte {fonteYCodigo}:
-            </Label>
-            <MoneyInput
-              value={valorFonteY}
-              onChange={setValorFonteY}
-              readOnly={readOnly}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-semibold">
               % Fonte {fonteYCodigo}:
             </Label>
             <Input
@@ -1520,11 +1500,15 @@ function ReceitasContent({
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-sm font-semibold">Insuficiência de recursos</Label>
-          <MoneyInput
-            value={insuficiencia}
-            onChange={setInsuficiencia}
-            readOnly={readOnly}
-            highlight={insuficiencia > 0 ? "red" : null}
+          <Input
+            readOnly
+            value={fmtBRL(insuficienciaDisplay)}
+            className={`bg-[#F4F5F7] font-semibold ${insuficiencia > 0 ? "text-red-700" : ""}`}
+            title={
+              insuficiencia > 0
+                ? "Atenção: despesas superam a arrecadação efetiva."
+                : "Não há insuficiência de recursos. A arrecadação superou as despesas empenhadas."
+            }
           />
         </div>
         <div className="space-y-1.5">
@@ -1536,6 +1520,11 @@ function ReceitasContent({
           />
         </div>
       </div>
+
+      <p className="mt-3 text-xs italic text-muted-foreground">
+        As fontes exibidas representam as duas maiores arrecadações do órgão.
+        Podem existir outras fontes não exibidas nesta tela.
+      </p>
 
       {/* Resumo IA */}
       <div className="mt-6">
