@@ -36,6 +36,15 @@ export const Route = createFileRoute("/analises/$id")({
   component: AnaliseDetalhePage,
 });
 
+function escapeHTML(s: string) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 type SubItem = { key: string; label: string; hasActions?: boolean };
 type SubGroup = { key: string; label: string; items: SubItem[] };
 
