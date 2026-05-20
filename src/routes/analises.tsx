@@ -384,16 +384,14 @@ function ProcessosPage() {
                 <Th label="Analista Responsável" k="analista" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Revisor" k="revisor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">Ações</th>
               </tr>
             </thead>
             <tbody>
               {pageRows.map((r, idx) => (
                 <tr
                   key={r.numero}
-                  onClick={() =>
-                    void r
-                  }
-                  className={`cursor-pointer transition-colors hover:bg-blue-50 ${
+                  className={`transition-colors hover:bg-blue-50 ${
                     idx % 2 === 1 ? "bg-gray-50/60" : "bg-white"
                   }`}
                 >
@@ -414,11 +412,20 @@ function ProcessosPage() {
                   <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
                   <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
                   <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
+                  <td className="px-3 py-2.5">
+                    <Link
+                      to="/analises/$id"
+                      params={{ id: r.numero }}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-[#1A56DB] px-2.5 py-1.5 text-xs font-medium text-white hover:bg-[#1A56DB]/90"
+                    >
+                      <SearchIcon className="h-3.5 w-3.5" /> Analisar
+                    </Link>
+                  </td>
                 </tr>
               ))}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
