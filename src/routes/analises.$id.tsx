@@ -168,6 +168,8 @@ function AnaliseDetalhePage() {
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
             <ConsidGeraisContent processo={processoLabel} orgao={orgao} />
+          ) : active === "receitas" ? (
+            <ReceitasContent processo={processoLabel} orgao={orgao} />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
