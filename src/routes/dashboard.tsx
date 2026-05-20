@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { DashboardHeader } from "@/components/pce/DashboardHeader";
+
 import { GlobalFilters, type Filters } from "@/components/pce/GlobalFilters";
 import { ChartCard } from "@/components/pce/ChartCard";
 import {
@@ -20,7 +20,6 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
       <main className="mx-auto max-w-[1600px] space-y-5 px-6 py-6">
         <GlobalFilters onApply={setFilters} />
 
