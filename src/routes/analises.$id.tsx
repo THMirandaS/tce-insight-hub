@@ -78,6 +78,90 @@ function AnaliseDetalhePage() {
   const processoLabel = id;
   const orgao = row?.orgao ?? "—";
   const relator = "CONS. JOÃO DA SILVA";
+  const auditor = "Auditor 01";
+
+  const activeLabel =
+    GROUPS.find((g) => g.key === active)?.label ??
+    PCE_ITEMS.find((i) => i.key === active)?.label ??
+    "";
+
+  function handleGerarPDF() {
+    const node = contentRef.current;
+    if (!node) return;
+    const clone = node.cloneNode(true) as HTMLElement;
+
+    // Inline form values so the print snapshot matches what's on screen
+    const origInputs = node.querySelectorAll<HTMLInputElement>("input");
+    clone.querySelectorAll<HTMLInputElement>("input").forEach((el, i) => {
+      const src = origInputs[i];
+      if (!src) return;
+      if (src.type === "checkbox" || src.type === "radio") {
+        if (src.checked) el.setAttribute("checked", "");
+        else el.removeAttribute("checked");
+      } else {
+        el.setAttribute("value", src.value);
+      }
+    });
+    const origTAs = node.querySelectorAll<HTMLTextAreaElement>("textarea");
+    clone.querySelectorAll<HTMLTextAreaElement>("textarea").forEach((el, i) => {
+      const src = origTAs[i];
+      if (!src) return;
+      el.textContent = src.value;
+    });
+    // Reflect Radix checkbox state (data-state="checked")
+    const origCk = node.querySelectorAll<HTMLElement>('[role="checkbox"]');
+    clone.querySelectorAll<HTMLElement>('[role="checkbox"]').forEach((el, i) => {
+      const src = origCk[i];
+      if (!src) return;
+      el.setAttribute("data-state", src.getAttribute("data-state") ?? "unchecked");
+    });
+
+    const now = new Date();
+    const dataHora = now.toLocaleString("pt-BR");
+
+    const w = window.open("", "_blank", "width=1024,height=768");
+    if (!w) return;
+    w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" />
+<title>PCE - ${activeLabel} - ${processoLabel}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @page { size: A4; margin: 16mm 12mm; }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#0D1B2A; }
+  .pdf-header { border-bottom: 2px solid #1A56DB; padding-bottom: 8px; margin-bottom: 16px; display:flex; flex-wrap:wrap; gap:16px 24px; font-size:12px; }
+  .pdf-header .cell .lbl { font-size:10px; text-transform:uppercase; color:#475569; letter-spacing:.04em; }
+  .pdf-header .cell .val { font-weight:600; color:#0D1B2A; }
+  .pdf-title { text-align:center; font-size:16px; font-weight:700; color:#0D1B2A; margin: 8px 0 16px; text-transform:uppercase; letter-spacing:.04em; }
+  .pdf-footer { margin-top: 24px; padding-top: 8px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:10px; color:#475569; }
+  button { display:none !important; }
+  [data-pdf-hide], .sr-only { display:none !important; }
+  textarea, input { border:1px solid #cbd5e1 !important; background:#fff !important; color:#0D1B2A !important; }
+  table { width:100%; border-collapse: collapse; }
+</style>
+</head><body>
+<div class="pdf-header">
+  <div class="cell"><div class="lbl">Processo</div><div class="val">${escapeHTML(processoLabel)}</div></div>
+  <div class="cell"><div class="lbl">Órgão</div><div class="val">${escapeHTML(orgao)}</div></div>
+  <div class="cell"><div class="lbl">Relator</div><div class="val">${escapeHTML(relator)}</div></div>
+  <div class="cell"><div class="lbl">Auditor</div><div class="val">${escapeHTML(auditor)}</div></div>
+</div>
+<h1 class="pdf-title">${escapeHTML(activeLabel)}</h1>
+<div id="pdf-content"></div>
+<div class="pdf-footer">
+  <span>Gerado em: ${escapeHTML(dataHora)} — Usuário: ${escapeHTML(auditor)}</span>
+  <span>PCE — Prestação de Contas Estaduais</span>
+</div>
+</body></html>`);
+    w.document.close();
+    const mount = w.document.getElementById("pdf-content");
+    if (mount) mount.appendChild(clone);
+    const trigger = () => {
+      w.focus();
+      w.print();
+    };
+    // Wait for Tailwind CDN to apply styles
+    setTimeout(trigger, 600);
+  }
+
 
   return (
     <div className="flex min-h-screen bg-white">
