@@ -169,7 +169,7 @@ function AutuacaoPage() {
                   <X className="h-4 w-4" />
                 </button>
                 <span className="text-sm font-medium">
-                  {count} município(s) selecionado(s)
+                  {count} órgão(s) selecionado(s)
                 </span>
               </div>
               <div className="flex items-center gap-2">
