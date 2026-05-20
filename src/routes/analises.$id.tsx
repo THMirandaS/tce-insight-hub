@@ -1244,3 +1244,374 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 function Divider() {
   return <span className="h-4 w-px bg-border" aria-hidden />;
 }
+
+// ============================================================
+// Receitas
+// ============================================================
+
+const RECEITAS_TRANSITO_JULGADO = false;
+const RECEITAS_SITUACAO_CONCLUIDA = false;
+const RECEITAS_USUARIO_AUTORIZADO = true;
+const RECEITAS_READ_ONLY =
+  RECEITAS_TRANSITO_JULGADO ||
+  RECEITAS_SITUACAO_CONCLUIDA ||
+  !RECEITAS_USUARIO_AUTORIZADO;
+
+const RECEITAS_MAX_TEXTO = 4000;
+
+const RECEITAS_RESUMO_IA =
+  "A arrecadação efetiva do exercício atingiu 94,3% da previsão orçamentária, demonstrando desempenho satisfatório na realização das receitas. A principal fonte de recursos representou 68% do total arrecadado, com execução acima do previsto. Foi identificada insuficiência de recursos na ordem de R$ 12.500.000,00, concentrada no segundo semestre do exercício, demandando atenção no planejamento orçamentário do próximo exercício.";
+
+type ReceitasHistorico = {
+  ts: string;
+  usuario: string;
+  campo: string;
+  anterior: string;
+  novo: string;
+};
+
+const RECEITAS_HISTORICO_INICIAL: ReceitasHistorico[] = [
+  {
+    ts: "14/03/2025 10:42",
+    usuario: "Auditor 01",
+    campo: "Arrecadação Efetiva",
+    anterior: "800.000.000,00",
+    novo: "801.550.000,00",
+  },
+  {
+    ts: "13/03/2025 16:18",
+    usuario: "Auditor 02",
+    campo: "Previsão de Arrecadação",
+    anterior: "840.000.000,00",
+    novo: "850.000.000,00",
+  },
+];
+
+function fmtBRL(n: number): string {
+  if (!isFinite(n)) return "0,00";
+  return n.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function parseBRL(s: string): number {
+  const clean = s.replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+  const n = parseFloat(clean);
+  return isNaN(n) ? 0 : n;
+}
+
+function MoneyInput({
+  value,
+  onChange,
+  readOnly,
+  className,
+  highlight,
+}: {
+  value: number;
+  onChange?: (n: number) => void;
+  readOnly?: boolean;
+  className?: string;
+  highlight?: "red" | "green" | null;
+}) {
+  const [local, setLocal] = useState<string>(fmtBRL(value));
+  // keep local in sync if value changes externally
+  // (intentional simple sync — only when prop differs from parsed local)
+  if (!readOnly && parseBRL(local) !== value && document.activeElement?.tagName !== "INPUT") {
+    // no-op: rely on user input
+  }
+  const colorCls =
+    highlight === "red"
+      ? "text-red-700 font-semibold"
+      : highlight === "green"
+        ? "text-green-700 font-semibold"
+        : "";
+  return (
+    <Input
+      value={local}
+      readOnly={readOnly}
+      onChange={(e) => {
+        setLocal(e.target.value);
+        onChange?.(parseBRL(e.target.value));
+      }}
+      onBlur={() => setLocal(fmtBRL(parseBRL(local)))}
+      className={`${readOnly ? "bg-[#F4F5F7]" : ""} ${colorCls} ${className ?? ""}`}
+    />
+  );
+}
+
+function ReceitasContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = RECEITAS_READ_ONLY;
+
+  const [previsao, setPrevisao] = useState<number>(850_000_000);
+  const [efetiva, setEfetiva] = useState<number>(801_550_000);
+
+  const [fonteXCodigo] = useState<string>("1.001.000");
+  const [fonteXValor, setFonteXValor] = useState<number>(545_054_000);
+  const [valorFonteX, setValorFonteX] = useState<number>(545_054_000);
+
+  const [fonteYCodigo] = useState<string>("1.002.000");
+  const [fonteYValor, setFonteYValor] = useState<number>(256_496_000);
+  const [valorFonteY, setValorFonteY] = useState<number>(256_496_000);
+
+  const [insuficiencia, setInsuficiencia] = useState<number>(12_500_000);
+  const [empenhadas, setEmpenhadas] = useState<number>(789_050_000);
+
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historico] = useState<ReceitasHistorico[]>(RECEITAS_HISTORICO_INICIAL);
+
+  const pctRealizacao = previsao > 0 ? (efetiva / previsao) * 100 : 0;
+  const totalFontes = valorFonteX + valorFonteY;
+  const pctFonteX = totalFontes > 0 ? (valorFonteX / totalFontes) * 100 : 0;
+  const pctFonteY = totalFontes > 0 ? (valorFonteY / totalFontes) * 100 : 0;
+
+  const realizacaoCor =
+    pctRealizacao >= 90 ? "text-green-700" : "text-red-700";
+
+  const restantes = RECEITAS_MAX_TEXTO - texto.length;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {RECEITAS_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">
+          <span className="border-b-2 border-[#0D1B2A] pb-1">Receitas:</span>
+        </h2>
+        <button
+          type="button"
+          onClick={() => setHistoryOpen(true)}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs text-foreground hover:bg-muted"
+          title="Histórico de alterações"
+        >
+          <History className="h-4 w-4" /> Histórico
+        </button>
+      </div>
+
+      {/* Linha 1 — totais */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-semibold">Previsão de Arrecadação</Label>
+          <MoneyInput value={previsao} onChange={setPrevisao} readOnly={readOnly} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-semibold">Arrecadação Efetiva</Label>
+          <MoneyInput value={efetiva} onChange={setEfetiva} readOnly={readOnly} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-semibold">% de Realização</Label>
+          <Input
+            readOnly
+            value={`${pctRealizacao.toFixed(1).replace(".", ",")}%`}
+            className={`bg-[#F4F5F7] font-semibold ${realizacaoCor}`}
+          />
+        </div>
+      </div>
+
+      {/* Linha 2 — duas fontes */}
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto_1fr]">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              Fonte {fonteXCodigo}:
+            </Label>
+            <MoneyInput
+              value={fonteXValor}
+              onChange={setFonteXValor}
+              readOnly={readOnly}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              Valor Fonte {fonteXCodigo}:
+            </Label>
+            <MoneyInput
+              value={valorFonteX}
+              onChange={setValorFonteX}
+              readOnly={readOnly}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              % Fonte {fonteXCodigo}:
+            </Label>
+            <Input
+              readOnly
+              value={`${pctFonteX.toFixed(0)}%`}
+              className="bg-[#F4F5F7] font-semibold"
+            />
+          </div>
+        </div>
+
+        <div
+          aria-hidden
+          className="hidden w-px self-stretch bg-[#1A56DB] md:block"
+        />
+
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              Fonte {fonteYCodigo}:
+            </Label>
+            <MoneyInput
+              value={fonteYValor}
+              onChange={setFonteYValor}
+              readOnly={readOnly}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              Valor Fonte {fonteYCodigo}:
+            </Label>
+            <MoneyInput
+              value={valorFonteY}
+              onChange={setValorFonteY}
+              readOnly={readOnly}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold">
+              % Fonte {fonteYCodigo}:
+            </Label>
+            <Input
+              readOnly
+              value={`${pctFonteY.toFixed(0)}%`}
+              className="bg-[#F4F5F7] font-semibold"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Linha 3 — totais finais */}
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-semibold">Insuficiência de recursos</Label>
+          <MoneyInput
+            value={insuficiencia}
+            onChange={setInsuficiencia}
+            readOnly={readOnly}
+            highlight={insuficiencia > 0 ? "red" : null}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-semibold">Despesas empenhadas</Label>
+          <MoneyInput
+            value={empenhadas}
+            onChange={setEmpenhadas}
+            readOnly={readOnly}
+          />
+        </div>
+      </div>
+
+      {/* Resumo IA */}
+      <div className="mt-6">
+        <ResumoIA texto={RECEITAS_RESUMO_IA} processo={processo} orgao={orgao} />
+      </div>
+
+      {/* Editor */}
+      <div className="mt-6 space-y-2">
+        <Label className="text-sm font-semibold">
+          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+        </Label>
+        <textarea
+          value={texto}
+          readOnly={readOnly}
+          maxLength={RECEITAS_MAX_TEXTO}
+          onChange={(e) => setTexto(e.target.value)}
+          className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+        />
+        <p className="text-right text-xs text-muted-foreground">
+          {restantes.toLocaleString("pt-BR")} caracteres restantes
+        </p>
+        <label className="flex items-start gap-2 text-sm text-foreground">
+          <Checkbox
+            checked={incluir}
+            onCheckedChange={(v) => setIncluir(Boolean(v))}
+            disabled={readOnly}
+          />
+          <span>
+            O texto complementar deverá constar no relatório de conclusão do
+            processo.
+          </span>
+        </label>
+      </div>
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as edições realizadas nos campos de receitas são
+              registradas para auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historico.map((h, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
