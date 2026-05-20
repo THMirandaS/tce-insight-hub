@@ -433,22 +433,34 @@ function AnaliseDetalhePage() {
                 <>
                   <Button
                     type="button"
+                    onClick={handleSalvar}
                     className="gap-2 bg-gray-500 text-white hover:bg-gray-600"
                   >
                     <Save className="h-4 w-4" /> Salvar
                   </Button>
                   <Button
                     type="button"
+                    onClick={handleCorrecao}
                     className="gap-2 bg-yellow-500 text-[#0D1B2A] hover:bg-yellow-600"
                   >
                     <AlertTriangle className="h-4 w-4" /> Correção
                   </Button>
                   <Button
                     type="button"
+                    onClick={handleConcluir}
                     className="gap-2 bg-green-600 text-white hover:bg-green-700"
                   >
                     <CheckCircle2 className="h-4 w-4" /> Concluir
                   </Button>
+                  {podeRevisar && currentStatus === "corrigido" && (
+                    <Button
+                      type="button"
+                      onClick={handleMarcarRevisado}
+                      className="gap-2 bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                      <Eye className="h-4 w-4" /> Marcar como Revisado
+                    </Button>
+                  )}
                 </>
               )}
             <Button
