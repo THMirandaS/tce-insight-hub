@@ -426,6 +426,14 @@ function AnaliseDetalhePage() {
               tab={despesaTab}
               onTabChange={setDespesaTab}
             />
+          ) : active === "dsp-dotacao" ? (
+            <DspDotacaoContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={dotacaoTab}
+              onTabChange={setDotacaoTab}
+            />
+
 
 
 
