@@ -408,6 +408,13 @@ function AnaliseDetalhePage() {
             <ConsidGeraisContent processo={processoLabel} orgao={orgao} />
           ) : active === "receitas" ? (
             <ReceitasContent processo={processoLabel} orgao={orgao} />
+          ) : active === "credito-inicial" ? (
+            <CreditoInicialContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={creditoTab}
+              onTabChange={setCreditoTab}
+            />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
