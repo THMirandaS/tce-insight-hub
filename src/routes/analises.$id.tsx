@@ -119,6 +119,7 @@ function AnaliseDetalhePage() {
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
+  const [dotacaoTab, setDotacaoTab] = useState<"principal" | "memoria">("principal");
 
   const currentStatus: SubmenuStatus | null =
     statuses[active] !== undefined ? statuses[active] : null;
@@ -425,6 +426,14 @@ function AnaliseDetalhePage() {
               tab={despesaTab}
               onTabChange={setDespesaTab}
             />
+          ) : active === "dsp-dotacao" ? (
+            <DspDotacaoContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={dotacaoTab}
+              onTabChange={setDotacaoTab}
+            />
+
 
 
 
@@ -455,7 +464,9 @@ function AnaliseDetalhePage() {
               !(active === "credito-inicial" && creditoTab !== "principal") &&
               !(active === "programas" && PROGRAMAS_READ_ONLY) &&
               !(active === "credito-despesas-prg" && CREDITO_DESPESAS_READ_ONLY) &&
-              !(active === "credito-despesas-prg" && despesaTab !== "principal") && (
+              !(active === "credito-despesas-prg" && despesaTab !== "principal") &&
+              !(active === "dsp-dotacao" && DSP_DOTACAO_READ_ONLY) &&
+              !(active === "dsp-dotacao" && dotacaoTab !== "principal") && (
 
                 <>
                   <Button
@@ -3648,6 +3659,633 @@ function CreditoDespesasContent({
                     key={i}
                     className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
                   >
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir linha</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir esta linha da memória de cálculo?
+              Esta ação será registrada no log de auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeMemoria(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// ============================================================
+// DSP POR DOTAÇÃO ORÇAMENTÁRIA
+// ============================================================
+
+const DSP_DOTACAO_TRANSITO_JULGADO = false;
+const DSP_DOTACAO_SITUACAO_CONCLUIDA = false;
+const DSP_DOTACAO_USUARIO_AUTORIZADO = true;
+const DSP_DOTACAO_READ_ONLY =
+  DSP_DOTACAO_TRANSITO_JULGADO ||
+  DSP_DOTACAO_SITUACAO_CONCLUIDA ||
+  !DSP_DOTACAO_USUARIO_AUTORIZADO;
+
+const DSP_DOTACAO_MAX_TEXTO = 4000;
+
+const DSP_DOTACAO_RESUMO_IA =
+  "Foram identificadas inconsistências nos elementos de despesa analisados. O elemento Sentenças Judiciais apresentou valor liquidado superior ao empenhado, configurando situação irregular que requer encaminhamento específico. Os demais elementos mantiveram execução dentro dos parâmetros regulares.";
+
+type DspDotacaoConclusao = "regular" | "ressalvas" | "irregular" | "";
+type DspDotacaoEncaminhamento = "nenhum" | "recomendacao" | "determinacao" | "";
+
+type DspDotacaoConsolidada = {
+  id: string;
+  elemento: string;
+  empenhado: number;
+  liquidado: number;
+  pago: number;
+};
+
+const DSP_DOTACAO_CONSOLIDADO: DspDotacaoConsolidada[] = [
+  { id: "e1", elemento: "Sentenças Judiciais", empenhado: 999_999_999.99, liquidado: 888_888_888.88, pago: 777_777_777.77 },
+  { id: "e2", elemento: "Auxílios", empenhado: 888_888_888.88, liquidado: 999_999_999.99, pago: 999_999_999.99 },
+  { id: "e3", elemento: "Obras e Instalações", empenhado: 777_777_777.77, liquidado: 777_777_777.77, pago: 777_777_777.77 },
+  { id: "e4", elemento: "Vencimentos e vantagens fixas", empenhado: 888_888_888.88, liquidado: 999_999_999.99, pago: 999_999_999.99 },
+  { id: "e5", elemento: "Outros", empenhado: 999_999_999.99, liquidado: 999_999_999.99, pago: 999_999_999.99 },
+];
+
+type DspDotacaoMemoriaLinha = {
+  id: string;
+  programa: string;
+  categoria: string;
+  grupo: string;
+  modalidade: string;
+  inicial: number;
+  autorizado: number;
+  despesa: number;
+};
+
+const DSP_DOTACAO_MEMORIA: DspDotacaoMemoriaLinha[] = [
+  { id: "dd1", programa: "47", categoria: "Despesas Correntes", grupo: "Outras Despesas Correntes", modalidade: "Transferências a União", inicial: 999_999_999.99, autorizado: 888_888_888.88, despesa: 800_000_000 },
+  { id: "dd2", programa: "55", categoria: "Despesas Correntes", grupo: "Pessoal e Encargos Sociais", modalidade: "Aplicação Direta Decorrente de Operações entre Órgãos, Fundos e Entida", inicial: 999_999_999.99, autorizado: 999_999_999.99, despesa: 950_000_000 },
+  { id: "dd3", programa: "68", categoria: "Despesas de Capital", grupo: "Inversões Financeiras", modalidade: "Aplicação Direta Decorrente de Operações entre Órgãos, Fundos e Entida", inicial: 0, autorizado: 999_999_999.99, despesa: 1_100_000_000 },
+  { id: "dd4", programa: "88", categoria: "Despesas de Capital", grupo: "Investimentos", modalidade: "Aplicação Direta", inicial: 888_888_888.88, autorizado: 999_999_999.99, despesa: 1_050_000_000 },
+  { id: "dd5", programa: "88", categoria: "Despesas de Capital", grupo: "Investimentos", modalidade: "Aplicação Direta", inicial: 777_777_777.77, autorizado: 699_999_999.99, despesa: 600_000_000 },
+];
+
+const DSP_DOTACAO_HISTORICO: ReceitasHistorico[] = [
+  { ts: "16/03/2025 11:22", usuario: "Auditor 01", campo: "Linha 2 - Crédito autorizado", anterior: "950.000.000,00", novo: "999.999.999,99" },
+  { ts: "15/03/2025 09:48", usuario: "Auditor 02", campo: "Conclusão", anterior: "Regular", novo: "Regular com ressalvas" },
+];
+
+function DspDotacaoContent({
+  processo,
+  orgao,
+  tab,
+  onTabChange,
+}: {
+  processo: string;
+  orgao: string;
+  tab: "principal" | "memoria";
+  onTabChange: (t: "principal" | "memoria") => void;
+}) {
+  const readOnly = DSP_DOTACAO_READ_ONLY;
+
+  const [memoria, setMemoria] = useState<DspDotacaoMemoriaLinha[]>(DSP_DOTACAO_MEMORIA);
+  const [consolidado] = useState<DspDotacaoConsolidada[]>(DSP_DOTACAO_CONSOLIDADO);
+  const [conclusao, setConclusao] = useState<DspDotacaoConclusao>("ressalvas");
+  const [encaminhamentoTipo, setEncTipo] = useState<DspDotacaoEncaminhamento>("recomendacao");
+  const [encTexto, setEncTexto] = useState("");
+  const [consideracoes, setConsideracoes] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const totalEmpenhado = consolidado.reduce((s, l) => s + (l.empenhado || 0), 0);
+  const totalLiquidado = consolidado.reduce((s, l) => s + (l.liquidado || 0), 0);
+  const totalPago = consolidado.reduce((s, l) => s + (l.pago || 0), 0);
+
+  const totalAutorizadoMem = memoria.reduce((s, l) => s + (l.autorizado || 0), 0);
+  const totalEmpenhadoMem = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
+
+  const exibirResumoIA = consolidado.some(
+    (l) => l.liquidado > l.empenhado || l.pago > l.liquidado
+  );
+
+  const encRestantes = DSP_DOTACAO_MAX_TEXTO - encTexto.length;
+  const consRestantes = DSP_DOTACAO_MAX_TEXTO - consideracoes.length;
+
+  const encDisabled = readOnly || encaminhamentoTipo === "nenhum" || encaminhamentoTipo === "";
+
+  function isEncOptionEnabled(opt: DspDotacaoEncaminhamento) {
+    if (opt === "nenhum") return conclusao === "regular";
+    if (opt === "recomendacao") return conclusao === "ressalvas";
+    if (opt === "determinacao") return conclusao === "irregular";
+    return false;
+  }
+  function onConclusaoChange(v: DspDotacaoConclusao) {
+    setConclusao(v);
+    if (v === "regular") setEncTipo("nenhum");
+    else if (v === "ressalvas") setEncTipo("recomendacao");
+    else if (v === "irregular") setEncTipo("determinacao");
+  }
+
+  function updateMemoria(id: string, patch: Partial<DspDotacaoMemoriaLinha>) {
+    setMemoria((arr) => arr.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  }
+  function addMemoria() {
+    setMemoria((arr) => [
+      ...arr,
+      {
+        id: `dd${Date.now()}`,
+        programa: "",
+        categoria: CATEGORIAS_ECONOMICAS[0],
+        grupo: GRUPOS_DESPESA[0],
+        modalidade: MODALIDADES_APLICACAO[0],
+        inicial: 0,
+        autorizado: 0,
+        despesa: 0,
+      },
+    ]);
+  }
+  function removeMemoria(id: string) {
+    setMemoria((arr) => arr.filter((l) => l.id !== id));
+    setConfirmDelete(null);
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {DSP_DOTACAO_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      {/* Abas */}
+      <div className="mb-6 flex gap-6 border-b border-border" data-pdf-hide>
+        {([
+          { k: "principal", label: "Despesa por dotação orçamentária" },
+          { k: "memoria", label: "Memória de cálculo" },
+        ] as const).map((t) => {
+          const isActive = tab === t.k;
+          return (
+            <button
+              key={t.k}
+              type="button"
+              onClick={() => onTabChange(t.k)}
+              className={`-mb-px border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "border-[#1A56DB] text-[#1A56DB]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "principal" ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Total empenhado</Label>
+              <Input readOnly value={fmtBRL(totalEmpenhado)} className="bg-[#F4F5F7] font-semibold" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Total liquidado</Label>
+              <Input readOnly value={fmtBRL(totalLiquidado)} className="bg-[#F4F5F7] font-semibold" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Total pago</Label>
+              <Input readOnly value={fmtBRL(totalPago)} className="bg-[#F4F5F7] font-semibold" />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
+              <span className="border-b-2 border-[#0D1B2A] pb-1">
+                Despesa por elemento
+              </span>
+            </h2>
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs text-foreground hover:bg-muted"
+              title="Histórico de alterações"
+            >
+              <History className="h-4 w-4" /> Histórico
+            </button>
+          </div>
+
+          <div className="mt-3 overflow-x-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Elemento de Despesa</th>
+                  <th className="px-3 py-2 text-right">Valor empenhado</th>
+                  <th className="px-3 py-2 text-right">Valor liquidado</th>
+                  <th className="px-3 py-2 text-right">Valor pago</th>
+                </tr>
+              </thead>
+              <tbody>
+                {consolidado.map((r, i) => (
+                  <tr key={r.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{r.elemento}</td>
+                    <td className="px-3 py-2 text-right">{fmtBRL(r.empenhado)}</td>
+                    <td className="px-3 py-2 text-right">{fmtBRL(r.liquidado)}</td>
+                    <td className="px-3 py-2 text-right">{fmtBRL(r.pago)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-[#F4F5F7] font-semibold">
+                  <td className="px-3 py-2">TOTAL</td>
+                  <td className="px-3 py-2 text-right">{fmtBRL(totalEmpenhado)}</td>
+                  <td className="px-3 py-2 text-right">{fmtBRL(totalLiquidado)}</td>
+                  <td className="px-3 py-2 text-right">{fmtBRL(totalPago)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {exibirResumoIA && (
+            <div className="mt-6">
+              <ResumoIA
+                texto={DSP_DOTACAO_RESUMO_IA}
+                processo={processo}
+                orgao={orgao}
+              />
+            </div>
+          )}
+
+          {/* Conclusão do item */}
+          <div className="mt-6 space-y-2">
+            <Label className="text-sm font-semibold">Conclusão do item:</Label>
+            <div className="flex flex-wrap gap-6">
+              {(
+                [
+                  { v: "regular", label: "Regular" },
+                  { v: "ressalvas", label: "Regular com ressalvas" },
+                  { v: "irregular", label: "Irregular" },
+                ] as const
+              ).map((o) => (
+                <label key={o.v} className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="dotacao-conclusao"
+                    value={o.v}
+                    checked={conclusao === o.v}
+                    disabled={readOnly}
+                    onChange={() => onConclusaoChange(o.v)}
+                    className="h-4 w-4 accent-[#1A56DB]"
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Tipo de encaminhamento */}
+          <div className="mt-4 space-y-2">
+            <Label className="text-sm font-semibold">Tipo de encaminhamento:</Label>
+            <div className="flex flex-wrap gap-6">
+              {(
+                [
+                  { v: "nenhum", label: "Nenhum" },
+                  { v: "recomendacao", label: "Recomendação" },
+                  { v: "determinacao", label: "Determinação" },
+                ] as const
+              ).map((o) => {
+                const enabled = !readOnly && isEncOptionEnabled(o.v);
+                return (
+                  <label
+                    key={o.v}
+                    className={`inline-flex items-center gap-2 text-sm ${enabled ? "" : "opacity-50"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="dotacao-encaminhamento"
+                      value={o.v}
+                      checked={encaminhamentoTipo === o.v}
+                      disabled={!enabled}
+                      onChange={() => setEncTipo(o.v)}
+                      className="h-4 w-4 accent-[#1A56DB]"
+                    />
+                    {o.label}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Editor Encaminhamento */}
+          <div className="mt-6 space-y-2">
+            <Label className="text-sm font-semibold">Encaminhamento:</Label>
+            <textarea
+              value={encTexto}
+              readOnly={encDisabled}
+              maxLength={DSP_DOTACAO_MAX_TEXTO}
+              onChange={(e) => setEncTexto(e.target.value)}
+              className={`min-h-[140px] w-full rounded-md border border-border p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30 ${
+                encDisabled ? "bg-[#F4F5F7]" : "bg-white"
+              }`}
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {encRestantes.toLocaleString("pt-BR")} caracteres restantes
+            </p>
+          </div>
+
+          {/* Editor Considerações */}
+          <div className="mt-4 space-y-2">
+            <Label className="text-sm font-semibold">Considerações:</Label>
+            <textarea
+              value={consideracoes}
+              readOnly={readOnly}
+              maxLength={DSP_DOTACAO_MAX_TEXTO}
+              onChange={(e) => setConsideracoes(e.target.value)}
+              className="min-h-[140px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {consRestantes.toLocaleString("pt-BR")} caracteres restantes
+            </p>
+            <label className="flex items-start gap-2 text-sm text-foreground">
+              <Checkbox
+                checked={incluir}
+                onCheckedChange={(v) => setIncluir(Boolean(v))}
+                disabled={readOnly}
+              />
+              <span>
+                O texto complementar deverá constar no relatório de conclusão
+                do processo.
+              </span>
+            </label>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de crédito autorizado
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalAutorizadoMem)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de despesas empenhadas
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalEmpenhadoMem)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
+              <span className="border-b-2 border-[#0D1B2A] pb-1">
+                Memória de cálculo
+              </span>
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs text-foreground hover:bg-muted"
+                title="Histórico de alterações"
+              >
+                <History className="h-4 w-4" /> Histórico
+              </button>
+              {!readOnly && (
+                <Button
+                  type="button"
+                  onClick={addMemoria}
+                  className="gap-1 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                >
+                  <Plus className="h-4 w-4" /> Adicionar linha
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-x-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Programa</th>
+                  <th className="px-3 py-2 text-left">Categoria Econômica</th>
+                  <th className="px-3 py-2 text-left">Grupo</th>
+                  <th className="px-3 py-2 text-left">Modalidade</th>
+                  <th className="px-3 py-2 text-right">Crédito inicial</th>
+                  <th className="px-3 py-2 text-right">Crédito autorizado</th>
+                  <th className="px-3 py-2 text-center">Apontamento</th>
+                  {!readOnly && <th className="px-3 py-2 text-center">Ações</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {memoria.map((l, i) => {
+                  const conforme = l.despesa <= l.autorizado;
+                  return (
+                    <tr key={l.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <td className="px-2 py-1.5">
+                        <Input
+                          value={l.programa}
+                          readOnly={readOnly}
+                          onChange={(e) => updateMemoria(l.id, { programa: e.target.value })}
+                          className="h-8"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <select
+                          value={l.categoria}
+                          disabled={readOnly}
+                          onChange={(e) => updateMemoria(l.id, { categoria: e.target.value })}
+                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                        >
+                          {CATEGORIAS_ECONOMICAS.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <select
+                          value={l.grupo}
+                          disabled={readOnly}
+                          onChange={(e) => updateMemoria(l.id, { grupo: e.target.value })}
+                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                        >
+                          {GRUPOS_DESPESA.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <select
+                          value={l.modalidade}
+                          disabled={readOnly}
+                          onChange={(e) => updateMemoria(l.id, { modalidade: e.target.value })}
+                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                        >
+                          {MODALIDADES_APLICACAO.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <MoneyInput
+                          value={l.inicial}
+                          readOnly={readOnly}
+                          onChange={(n) => updateMemoria(l.id, { inicial: n })}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <MoneyInput
+                          value={l.autorizado}
+                          readOnly={readOnly}
+                          onChange={(n) => updateMemoria(l.id, { autorizado: n })}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            conforme
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {conforme ? "Conforme" : "Não Conforme"}
+                        </span>
+                      </td>
+                      {!readOnly && (
+                        <td className="px-2 py-1.5">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              className="text-[#1A56DB] hover:opacity-80"
+                              title="Editar"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDelete(l.id)}
+                              className="text-red-600 hover:opacity-80"
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-[#F4F5F7] font-semibold">
+                  <td className="px-3 py-2" colSpan={4}>TOTAL</td>
+                  <td className="px-3 py-2 text-right">
+                    {fmtBRL(memoria.reduce((s, l) => s + (l.inicial || 0), 0))}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {fmtBRL(totalAutorizadoMem)}
+                  </td>
+                  <td />
+                  {!readOnly && <td />}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações realizadas neste submenu são registradas para
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {DSP_DOTACAO_HISTORICO.map((h, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     <td className="px-3 py-2">{h.ts}</td>
                     <td className="px-3 py-2">{h.usuario}</td>
                     <td className="px-3 py-2">{h.campo}</td>
