@@ -2410,3 +2410,523 @@ function CreditoInicialContent({
     </>
   );
 }
+
+// ============================================================
+// PROGRAMAS
+// ============================================================
+
+const PROGRAMAS_TRANSITO_JULGADO = false;
+const PROGRAMAS_SITUACAO_CONCLUIDA = false;
+const PROGRAMAS_USUARIO_AUTORIZADO = true;
+const PROGRAMAS_READ_ONLY =
+  PROGRAMAS_TRANSITO_JULGADO ||
+  PROGRAMAS_SITUACAO_CONCLUIDA ||
+  !PROGRAMAS_USUARIO_AUTORIZADO;
+
+const PROGRAMAS_MAX_TEXTO = 4000;
+
+const TIPOS_PROGRAMA = [
+  "Finalístico",
+  "Apoio a políticas públicas e áreas específicas",
+] as const;
+
+const HORIZONTES_TEMPORAIS = ["Contínuo", "Temporário"] as const;
+
+type ProgramaLinha = {
+  id: string;
+  programa: string;
+  tipo: string;
+  horizonte: string;
+  justificativa: string;
+  objetivo: string;
+};
+
+const PROGRAMAS_INICIAIS: ProgramaLinha[] = [
+  {
+    id: "p1",
+    programa: "47",
+    tipo: "Finalístico",
+    horizonte: "Contínuo",
+    justificativa:
+      "Otimizar a capacidade de atuação e resposta do estado diante dos impactos provocados pelas chuvas, permitindo que o estado assegure o restabelecimento à normalidade social e econômica da população atingida.",
+    objetivo:
+      "Realizar ações de preparação, resposta e recuperação destinadas a mitigar os efeitos causados pelos desastres decorrentes das chuvas.",
+  },
+  {
+    id: "p2",
+    programa: "55",
+    tipo: "Apoio a políticas públicas e áreas específicas",
+    horizonte: "Contínuo",
+    justificativa:
+      "Os sistemas penitenciário e socioeducativo do estado de Minas Gerais têm demandado cada vez mais recursos para custear a manutenção, reforma e modernização dos estabelecimentos penais.",
+    objetivo:
+      "Colaborar com a preservação, reparos preventivos e corretivos, instalações, adaptações, recuperações, conservação e modernização das estruturas físicas das unidades prisionais.",
+  },
+  {
+    id: "p3",
+    programa: "68",
+    tipo: "Finalístico",
+    horizonte: "Contínuo",
+    justificativa:
+      "Sendo o poder público responsável pelo equipamento de infraestrutura, é necessário o direcionamento dos investimentos em nível estadual, regional e municipal para construção, reforma e ampliação.",
+    objetivo:
+      "Direcionar investimentos para infraestrutura viária e para construção, reforma e ampliação de equipamentos públicos.",
+  },
+  {
+    id: "p4",
+    programa: "88",
+    tipo: "Finalístico",
+    horizonte: "Contínuo",
+    justificativa:
+      "Enfrentamento dos desafios logísticos e de infraestrutura relativos à circulação de bens, pessoas e mercadorias no âmbito das rodovias sob gestão do DERREG.",
+    objetivo:
+      "Manter uma infraestrutura rodoviária de qualidade, favorável à sustentabilidade e ao desenvolvimento econômico e o bem-estar dos usuários.",
+  },
+];
+
+const PROGRAMAS_HISTORICO = [
+  {
+    ts: "20/05/2026 14:32",
+    usuario: "Analista 03",
+    campo: "Programa 47 - Justificativa",
+    anterior: "(vazio)",
+    novo: "Otimizar a capacidade de atuação...",
+  },
+  {
+    ts: "19/05/2026 09:18",
+    usuario: "Analista 03",
+    campo: "Programa 88",
+    anterior: "(novo)",
+    novo: "Inclusão",
+  },
+  {
+    ts: "18/05/2026 16:05",
+    usuario: "Analista 02",
+    campo: "Programa 55 - Tipo",
+    anterior: "Finalístico",
+    novo: "Apoio a políticas públicas e áreas específicas",
+  },
+];
+
+function ProgramasContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = PROGRAMAS_READ_ONLY;
+
+  const [linhas, setLinhas] = useState<ProgramaLinha[]>(PROGRAMAS_INICIAIS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+
+  const restantes = PROGRAMAS_MAX_TEXTO - texto.length;
+  const quantidade = linhas.length;
+
+  const hasTemporario = linhas.some((l) => l.horizonte === "Temporário");
+  const hasMuitos = linhas.length > 5;
+  const hasIncompleto = linhas.some(
+    (l) => !l.justificativa.trim() || !l.objetivo.trim()
+  );
+  const showResumoIA = hasTemporario || hasMuitos || hasIncompleto;
+
+  const resumoIATexto = [
+    hasTemporario &&
+      "Foram identificados programas com Horizonte Temporal 'Temporário', o que demanda verificação quanto à vigência e ao cronograma de execução.",
+    hasMuitos &&
+      `O órgão apresenta ${quantidade} programas, número acima do usual, sugerindo revisão da consolidação programática.`,
+    hasIncompleto &&
+      "Há programas com campos de Justificativa ou Objetivo não preenchidos, comprometendo a transparência da política pública.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  function updateLinha(id: string, patch: Partial<ProgramaLinha>) {
+    setLinhas((arr) =>
+      arr.map((l) => (l.id === id ? { ...l, ...patch } : l))
+    );
+  }
+  function addLinha() {
+    const id = `p${Date.now()}`;
+    setLinhas((arr) => [
+      ...arr,
+      {
+        id,
+        programa: "",
+        tipo: TIPOS_PROGRAMA[0],
+        horizonte: HORIZONTES_TEMPORAIS[0],
+        justificativa: "",
+        objetivo: "",
+      },
+    ]);
+    setEditingId(id);
+  }
+  function removeLinha(id: string) {
+    setLinhas((arr) => arr.filter((l) => l.id !== id));
+    setConfirmDelete(null);
+    if (editingId === id) setEditingId(null);
+  }
+  function toggleExpand(key: string) {
+    setExpanded((e) => ({ ...e, [key]: !e[key] }));
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {PROGRAMAS_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">
+          <span className="border-b-2 border-[#0D1B2A] pb-1">Programas:</span>
+        </h2>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs text-foreground hover:bg-muted"
+            title="Histórico de alterações"
+          >
+            <History className="h-4 w-4" /> Histórico
+          </button>
+          {!readOnly && (
+            <Button
+              type="button"
+              onClick={addLinha}
+              className="gap-1 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              <Plus className="h-4 w-4" /> Adicionar Programa
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <p className="mt-3 text-sm font-medium text-foreground">
+        Quantidade de programas: {quantidade}
+      </p>
+
+      <div className="mt-3 overflow-x-auto rounded-md border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-3 py-2 text-left w-24">Programa</th>
+              <th className="px-3 py-2 text-left">Tipo</th>
+              <th className="px-3 py-2 text-left w-36">Horizonte Temporal</th>
+              <th className="px-3 py-2 text-left">Justificativa</th>
+              <th className="px-3 py-2 text-left">Objetivo</th>
+              {!readOnly && (
+                <th className="px-3 py-2 text-center w-24">Ações</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {linhas.map((l, i) => {
+              const editing = editingId === l.id && !readOnly;
+              const jKey = `${l.id}-j`;
+              const oKey = `${l.id}-o`;
+              const jExp = expanded[jKey];
+              const oExp = expanded[oKey];
+              return (
+                <tr
+                  key={l.id}
+                  className={i % 2 === 0 ? "bg-white align-top" : "bg-gray-50 align-top"}
+                >
+                  <td className="px-2 py-1.5">
+                    {editing ? (
+                      <Input
+                        value={l.programa}
+                        onChange={(e) =>
+                          updateLinha(l.id, { programa: e.target.value })
+                        }
+                        className="h-8"
+                      />
+                    ) : (
+                      <span className="px-1 py-2 block font-medium">
+                        {l.programa || "—"}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5">
+                    {editing ? (
+                      <select
+                        value={l.tipo}
+                        onChange={(e) =>
+                          updateLinha(l.id, { tipo: e.target.value })
+                        }
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm"
+                      >
+                        {TIPOS_PROGRAMA.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="px-1 py-2 block">{l.tipo}</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5">
+                    {editing ? (
+                      <select
+                        value={l.horizonte}
+                        onChange={(e) =>
+                          updateLinha(l.id, { horizonte: e.target.value })
+                        }
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm"
+                      >
+                        {HORIZONTES_TEMPORAIS.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="px-1 py-2 block">{l.horizonte}</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 max-w-[280px]">
+                    {editing ? (
+                      <textarea
+                        value={l.justificativa}
+                        onChange={(e) =>
+                          updateLinha(l.id, { justificativa: e.target.value })
+                        }
+                        rows={4}
+                        className="w-full rounded-md border border-border bg-white p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(jKey)}
+                        className="block w-full text-left hover:bg-blue-50 rounded p-1 transition-colors"
+                        title="Clique para expandir/recolher"
+                      >
+                        <span className={jExp ? "" : "line-clamp-3"}>
+                          {l.justificativa || (
+                            <em className="text-muted-foreground">Não preenchido</em>
+                          )}
+                        </span>
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 max-w-[280px]">
+                    {editing ? (
+                      <textarea
+                        value={l.objetivo}
+                        onChange={(e) =>
+                          updateLinha(l.id, { objetivo: e.target.value })
+                        }
+                        rows={4}
+                        className="w-full rounded-md border border-border bg-white p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(oKey)}
+                        className="block w-full text-left hover:bg-blue-50 rounded p-1 transition-colors"
+                        title="Clique para expandir/recolher"
+                      >
+                        <span className={oExp ? "" : "line-clamp-3"}>
+                          {l.objetivo || (
+                            <em className="text-muted-foreground">Não preenchido</em>
+                          )}
+                        </span>
+                      </button>
+                    )}
+                  </td>
+                  {!readOnly && (
+                    <td className="px-2 py-1.5">
+                      <div className="flex items-center justify-center gap-2">
+                        {editing ? (
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            className="text-green-600 hover:opacity-80"
+                            title="Concluir edição"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(l.id)}
+                            className="text-[#1A56DB] hover:opacity-80"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(l.id)}
+                          className="text-red-600 hover:opacity-80"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+            {linhas.length === 0 && (
+              <tr>
+                <td
+                  colSpan={readOnly ? 5 : 6}
+                  className="px-3 py-6 text-center text-sm text-muted-foreground"
+                >
+                  Nenhum programa cadastrado.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showResumoIA && (
+        <div className="mt-6">
+          <ResumoIA
+            texto={resumoIATexto}
+            processo={processo}
+            orgao={orgao}
+          />
+        </div>
+      )}
+
+      <div className="mt-6 space-y-2">
+        <Label className="text-sm font-semibold">
+          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+        </Label>
+        <textarea
+          value={texto}
+          readOnly={readOnly}
+          maxLength={PROGRAMAS_MAX_TEXTO}
+          onChange={(e) => setTexto(e.target.value)}
+          className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+        />
+        <p className="text-right text-xs text-muted-foreground">
+          {restantes.toLocaleString("pt-BR")} caracteres restantes
+        </p>
+        <label className="flex items-start gap-2 text-sm text-foreground">
+          <Checkbox
+            checked={incluir}
+            onCheckedChange={(v) => setIncluir(Boolean(v))}
+            disabled={readOnly}
+          />
+          <span>
+            O texto complementar deverá constar no relatório de conclusão do
+            processo.
+          </span>
+        </label>
+      </div>
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações (incluir, editar, excluir) nos programas são
+              registradas para auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {PROGRAMAS_HISTORICO.map((h, i) => (
+                  <tr
+                    key={i}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir programa</DialogTitle>
+            <DialogDescription>
+              Deseja excluir este programa? Esta ação será registrada no log de
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeLinha(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
