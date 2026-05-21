@@ -959,7 +959,7 @@ type ConclusaoTipo = "aprovacao" | "ressalvas" | "rejeicao";
 
 type ProcessoAnterior = {
   numero: string;
-  conclusao: ConclusaoTipo;
+  conclusao: DespesaConclusao;
   conclusaoLabel: string;
   incoformidades: string[];
   resumoIA?: string;
@@ -1001,7 +1001,7 @@ const ANTERIORES: ProcessoAnterior[] = [
   },
 ];
 
-function badgeClasses(tipo: ConclusaoTipo) {
+function badgeClasses(tipo: DespesaConclusao) {
   switch (tipo) {
     case "aprovacao":
       return "bg-green-100 text-green-800 border border-green-300";
@@ -2960,8 +2960,8 @@ const CREDITO_DESPESAS_MAX_TEXTO = 4000;
 const CREDITO_DESPESAS_RESUMO_IA =
   "A execução orçamentária apresentou índice médio de empenho de 94% em relação ao crédito autorizado. O programa 88 apresentou execução acima do autorizado (110%), configurando situação de atenção que requer encaminhamento específico. Os demais programas mantiveram execução dentro dos limites autorizados.";
 
-type ConclusaoTipo = "regular" | "ressalvas" | "irregular" | "";
-type EncaminhamentoTipo = "nenhum" | "recomendacao" | "determinacao" | "";
+type DespesaConclusao = "regular" | "ressalvas" | "irregular" | "";
+type DespesaEncaminhamento = "nenhum" | "recomendacao" | "determinacao" | "";
 
 type DespesaMemoriaLinha = {
   id: string;
@@ -3084,9 +3084,9 @@ function CreditoDespesasContent({
   const [memoria, setMemoria] = useState<DespesaMemoriaLinha[]>(
     CREDITO_DESPESAS_MEMORIA
   );
-  const [conclusao, setConclusao] = useState<ConclusaoTipo>("ressalvas");
-  const [encaminhamentoTipo, setEncaminhamentoTipo] =
-    useState<EncaminhamentoTipo>("recomendacao");
+  const [conclusao, setConclusao] = useState<DespesaConclusao>("ressalvas");
+  const [encaminhamentoTipo, setDespesaEncaminhamento] =
+    useState<DespesaEncaminhamento>("recomendacao");
   const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
@@ -3102,19 +3102,19 @@ function CreditoDespesasContent({
   const encDisabled =
     readOnly || encaminhamentoTipo === "nenhum" || encaminhamentoTipo === "";
 
-  function isEncOptionEnabled(opt: EncaminhamentoTipo) {
+  function isEncOptionEnabled(opt: DespesaEncaminhamento) {
     if (opt === "nenhum") return conclusao === "regular";
     if (opt === "recomendacao") return conclusao === "ressalvas";
     if (opt === "determinacao") return conclusao === "irregular";
     return false;
   }
 
-  function onConclusaoChange(v: ConclusaoTipo) {
+  function onConclusaoChange(v: DespesaConclusao) {
     setConclusao(v);
     // ajustar encaminhamento automaticamente para o habilitado
-    if (v === "regular") setEncaminhamentoTipo("nenhum");
-    else if (v === "ressalvas") setEncaminhamentoTipo("recomendacao");
-    else if (v === "irregular") setEncaminhamentoTipo("determinacao");
+    if (v === "regular") setDespesaEncaminhamento("nenhum");
+    else if (v === "ressalvas") setDespesaEncaminhamento("recomendacao");
+    else if (v === "irregular") setDespesaEncaminhamento("determinacao");
   }
 
   function updateMemoria(id: string, patch: Partial<DespesaMemoriaLinha>) {
@@ -3360,7 +3360,7 @@ function CreditoDespesasContent({
                       value={o.v}
                       checked={encaminhamentoTipo === o.v}
                       disabled={!enabled}
-                      onChange={() => setEncaminhamentoTipo(o.v)}
+                      onChange={() => setDespesaEncaminhamento(o.v)}
                       className="h-4 w-4 accent-[#1A56DB]"
                     />
                     {o.label}
