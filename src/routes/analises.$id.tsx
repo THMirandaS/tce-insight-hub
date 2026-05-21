@@ -118,6 +118,7 @@ function AnaliseDetalhePage() {
   );
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
+  const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
 
   const currentStatus: SubmenuStatus | null =
     statuses[active] !== undefined ? statuses[active] : null;
