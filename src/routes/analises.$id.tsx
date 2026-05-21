@@ -959,7 +959,7 @@ type ConclusaoTipo = "aprovacao" | "ressalvas" | "rejeicao";
 
 type ProcessoAnterior = {
   numero: string;
-  conclusao: DespesaConclusao;
+  conclusao: ConclusaoTipo;
   conclusaoLabel: string;
   incoformidades: string[];
   resumoIA?: string;
@@ -1001,7 +1001,7 @@ const ANTERIORES: ProcessoAnterior[] = [
   },
 ];
 
-function badgeClasses(tipo: DespesaConclusao) {
+function badgeClasses(tipo: ConclusaoTipo) {
   switch (tipo) {
     case "aprovacao":
       return "bg-green-100 text-green-800 border border-green-300";
