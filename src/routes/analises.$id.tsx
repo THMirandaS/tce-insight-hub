@@ -117,6 +117,7 @@ function AnaliseDetalhePage() {
     () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
   );
   const [legendOpen, setLegendOpen] = useState(false);
+  const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
 
   const currentStatus: SubmenuStatus | null =
     statuses[active] !== undefined ? statuses[active] : null;
@@ -407,6 +408,13 @@ function AnaliseDetalhePage() {
             <ConsidGeraisContent processo={processoLabel} orgao={orgao} />
           ) : active === "receitas" ? (
             <ReceitasContent processo={processoLabel} orgao={orgao} />
+          ) : active === "credito-inicial" ? (
+            <CreditoInicialContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={creditoTab}
+              onTabChange={setCreditoTab}
+            />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
@@ -429,7 +437,9 @@ function AnaliseDetalhePage() {
             {active !== "anteriores" &&
               active !== "demais" &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
-              !(active === "receitas" && RECEITAS_READ_ONLY) && (
+              !(active === "receitas" && RECEITAS_READ_ONLY) &&
+              !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
+              !(active === "credito-inicial" && creditoTab !== "principal") && (
                 <>
                   <Button
                     type="button"
@@ -1847,6 +1857,547 @@ function ReceitasContent({
           <DialogFooter>
             <Button type="button" onClick={() => setHistoryOpen(false)}>
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// ============================================================
+// Crédito inicial autorizado
+// ============================================================
+
+const CREDITO_INICIAL_TRANSITO_JULGADO = false;
+const CREDITO_INICIAL_SITUACAO_CONCLUIDA = false;
+const CREDITO_INICIAL_USUARIO_AUTORIZADO = true;
+const CREDITO_INICIAL_READ_ONLY =
+  CREDITO_INICIAL_TRANSITO_JULGADO ||
+  CREDITO_INICIAL_SITUACAO_CONCLUIDA ||
+  !CREDITO_INICIAL_USUARIO_AUTORIZADO;
+
+const CREDITO_INICIAL_MAX_TEXTO = 4000;
+
+const CREDITO_INICIAL_RESUMO_IA =
+  "O crédito autorizado apresentou variação de 3,2% em relação ao crédito inicial, reflexo de suplementações orçamentárias realizadas no exercício. As despesas de capital representaram 62% do total autorizado, com destaque para os investimentos em infraestrutura. Foram identificadas inconsistências em duas modalidades de aplicação que merecem atenção na análise.";
+
+const CATEGORIAS_ECONOMICAS = [
+  "Despesas Correntes",
+  "Despesas de Capital",
+] as const;
+
+const GRUPOS_DESPESA = [
+  "Pessoal e Encargos Sociais",
+  "Outras Despesas Correntes",
+  "Inversões Financeiras",
+  "Investimentos",
+  "Amortização da Dívida",
+] as const;
+
+const MODALIDADES_APLICACAO = [
+  "Aplicação Direta",
+  "Aplicação Direta Decorrente de Operações entre Órgãos, Fundos e Entida",
+  "Transferências a União",
+  "Transferências a Estados e DF",
+  "Transferências a Municípios",
+] as const;
+
+type CreditoLinha = {
+  id: string;
+  programa: string;
+  categoria: string;
+  grupo: string;
+  modalidade: string;
+  inicial: number;
+  autorizado: number;
+};
+
+const CREDITO_INICIAL_LINHAS: CreditoLinha[] = [
+  {
+    id: "c1",
+    programa: "47",
+    categoria: "Despesas Correntes",
+    grupo: "Outras Despesas Correntes",
+    modalidade: "Transferências a União",
+    inicial: 999_999_999.99,
+    autorizado: 888_888_888.88,
+  },
+  {
+    id: "c2",
+    programa: "55",
+    categoria: "Despesas Correntes",
+    grupo: "Pessoal e Encargos Sociais",
+    modalidade:
+      "Aplicação Direta Decorrente de Operações entre Órgãos, Fundos e Entida",
+    inicial: 999_999_999.99,
+    autorizado: 999_999_999.99,
+  },
+  {
+    id: "c3",
+    programa: "68",
+    categoria: "Despesas de Capital",
+    grupo: "Inversões Financeiras",
+    modalidade:
+      "Aplicação Direta Decorrente de Operações entre Órgãos, Fundos e Entida",
+    inicial: 0,
+    autorizado: 999_999_999.99,
+  },
+  {
+    id: "c4",
+    programa: "88",
+    categoria: "Despesas de Capital",
+    grupo: "Investimentos",
+    modalidade: "Aplicação Direta",
+    inicial: 888_888_888.88,
+    autorizado: 999_999_999.99,
+  },
+  {
+    id: "c5",
+    programa: "88",
+    categoria: "Despesas de Capital",
+    grupo: "Investimentos",
+    modalidade: "Aplicação Direta",
+    inicial: 777_777_777.77,
+    autorizado: 699_999_999.99,
+  },
+];
+
+const CREDITO_INICIAL_HISTORICO: ReceitasHistorico[] = [
+  {
+    ts: "15/03/2025 09:30",
+    usuario: "Auditor 01",
+    campo: "Linha 4 - Crédito autorizado",
+    anterior: "950.000.000,00",
+    novo: "999.999.999,99",
+  },
+  {
+    ts: "14/03/2025 17:12",
+    usuario: "Auditor 02",
+    campo: "Linha 1 - Programa",
+    anterior: "45",
+    novo: "47",
+  },
+];
+
+function CreditoInicialContent({
+  processo,
+  orgao,
+  tab,
+  onTabChange,
+}: {
+  processo: string;
+  orgao: string;
+  tab: "principal" | "memoria";
+  onTabChange: (t: "principal" | "memoria") => void;
+}) {
+  const readOnly = CREDITO_INICIAL_READ_ONLY;
+
+  const [linhas, setLinhas] = useState<CreditoLinha[]>(CREDITO_INICIAL_LINHAS);
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const totalInicial = linhas.reduce((s, l) => s + (l.inicial || 0), 0);
+  const totalAutorizado = linhas.reduce((s, l) => s + (l.autorizado || 0), 0);
+
+  const restantes = CREDITO_INICIAL_MAX_TEXTO - texto.length;
+
+  function updateLinha(id: string, patch: Partial<CreditoLinha>) {
+    setLinhas((arr) => arr.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  }
+  function addLinha() {
+    setLinhas((arr) => [
+      ...arr,
+      {
+        id: `c${Date.now()}`,
+        programa: "",
+        categoria: CATEGORIAS_ECONOMICAS[0],
+        grupo: GRUPOS_DESPESA[0],
+        modalidade: MODALIDADES_APLICACAO[0],
+        inicial: 0,
+        autorizado: 0,
+      },
+    ]);
+  }
+  function removeLinha(id: string) {
+    setLinhas((arr) => arr.filter((l) => l.id !== id));
+    setConfirmDelete(null);
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {CREDITO_INICIAL_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      {/* Abas */}
+      <div className="mb-6 flex gap-6 border-b border-border" data-pdf-hide>
+        {([
+          { k: "principal", label: "Crédito inicial e autorizado" },
+          { k: "memoria", label: "Memória de cálculo" },
+        ] as const).map((t) => {
+          const active = tab === t.k;
+          return (
+            <button
+              key={t.k}
+              type="button"
+              onClick={() => onTabChange(t.k)}
+              className={`-mb-px border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+                active
+                  ? "border-[#1A56DB] text-[#1A56DB]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "principal" ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de Crédito inicial
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalInicial)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de Crédito autorizado
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalAutorizado)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <ResumoIA
+              texto={CREDITO_INICIAL_RESUMO_IA}
+              processo={processo}
+              orgao={orgao}
+            />
+          </div>
+
+          <div className="mt-6 space-y-2">
+            <Label className="text-sm font-semibold">
+              AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+            </Label>
+            <textarea
+              value={texto}
+              readOnly={readOnly}
+              maxLength={CREDITO_INICIAL_MAX_TEXTO}
+              onChange={(e) => setTexto(e.target.value)}
+              className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {restantes.toLocaleString("pt-BR")} caracteres restantes
+            </p>
+            <label className="flex items-start gap-2 text-sm text-foreground">
+              <Checkbox
+                checked={incluir}
+                onCheckedChange={(v) => setIncluir(Boolean(v))}
+                disabled={readOnly}
+              />
+              <span>
+                O texto complementar deverá constar no relatório de conclusão
+                do processo.
+              </span>
+            </label>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de Crédito inicial
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalInicial)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                Total de Crédito autorizado
+              </Label>
+              <Input
+                readOnly
+                value={fmtBRL(totalAutorizado)}
+                className="bg-[#F4F5F7] font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
+              <span className="border-b-2 border-[#0D1B2A] pb-1">
+                Memória de cálculo
+              </span>
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs text-foreground hover:bg-muted"
+                title="Histórico de alterações"
+              >
+                <History className="h-4 w-4" /> Histórico
+              </button>
+              {!readOnly && (
+                <Button
+                  type="button"
+                  onClick={addLinha}
+                  className="gap-1 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                >
+                  <Plus className="h-4 w-4" /> Adicionar linha
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-x-auto rounded-md border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Programa</th>
+                  <th className="px-3 py-2 text-left">Categoria Econômica</th>
+                  <th className="px-3 py-2 text-left">Grupo</th>
+                  <th className="px-3 py-2 text-left">Modalidade</th>
+                  <th className="px-3 py-2 text-right">Crédito inicial</th>
+                  <th className="px-3 py-2 text-right">Crédito autorizado</th>
+                  {!readOnly && (
+                    <th className="px-3 py-2 text-center">Ações</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {linhas.map((l, i) => (
+                  <tr
+                    key={l.id}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-2 py-1.5">
+                      <Input
+                        value={l.programa}
+                        readOnly={readOnly}
+                        onChange={(e) =>
+                          updateLinha(l.id, { programa: e.target.value })
+                        }
+                        className="h-8"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <select
+                        value={l.categoria}
+                        disabled={readOnly}
+                        onChange={(e) =>
+                          updateLinha(l.id, { categoria: e.target.value })
+                        }
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                      >
+                        {CATEGORIAS_ECONOMICAS.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <select
+                        value={l.grupo}
+                        disabled={readOnly}
+                        onChange={(e) =>
+                          updateLinha(l.id, { grupo: e.target.value })
+                        }
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                      >
+                        {GRUPOS_DESPESA.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <select
+                        value={l.modalidade}
+                        disabled={readOnly}
+                        onChange={(e) =>
+                          updateLinha(l.id, { modalidade: e.target.value })
+                        }
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                      >
+                        {MODALIDADES_APLICACAO.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <MoneyInput
+                        value={l.inicial}
+                        readOnly={readOnly}
+                        onChange={(n) => updateLinha(l.id, { inicial: n })}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5">
+                      <MoneyInput
+                        value={l.autorizado}
+                        readOnly={readOnly}
+                        onChange={(n) => updateLinha(l.id, { autorizado: n })}
+                      />
+                    </td>
+                    {!readOnly && (
+                      <td className="px-2 py-1.5">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            className="text-[#1A56DB] hover:opacity-80"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDelete(l.id)}
+                            className="text-red-600 hover:opacity-80"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-[#F4F5F7] font-semibold">
+                  <td className="px-3 py-2" colSpan={4}>
+                    TOTAL
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {fmtBRL(totalInicial)}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {fmtBRL(totalAutorizado)}
+                  </td>
+                  {!readOnly && <td />}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações (incluir, editar, excluir) na memória de cálculo
+              são registradas para auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CREDITO_INICIAL_HISTORICO.map((h, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir linha</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir esta linha da memória de cálculo?
+              Esta ação será registrada no log de auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeLinha(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Excluir
             </Button>
           </DialogFooter>
         </DialogContent>
