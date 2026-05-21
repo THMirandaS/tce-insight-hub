@@ -437,7 +437,9 @@ function AnaliseDetalhePage() {
             {active !== "anteriores" &&
               active !== "demais" &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
-              !(active === "receitas" && RECEITAS_READ_ONLY) && (
+              !(active === "receitas" && RECEITAS_READ_ONLY) &&
+              !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
+              !(active === "credito-inicial" && creditoTab !== "principal") && (
                 <>
                   <Button
                     type="button"
