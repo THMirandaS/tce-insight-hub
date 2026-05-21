@@ -5349,3 +5349,706 @@ function ControleInternoContent({
     </>
   );
 }
+
+// ============ Outras Inconformidades ============
+
+const OUTRAS_INCO_TRANSITO_JULGADO = false;
+const OUTRAS_INCO_SITUACAO_CONCLUIDA = false;
+const OUTRAS_INCO_READ_ONLY =
+  OUTRAS_INCO_TRANSITO_JULGADO || OUTRAS_INCO_SITUACAO_CONCLUIDA;
+
+const OUTRAS_INCO_MAX = 4000;
+
+type OIConclusao = "Regular" | "Regular com ressalvas" | "Irregular";
+type OIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
+
+type OutrasInco = {
+  id: string;
+  titulo: string;
+  conclusao: OIConclusao;
+  encaminhamento: OIEncaminhamento;
+  descricao: string;
+  descEncaminhamento: string;
+  entendimento: string;
+};
+
+// Estado persistente entre navegações (mantido no módulo)
+const OUTRAS_INCO_STORE: { lista: OutrasInco[]; texto: string; incluir: boolean } = {
+  lista: [
+    {
+      id: "oi1",
+      titulo: "Atraso na entrega de documentação comprobatória",
+      conclusao: "Regular com ressalvas",
+      encaminhamento: "Recomendação",
+      descricao:
+        "Foi identificado atraso sistemático na entrega de documentos comprobatórios referentes às despesas realizadas no exercício, impactando o cronograma de análise técnica.",
+      descEncaminhamento:
+        "Recomenda-se que o órgão estabeleça controles internos para garantir a entrega tempestiva da documentação exigida.",
+      entendimento:
+        "Situação recorrente que não configurou irregularidade grave mas merece atenção para os próximos exercícios.",
+    },
+    {
+      id: "oi2",
+      titulo: "Divergência em registros de contratos",
+      conclusao: "Irregular",
+      encaminhamento: "Determinação",
+      descricao:
+        "Foram encontradas divergências entre os valores registrados nos contratos e os valores efetivamente pagos, sem justificativa formal.",
+      descEncaminhamento:
+        "Determina-se que o órgão apresente justificativa formal para as divergências identificadas e promova a regularização dos registros.",
+      entendimento:
+        "Irregularidade que demanda encaminhamento com determinação conforme Art. 97, inciso III do Regimento Interno.",
+    },
+  ],
+  texto: "",
+  incluir: true,
+};
+
+const OUTRAS_INCO_HISTORICO_STORE: ReceitasHistorico[] = [
+  {
+    ts: "20/05/2026 09:12",
+    usuario: "Auditor João Silva",
+    campo: "Cadastro",
+    anterior: "-",
+    novo: "Atraso na entrega de documentação comprobatória",
+  },
+  {
+    ts: "20/05/2026 09:25",
+    usuario: "Auditor João Silva",
+    campo: "Cadastro",
+    anterior: "-",
+    novo: "Divergência em registros de contratos",
+  },
+];
+
+function conclusaoBadge(c: OIConclusao) {
+  if (c === "Regular") return "bg-green-100 text-green-800 border border-green-300";
+  if (c === "Regular com ressalvas")
+    return "bg-yellow-100 text-yellow-800 border border-yellow-300";
+  return "bg-red-100 text-red-800 border border-red-300";
+}
+function encaminhamentoBadge(e: OIEncaminhamento) {
+  if (e === "Nenhum") return "bg-gray-100 text-gray-700 border border-gray-300";
+  if (e === "Recomendação") return "bg-blue-100 text-blue-800 border border-blue-300";
+  return "bg-orange-100 text-orange-800 border border-orange-300";
+}
+
+function inferConclusao(e: OIEncaminhamento): OIConclusao {
+  if (e === "Nenhum") return "Regular";
+  if (e === "Recomendação") return "Regular com ressalvas";
+  return "Irregular";
+}
+function inferEncaminhamento(c: OIConclusao): OIEncaminhamento {
+  if (c === "Regular") return "Nenhum";
+  if (c === "Regular com ressalvas") return "Recomendação";
+  return "Determinação";
+}
+
+function OutrasInconformidadesContent({
+  processo,
+  orgao,
+  view,
+  onViewChange,
+}: {
+  processo: string;
+  orgao: string;
+  view: "form" | "lista";
+  onViewChange: (v: "form" | "lista") => void;
+}) {
+  const readOnly = OUTRAS_INCO_READ_ONLY;
+
+  const [lista, setLista] = useState<OutrasInco[]>(OUTRAS_INCO_STORE.lista);
+  const [texto, setTexto] = useState(OUTRAS_INCO_STORE.texto);
+  const [incluir, setIncluir] = useState(OUTRAS_INCO_STORE.incluir);
+  const [historico, setHistorico] = useState<ReceitasHistorico[]>(
+    OUTRAS_INCO_HISTORICO_STORE,
+  );
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Form state
+  const emptyForm = {
+    titulo: "",
+    conclusao: "Regular" as OIConclusao,
+    encaminhamento: "Nenhum" as OIEncaminhamento,
+    descricao: "",
+    descEncaminhamento: "",
+    entendimento: "",
+  };
+  const [form, setForm] = useState<typeof emptyForm>(emptyForm);
+  const [touched, setTouched] = useState(false);
+
+  // Persiste no store ao mudar
+  function commitLista(next: OutrasInco[]) {
+    setLista(next);
+    OUTRAS_INCO_STORE.lista = next;
+  }
+  function commitTexto(v: string) {
+    setTexto(v);
+    OUTRAS_INCO_STORE.texto = v;
+  }
+  function commitIncluir(v: boolean) {
+    setIncluir(v);
+    OUTRAS_INCO_STORE.incluir = v;
+  }
+
+  function novaIncoformidade() {
+    setForm(emptyForm);
+    setEditingId(null);
+    setTouched(false);
+    onViewChange("form");
+  }
+
+  function editar(id: string) {
+    const item = lista.find((x) => x.id === id);
+    if (!item) return;
+    setForm({
+      titulo: item.titulo,
+      conclusao: item.conclusao,
+      encaminhamento: item.encaminhamento,
+      descricao: item.descricao,
+      descEncaminhamento: item.descEncaminhamento,
+      entendimento: item.entendimento,
+    });
+    setEditingId(id);
+    setTouched(false);
+    onViewChange("form");
+  }
+
+  function removerConfirmado(id: string) {
+    const item = lista.find((x) => x.id === id);
+    const next = lista.filter((x) => x.id !== id);
+    commitLista(next);
+    setHistorico((h) => [
+      {
+        ts: new Date().toLocaleString("pt-BR"),
+        usuario: "Auditor Atual",
+        campo: "Exclusão",
+        anterior: item?.titulo ?? "-",
+        novo: "-",
+      },
+      ...h,
+    ]);
+    setConfirmDelete(null);
+    toast.success("Incoformidade excluída.");
+  }
+
+  function validar(): boolean {
+    return (
+      form.titulo.trim().length > 0 &&
+      form.descricao.trim().length > 0 &&
+      (form.encaminhamento === "Nenhum" ||
+        form.descEncaminhamento.trim().length > 0)
+    );
+  }
+
+  function salvar(): boolean {
+    setTouched(true);
+    if (!validar()) return false;
+
+    if (editingId) {
+      const next = lista.map((x) =>
+        x.id === editingId ? { ...x, ...form } : x,
+      );
+      commitLista(next);
+      setHistorico((h) => [
+        {
+          ts: new Date().toLocaleString("pt-BR"),
+          usuario: "Auditor Atual",
+          campo: "Edição",
+          anterior: editingId,
+          novo: form.titulo,
+        },
+        ...h,
+      ]);
+    } else {
+      const novo: OutrasInco = { id: `oi${Date.now()}`, ...form };
+      commitLista([...lista, novo]);
+      setHistorico((h) => [
+        {
+          ts: new Date().toLocaleString("pt-BR"),
+          usuario: "Auditor Atual",
+          campo: "Cadastro",
+          anterior: "-",
+          novo: form.titulo,
+        },
+        ...h,
+      ]);
+    }
+    toast.success("Incoformidade cadastrada com sucesso!");
+    return true;
+  }
+
+  function inserirNovo() {
+    if (salvar()) {
+      setForm(emptyForm);
+      setEditingId(null);
+      setTouched(false);
+    }
+  }
+  function inserirSair() {
+    if (salvar()) {
+      setForm(emptyForm);
+      setEditingId(null);
+      setTouched(false);
+      onViewChange("lista");
+    }
+  }
+
+  function setEnc(e: OIEncaminhamento) {
+    setForm((f) => ({
+      ...f,
+      encaminhamento: e,
+      conclusao: inferConclusao(e),
+      descEncaminhamento: e === "Nenhum" ? "" : f.descEncaminhamento,
+    }));
+  }
+  function setConc(c: OIConclusao) {
+    setForm((f) => ({
+      ...f,
+      conclusao: c,
+      encaminhamento: inferEncaminhamento(c),
+      descEncaminhamento:
+        inferEncaminhamento(c) === "Nenhum" ? "" : f.descEncaminhamento,
+    }));
+  }
+
+  const header = (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+      <div className="my-6 border-t border-border" />
+      {OUTRAS_INCO_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+    </>
+  );
+
+  // -------------------- TELA 1 (formulário) --------------------
+  if (view === "form" && !readOnly) {
+    const descRest = OUTRAS_INCO_MAX - form.descricao.length;
+    const encRest = OUTRAS_INCO_MAX - form.descEncaminhamento.length;
+    const entRest = OUTRAS_INCO_MAX - form.entendimento.length;
+    const encDisabled = form.encaminhamento === "Nenhum";
+
+    const errTitulo = touched && !form.titulo.trim();
+    const errDesc = touched && !form.descricao.trim();
+    const errEnc =
+      touched && !encDisabled && !form.descEncaminhamento.trim();
+
+    return (
+      <>
+        {header}
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-semibold underline">
+            Outras Incoformidades:
+          </h2>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onViewChange("lista")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" /> Ver listagem
+          </Button>
+        </div>
+
+        <div className="space-y-5 rounded-md border border-border bg-white p-4">
+          <div>
+            <Label className="text-sm font-semibold">
+              Título da Incoformidade:
+            </Label>
+            <Input
+              value={form.titulo}
+              placeholder="Descreva o título..."
+              onChange={(e) =>
+                setForm((f) => ({ ...f, titulo: e.target.value }))
+              }
+              className={`mt-1 ${errTitulo ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-md border border-border p-3">
+              <Label className="text-sm font-semibold">
+                Conclusão do item:
+              </Label>
+              <div className="mt-2 space-y-2 text-sm">
+                {(
+                  [
+                    "Regular",
+                    "Regular com ressalvas",
+                    "Irregular",
+                  ] as OIConclusao[]
+                ).map((c) => (
+                  <label key={c} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="oi-conclusao"
+                      checked={form.conclusao === c}
+                      onChange={() => setConc(c)}
+                    />
+                    {c}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-md border border-border p-3">
+              <Label className="text-sm font-semibold">
+                Tipo de encaminhamento:
+              </Label>
+              <div className="mt-2 space-y-2 text-sm">
+                {(
+                  [
+                    "Nenhum",
+                    "Recomendação",
+                    "Determinação",
+                  ] as OIEncaminhamento[]
+                ).map((e) => (
+                  <label key={e} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="oi-enc"
+                      checked={form.encaminhamento === e}
+                      onChange={() => setEnc(e)}
+                    />
+                    {e}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold">
+              Descrição da incoformidade:
+            </Label>
+            <textarea
+              value={form.descricao}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  descricao: e.target.value.slice(0, OUTRAS_INCO_MAX),
+                }))
+              }
+              rows={5}
+              maxLength={OUTRAS_INCO_MAX}
+              className={`mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB] ${errDesc ? "border-red-500" : "border-input"}`}
+            />
+            <div className="text-right text-xs text-muted-foreground">
+              {descRest} caracteres restantes
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold">Encaminhamento:</Label>
+            <textarea
+              value={form.descEncaminhamento}
+              disabled={encDisabled}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  descEncaminhamento: e.target.value.slice(0, OUTRAS_INCO_MAX),
+                }))
+              }
+              rows={5}
+              maxLength={OUTRAS_INCO_MAX}
+              className={`mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 ${errEnc ? "border-red-500" : "border-input"}`}
+            />
+            <div className="text-right text-xs text-muted-foreground">
+              {encRest} caracteres restantes
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold">
+              Entendimento técnico:
+            </Label>
+            <textarea
+              value={form.entendimento}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  entendimento: e.target.value.slice(0, OUTRAS_INCO_MAX),
+                }))
+              }
+              rows={5}
+              maxLength={OUTRAS_INCO_MAX}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+            />
+            <div className="text-right text-xs text-muted-foreground">
+              {entRest} caracteres restantes
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              onClick={inserirNovo}
+              className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              <Plus className="h-4 w-4" /> Inserir o novo
+            </Button>
+            <Button
+              type="button"
+              onClick={inserirSair}
+              className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90"
+            >
+              <Check className="h-4 w-4" /> Inserir e sair
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // -------------------- TELA 2 (listagem) --------------------
+  const textoRest = OUTRAS_INCO_MAX - texto.length;
+
+  return (
+    <>
+      {header}
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-base font-semibold underline">
+          Outras Incoformidades:
+        </h2>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="rounded-md border border-border bg-white p-2 text-gray-600 hover:bg-gray-50"
+            title="Histórico de Alterações"
+          >
+            <History className="h-4 w-4" />
+          </button>
+          {!readOnly && (
+            <Button
+              type="button"
+              onClick={novaIncoformidade}
+              className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              <Plus className="h-4 w-4" /> Nova Incoformidade
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-md border border-border bg-white">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-3 py-2 text-left">Incoformidade</th>
+              <th className="px-3 py-2 text-left">Conclusão</th>
+              <th className="px-3 py-2 text-left">Encaminhamento</th>
+              <th className="px-3 py-2 text-left">Descrição</th>
+              <th className="px-3 py-2 text-left">Desc. encaminhamento</th>
+              <th className="px-3 py-2 text-left">Entendimento técnico</th>
+              {!readOnly && <th className="px-3 py-2 text-left">Ações</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {lista.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={readOnly ? 6 : 7}
+                  className="px-3 py-8 text-center text-sm text-muted-foreground"
+                >
+                  Nenhuma incoformidade cadastrada. Clique em "+ Nova
+                  Incoformidade" para começar.
+                </td>
+              </tr>
+            ) : (
+              lista.map((row, i) => (
+                <tr
+                  key={row.id}
+                  className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
+                  <td className="px-3 py-2 align-top">{row.titulo}</td>
+                  <td className="px-3 py-2 align-top">
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs ${conclusaoBadge(row.conclusao)}`}
+                    >
+                      {row.conclusao}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 align-top">
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs ${encaminhamentoBadge(row.encaminhamento)}`}
+                    >
+                      {row.encaminhamento}
+                    </span>
+                  </td>
+                  <td
+                    className="max-w-[220px] truncate px-3 py-2 align-top"
+                    title={row.descricao}
+                  >
+                    {row.descricao}
+                  </td>
+                  <td
+                    className="max-w-[220px] truncate px-3 py-2 align-top"
+                    title={row.descEncaminhamento}
+                  >
+                    {row.descEncaminhamento || "-"}
+                  </td>
+                  <td
+                    className="max-w-[220px] truncate px-3 py-2 align-top"
+                    title={row.entendimento}
+                  >
+                    {row.entendimento || "-"}
+                  </td>
+                  {!readOnly && (
+                    <td className="px-3 py-2 align-top">
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => editar(row.id)}
+                          className="rounded p-1 text-blue-600 hover:bg-blue-50"
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(row.id)}
+                          className="rounded p-1 text-red-600 hover:bg-red-50"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-6 space-y-2">
+        <Label className="text-sm font-semibold">
+          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+        </Label>
+        <textarea
+          value={texto}
+          readOnly={readOnly}
+          onChange={(e) => commitTexto(e.target.value.slice(0, OUTRAS_INCO_MAX))}
+          maxLength={OUTRAS_INCO_MAX}
+          rows={6}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB] disabled:bg-gray-50"
+        />
+        <div className="text-right text-xs text-muted-foreground">
+          {textoRest} caracteres restantes
+        </div>
+        <div className="flex items-start gap-2 pt-2">
+          <Checkbox
+            id="oi-incluir"
+            checked={incluir}
+            disabled={readOnly}
+            onCheckedChange={(c) => commitIncluir(c === true)}
+          />
+          <Label htmlFor="oi-incluir" className="text-sm leading-tight">
+            O texto complementar deverá constar no relatório de conclusão do
+            processo.
+          </Label>
+        </div>
+      </div>
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações realizadas neste submenu são registradas para
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Ação</th>
+                  <th className="px-3 py-2 text-left">Título</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historico.map((h, i) => (
+                  <tr
+                    key={i}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir incoformidade</DialogTitle>
+            <DialogDescription>
+              Deseja excluir esta incoformidade?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removerConfirmado(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
