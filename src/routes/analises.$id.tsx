@@ -439,12 +439,13 @@ function AnaliseDetalhePage() {
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
-
-
-
-
-
-
+          ) : active === "outras-inconformidades" ? (
+            <OutrasInconformidadesContent
+              processo={processoLabel}
+              orgao={orgao}
+              view={outrasView}
+              onViewChange={setOutrasView}
+            />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
