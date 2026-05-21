@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/analises/$id")({
   component: AnaliseDetalhePage,
