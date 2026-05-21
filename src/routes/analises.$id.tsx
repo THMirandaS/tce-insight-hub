@@ -415,6 +415,9 @@ function AnaliseDetalhePage() {
               tab={creditoTab}
               onTabChange={setCreditoTab}
             />
+          ) : active === "programas" ? (
+            <ProgramasContent processo={processoLabel} orgao={orgao} />
+
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
