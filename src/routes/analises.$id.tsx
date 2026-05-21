@@ -117,6 +117,7 @@ function AnaliseDetalhePage() {
     () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
   );
   const [legendOpen, setLegendOpen] = useState(false);
+  const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
 
   const currentStatus: SubmenuStatus | null =
     statuses[active] !== undefined ? statuses[active] : null;
