@@ -4343,3 +4343,327 @@ function DspDotacaoContent({
     </>
   );
 }
+
+// ============================================================
+// RESTOS A PAGAR
+// ============================================================
+
+const RESTOS_PAGAR_TRANSITO_JULGADO = false;
+const RESTOS_PAGAR_SITUACAO_CONCLUIDA = false;
+const RESTOS_PAGAR_USUARIO_AUTORIZADO = true;
+const RESTOS_PAGAR_READ_ONLY =
+  RESTOS_PAGAR_TRANSITO_JULGADO ||
+  RESTOS_PAGAR_SITUACAO_CONCLUIDA ||
+  !RESTOS_PAGAR_USUARIO_AUTORIZADO;
+
+const RESTOS_PAGAR_MAX_TEXTO = 4000;
+const RESTOS_PAGAR_ANO_ATUAL = 2025;
+
+const RESTOS_PAGAR_RESUMO_IA =
+  "Foram identificados Restos a Pagar com anos de origem anteriores a 2018, indicando pendências orçamentárias de longa data que merecem atenção. Os RAPs não processados superam os processados em 34%, configurando situação que requer encaminhamento específico quanto à execução orçamentária pendente do órgão.";
+
+type RestoPagarLinha = {
+  id: string;
+  ano: number;
+  processados: number;
+  naoProcessados: number;
+};
+
+const RESTOS_PAGAR_INICIAL: RestoPagarLinha[] = [
+  { id: "rp1", ano: 2016, processados: 12_500_000, naoProcessados: 8_300_000 },
+  { id: "rp2", ano: 2017, processados: 9_800_000, naoProcessados: 15_200_000 },
+  { id: "rp3", ano: 2023, processados: 45_000_000, naoProcessados: 32_000_000 },
+  { id: "rp4", ano: 2024, processados: 78_500_000, naoProcessados: 95_000_000 },
+];
+
+const RESTOS_PAGAR_HISTORICO: ReceitasHistorico[] = [
+  { ts: "18/03/2025 10:15", usuario: "Auditor 01", campo: "Linha 2024 - Não Processados", anterior: "90.000.000,00", novo: "95.000.000,00" },
+  { ts: "17/03/2025 14:32", usuario: "Auditor 02", campo: "Adição de linha", anterior: "-", novo: "Ano 2016" },
+];
+
+function RestosPagarContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = RESTOS_PAGAR_READ_ONLY;
+
+  const [linhas, setLinhas] = useState<RestoPagarLinha[]>(RESTOS_PAGAR_INICIAL);
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const totalProcessados = linhas.reduce((s, l) => s + (l.processados || 0), 0);
+  const totalNaoProcessados = linhas.reduce((s, l) => s + (l.naoProcessados || 0), 0);
+
+  const textoRestantes = RESTOS_PAGAR_MAX_TEXTO - texto.length;
+
+  const temAnoAntigo = linhas.some((l) => l.ano < RESTOS_PAGAR_ANO_ATUAL - 5);
+  const naoProcMaiorProc = totalNaoProcessados > totalProcessados;
+  const exibirResumoIA = temAnoAntigo || naoProcMaiorProc;
+
+  function updateLinha(id: string, patch: Partial<RestoPagarLinha>) {
+    setLinhas((arr) => arr.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  }
+  function addLinha() {
+    setLinhas((arr) => [
+      ...arr,
+      {
+        id: `rp${Date.now()}`,
+        ano: RESTOS_PAGAR_ANO_ATUAL - 1,
+        processados: 0,
+        naoProcessados: 0,
+      },
+    ]);
+  }
+  function removeLinha(id: string) {
+    setLinhas((arr) => arr.filter((l) => l.id !== id));
+    setConfirmDelete(null);
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {RESTOS_PAGAR_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-base font-semibold underline">Restos a pagar:</h2>
+        <div className="flex items-center gap-2" data-pdf-hide>
+          {!readOnly && (
+            <Button
+              type="button"
+              onClick={addLinha}
+              className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              + Adicionar Ano
+            </Button>
+          )}
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Histórico de alterações"
+          >
+            <History className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-md border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-3 py-2 text-left">Ano Origem</th>
+              <th className="px-3 py-2 text-right">Rap's Processados</th>
+              <th className="px-3 py-2 text-right">Rap's Não Processados</th>
+              {!readOnly && <th className="px-3 py-2 text-center">Ações</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {linhas.map((l, i) => (
+              <tr key={l.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="px-2 py-1.5">
+                  <Input
+                    type="number"
+                    value={l.ano}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateLinha(l.id, { ano: Number(e.target.value) || 0 })
+                    }
+                    className="w-24"
+                  />
+                </td>
+                <td className="px-2 py-1.5">
+                  <MoneyInput
+                    value={l.processados}
+                    readOnly={readOnly}
+                    onChange={(n) => updateLinha(l.id, { processados: n })}
+                  />
+                </td>
+                <td className="px-2 py-1.5">
+                  <MoneyInput
+                    value={l.naoProcessados}
+                    readOnly={readOnly}
+                    onChange={(n) => updateLinha(l.id, { naoProcessados: n })}
+                  />
+                </td>
+                {!readOnly && (
+                  <td className="px-2 py-1.5">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        className="text-[#1A56DB] hover:opacity-80"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(l.id)}
+                        className="text-red-600 hover:opacity-80"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-[#F4F5F7] font-bold">
+              <td className="px-3 py-2">
+                Total antes das inscrições de {RESTOS_PAGAR_ANO_ATUAL}
+              </td>
+              <td className="px-3 py-2 text-right">{fmtBRL(totalProcessados)}</td>
+              <td className="px-3 py-2 text-right">{fmtBRL(totalNaoProcessados)}</td>
+              {!readOnly && <td />}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {exibirResumoIA && (
+        <div className="mt-6">
+          <ResumoIA
+            texto={RESTOS_PAGAR_RESUMO_IA}
+            processo={processo}
+            orgao={orgao}
+          />
+        </div>
+      )}
+
+      <div className="mt-6 space-y-2">
+        <Label className="text-sm font-semibold">
+          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+        </Label>
+        <textarea
+          value={texto}
+          readOnly={readOnly}
+          onChange={(e) =>
+            setTexto(e.target.value.slice(0, RESTOS_PAGAR_MAX_TEXTO))
+          }
+          maxLength={RESTOS_PAGAR_MAX_TEXTO}
+          rows={6}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+        />
+        <div className="text-right text-xs text-muted-foreground">
+          {textoRestantes} caracteres restantes
+        </div>
+        <div className="flex items-start gap-2 pt-2">
+          <Checkbox
+            id="restos-incluir"
+            checked={incluir}
+            disabled={readOnly}
+            onCheckedChange={(c) => setIncluir(c === true)}
+          />
+          <Label htmlFor="restos-incluir" className="text-sm leading-tight">
+            O texto complementar deverá constar no relatório de conclusão do
+            processo.
+          </Label>
+        </div>
+      </div>
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações realizadas neste submenu são registradas para
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {RESTOS_PAGAR_HISTORICO.map((h, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir registro</DialogTitle>
+            <DialogDescription>Deseja excluir este registro?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeLinha(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
