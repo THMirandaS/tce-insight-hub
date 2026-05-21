@@ -485,7 +485,8 @@ function AnaliseDetalhePage() {
               !(active === "restos-pagar" && RESTOS_PAGAR_READ_ONLY) &&
               !(active === "controle-interno" && CI_READ_ONLY) &&
               !(active === "outras-inconformidades" && OUTRAS_INCO_READ_ONLY) &&
-              !(active === "outras-inconformidades" && outrasView !== "lista") && (
+              !(active === "outras-inconformidades" && outrasView !== "lista") &&
+              !(active === "conclusao" && CONCLUSAO_READ_ONLY) && (
 
 
 
