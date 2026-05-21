@@ -184,6 +184,10 @@ function AnaliseDetalhePage() {
     "";
 
   function handleGerarPDF() {
+    if (active === "conclusao" && CONCLUSAO_PDF_REF.fn) {
+      CONCLUSAO_PDF_REF.fn(processoLabel, orgao);
+      return;
+    }
     const node = contentRef.current;
     if (!node) return;
     const clone = node.cloneNode(true) as HTMLElement;
