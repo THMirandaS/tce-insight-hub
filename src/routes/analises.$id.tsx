@@ -4672,3 +4672,675 @@ function RestosPagarContent({
     </>
   );
 }
+
+/* ===================== Controle Interno ===================== */
+
+const CI_TRANSITO_JULGADO = false;
+const CI_SITUACAO_CONCLUIDA = false;
+const CI_USUARIO_AUTORIZADO = true;
+const CI_READ_ONLY =
+  CI_TRANSITO_JULGADO || CI_SITUACAO_CONCLUIDA || !CI_USUARIO_AUTORIZADO;
+
+const CI_MAX_TEXTO = 4000;
+
+type CIMaterialidade = "Alta" | "Média" | "Baixa";
+type CISimNao = "Sim" | "Não";
+type CIInciso = "Inciso II" | "Inciso III" | "Não se enquadra";
+
+type CIApontamento = {
+  id: string;
+  apontamento: string;
+  relatorio: string;
+  pecaPagina: string;
+  valor: number | null;
+  materialidade: CIMaterialidade;
+  danoErario: CISimNao;
+  quantificado: CISimNao;
+  riscoRelevante: CISimNao;
+  inciso: CIInciso;
+  conclusao: string;
+  inserirRelatorio: boolean;
+  entendimento: string;
+};
+
+const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
+  {
+    id: "ci1",
+    apontamento:
+      "Levantamento incompleto dos inventários físicos e financeiros dos bens móveis",
+    relatorio: "RCI 2024",
+    pecaPagina: "Peça 21, págs. 45-46",
+    valor: 17371.2,
+    materialidade: "Média",
+    danoErario: "Não",
+    quantificado: "Sim",
+    riscoRelevante: "Sim",
+    inciso: "Inciso II",
+    conclusao:
+      "Determinar levantamento completo dos inventários físicos e financeiros",
+    inserirRelatorio: true,
+    entendimento:
+      "Impropriedade de natureza formal considerada relevante",
+  },
+  {
+    id: "ci2",
+    apontamento:
+      "Imóveis contabilizados incorretamente por valor de R$ 0,01",
+    relatorio: "RCI 2024",
+    pecaPagina: "Peça 23, pág. 34",
+    valor: 0.01,
+    materialidade: "Alta",
+    danoErario: "Não",
+    quantificado: "Sim",
+    riscoRelevante: "Sim",
+    inciso: "Inciso III",
+    conclusao:
+      "Determinar apresentação do andamento da tratativa com SEPLAG",
+    inserirRelatorio: true,
+    entendimento: "Bens avaliados incorretamente sem regularização",
+  },
+  {
+    id: "ci3",
+    apontamento:
+      "Documentos referentes à execução orçamentária sem assinatura",
+    relatorio: "RCI 2024",
+    pecaPagina: "Peça 23, pág. 41",
+    valor: null,
+    materialidade: "Média",
+    danoErario: "Não",
+    quantificado: "Não",
+    riscoRelevante: "Sim",
+    inciso: "Inciso II",
+    conclusao:
+      "Determinar assinatura digital de todos os documentos até o término do exercício",
+    inserirRelatorio: true,
+    entendimento: "Descumprimento do art. 13 do Decreto nº 48.934/2024",
+  },
+  {
+    id: "ci4",
+    apontamento: "Divergência de conciliação contábil — R$ 915.603,62",
+    relatorio: "RCI 2024",
+    pecaPagina: "Peça 21 pág. 30 / Peça 23 págs. 19, 28 e 96",
+    valor: 915603.62,
+    materialidade: "Alta",
+    danoErario: "Não",
+    quantificado: "Sim",
+    riscoRelevante: "Sim",
+    inciso: "Inciso II",
+    conclusao:
+      "Recomendar continuidade da apuração e apresentação dos resultados em futura PCE",
+    inserirRelatorio: true,
+    entendimento:
+      "Saldo contábil sem correspondência bancária ainda em apuração",
+  },
+  {
+    id: "ci5",
+    apontamento:
+      "Emissão intempestiva do relatório do inventário físico e financeiro dos materiais em almoxarifado",
+    relatorio: "RCI 2024",
+    pecaPagina: "Peça 21",
+    valor: null,
+    materialidade: "Baixa",
+    danoErario: "Não",
+    quantificado: "Não",
+    riscoRelevante: "Não",
+    inciso: "Não se enquadra",
+    conclusao:
+      "Recomendar aprimoramento dos trabalhos das comissões inventariantes",
+    inserirRelatorio: true,
+    entendimento:
+      "Relatório emitido em 12/01/2025, após prazo legal de 10/01/2025",
+  },
+];
+
+const CI_RESUMO_IA =
+  "A análise do RCI identificou 5 apontamentos relevantes, sendo 2 de alta materialidade relacionados a imóveis contabilizados incorretamente e divergência de conciliação contábil. Não foram identificados danos ao erário. Recomenda-se atenção especial aos apontamentos dos tópicos 4.3.2 e 4.3.3, que demandam encaminhamento com determinação.";
+
+const CI_HISTORICO: ReceitasHistorico[] = [
+  {
+    ts: "20/05/2026 10:14",
+    usuario: "IA - Sistema",
+    campo: "Apontamentos",
+    anterior: "-",
+    novo: "5 apontamentos extraídos do RCI 2024",
+  },
+  {
+    ts: "20/05/2026 14:32",
+    usuario: "Auditor João Silva",
+    campo: "Apontamento 2 - Conclusão",
+    anterior: "Recomendar regularização",
+    novo: "Determinar apresentação do andamento da tratativa com SEPLAG",
+  },
+];
+
+function ControleInternoContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = CI_READ_ONLY;
+
+  const [reqMinimos, setReqMinimos] = useState(true);
+  const [pesquisavel, setPesquisavel] = useState(true);
+  const [adequado, setAdequado] = useState<"sim" | "nao" | null>("sim");
+  const [enquadraIncisos, setEnquadraIncisos] = useState<
+    "sim" | "nao" | null
+  >(null);
+
+  const [apontamentos, setApontamentos] = useState<CIApontamento[]>(
+    CI_APONTAMENTOS_INICIAL,
+  );
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const textoRestantes = CI_MAX_TEXTO - texto.length;
+
+  const exibirResumoIA = apontamentos.some(
+    (a) => a.materialidade === "Alta" || a.danoErario === "Sim",
+  );
+
+  function updateAp(id: string, patch: Partial<CIApontamento>) {
+    setApontamentos((arr) =>
+      arr.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    );
+  }
+  function addAp() {
+    setApontamentos((arr) => [
+      ...arr,
+      {
+        id: `ci${Date.now()}`,
+        apontamento: "",
+        relatorio: "",
+        pecaPagina: "",
+        valor: null,
+        materialidade: "Média",
+        danoErario: "Não",
+        quantificado: "Não",
+        riscoRelevante: "Não",
+        inciso: "Não se enquadra",
+        conclusao: "",
+        inserirRelatorio: false,
+        entendimento: "",
+      },
+    ]);
+  }
+  function removeAp(id: string) {
+    setApontamentos((arr) => arr.filter((a) => a.id !== id));
+    setConfirmDelete(null);
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      {CI_TRANSITO_JULGADO && (
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            <span className="font-semibold">
+              ⚠️ Este processo possui Trânsito e Julgado.
+            </span>{" "}
+            Nenhuma alteração é permitida.
+          </p>
+        </div>
+      )}
+
+      <h2 className="mb-4 text-base font-semibold underline">
+        Controle Interno:
+      </h2>
+
+      {/* Bloco 1 - Verificações iniciais */}
+      <div className="space-y-4 rounded-md border border-border bg-white p-4">
+        <div className="space-y-3">
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="ci-req-minimos"
+              checked={reqMinimos}
+              disabled={readOnly}
+              onCheckedChange={(c) => setReqMinimos(c === true)}
+            />
+            <Label htmlFor="ci-req-minimos" className="text-sm leading-tight">
+              O relatório contém as informações mínimas exigidas pela DN.
+            </Label>
+          </div>
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="ci-pesquisavel"
+              checked={pesquisavel}
+              disabled={readOnly}
+              onCheckedChange={(c) => setPesquisavel(c === true)}
+            />
+            <Label htmlFor="ci-pesquisavel" className="text-sm leading-tight">
+              Documento em formato digital pesquisável e não digitalizado como
+              imagem.
+            </Label>
+          </div>
+        </div>
+
+        <div className="border-t border-border" />
+
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold">
+            O relatório está adequado (possui os requisitos técnicos e formais
+            relevantes)?
+          </Label>
+          <div className="flex flex-wrap gap-6">
+            {(
+              [
+                { v: "sim", label: "Sim" },
+                { v: "nao", label: "Não" },
+              ] as const
+            ).map((o) => (
+              <label
+                key={o.v}
+                className="inline-flex items-center gap-2 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="ci-adequado"
+                  value={o.v}
+                  checked={adequado === o.v}
+                  disabled={readOnly}
+                  onChange={() => setAdequado(o.v)}
+                  className="h-4 w-4 accent-[#1A56DB]"
+                />
+                {o.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {adequado === "nao" && (
+          <div className="space-y-2 rounded-md bg-[#F4F5F7] p-3">
+            <Label className="text-sm font-semibold">
+              A inadequação identificada se enquadra nos incisos II ou III do
+              Art. 97 do Regimento Interno?
+            </Label>
+            <div className="flex flex-wrap gap-6">
+              {(
+                [
+                  { v: "sim", label: "Sim" },
+                  { v: "nao", label: "Não" },
+                ] as const
+              ).map((o) => (
+                <label
+                  key={o.v}
+                  className="inline-flex items-center gap-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="ci-incisos"
+                    value={o.v}
+                    checked={enquadraIncisos === o.v}
+                    disabled={readOnly}
+                    onChange={() => setEnquadraIncisos(o.v)}
+                    className="h-4 w-4 accent-[#1A56DB]"
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bloco 2 - Tabela de apontamentos */}
+      <div className="mt-6 flex items-start gap-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-3 text-sm text-[#0D1B2A]">
+        <span aria-hidden className="text-lg leading-none">
+          ✨
+        </span>
+        <p>
+          Apontamentos extraídos automaticamente pela IA a partir da leitura
+          do RCI enviado pelo órgão via e-TCE. Revise, edite ou adicione
+          apontamentos conforme necessário.
+        </p>
+      </div>
+
+      <div className="mb-3 mt-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Apontamentos do RCI</h3>
+        <div className="flex items-center gap-2" data-pdf-hide>
+          {!readOnly && (
+            <Button
+              type="button"
+              onClick={addAp}
+              className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              + Adicionar Apontamento
+            </Button>
+          )}
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Histórico de alterações"
+          >
+            <History className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-md border border-border">
+        <table className="w-full min-w-[1800px] text-sm">
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-3 py-2 text-left">Apontamento</th>
+              <th className="px-3 py-2 text-left">Relatório</th>
+              <th className="px-3 py-2 text-left">Peça/Página</th>
+              <th className="px-3 py-2 text-right">Valor</th>
+              <th className="px-3 py-2 text-left">Materialidade</th>
+              <th className="px-3 py-2 text-left">Dano ao Erário?</th>
+              <th className="px-3 py-2 text-left">Quantificado?</th>
+              <th className="px-3 py-2 text-left">Risco relevante?</th>
+              <th className="px-3 py-2 text-left">Inciso II ou III?</th>
+              <th className="px-3 py-2 text-left">Conclusão e Encaminhamento</th>
+              <th className="px-3 py-2 text-center">Inserir no Relatório</th>
+              <th className="px-3 py-2 text-left">Entendimento técnico</th>
+              {!readOnly && <th className="px-3 py-2 text-center">Ações</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {apontamentos.map((a, i) => (
+              <tr key={a.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="min-w-[220px] px-2 py-1.5 align-top">
+                  <textarea
+                    value={a.apontamento}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { apontamento: e.target.value })
+                    }
+                    rows={2}
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  />
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <Input
+                    value={a.relatorio}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { relatorio: e.target.value })
+                    }
+                    className="w-28 text-xs"
+                  />
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <Input
+                    value={a.pecaPagina}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { pecaPagina: e.target.value })
+                    }
+                    className="w-44 text-xs"
+                  />
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <MoneyInput
+                    value={a.valor ?? 0}
+                    readOnly={readOnly}
+                    onChange={(n) => updateAp(a.id, { valor: n })}
+                  />
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <select
+                    value={a.materialidade}
+                    disabled={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, {
+                        materialidade: e.target.value as CIMaterialidade,
+                      })
+                    }
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  >
+                    <option>Alta</option>
+                    <option>Média</option>
+                    <option>Baixa</option>
+                  </select>
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <select
+                    value={a.danoErario}
+                    disabled={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, {
+                        danoErario: e.target.value as CISimNao,
+                      })
+                    }
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  >
+                    <option>Sim</option>
+                    <option>Não</option>
+                  </select>
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <select
+                    value={a.quantificado}
+                    disabled={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, {
+                        quantificado: e.target.value as CISimNao,
+                      })
+                    }
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  >
+                    <option>Sim</option>
+                    <option>Não</option>
+                  </select>
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <select
+                    value={a.riscoRelevante}
+                    disabled={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, {
+                        riscoRelevante: e.target.value as CISimNao,
+                      })
+                    }
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  >
+                    <option>Sim</option>
+                    <option>Não</option>
+                  </select>
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <select
+                    value={a.inciso}
+                    disabled={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { inciso: e.target.value as CIInciso })
+                    }
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  >
+                    <option>Inciso II</option>
+                    <option>Inciso III</option>
+                    <option>Não se enquadra</option>
+                  </select>
+                </td>
+                <td className="min-w-[220px] px-2 py-1.5 align-top">
+                  <textarea
+                    value={a.conclusao}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { conclusao: e.target.value })
+                    }
+                    rows={2}
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  />
+                </td>
+                <td className="px-2 py-1.5 text-center align-top">
+                  <Checkbox
+                    checked={a.inserirRelatorio}
+                    disabled={readOnly}
+                    onCheckedChange={(c) =>
+                      updateAp(a.id, { inserirRelatorio: c === true })
+                    }
+                  />
+                </td>
+                <td className="min-w-[220px] px-2 py-1.5 align-top">
+                  <textarea
+                    value={a.entendimento}
+                    readOnly={readOnly}
+                    onChange={(e) =>
+                      updateAp(a.id, { entendimento: e.target.value })
+                    }
+                    rows={2}
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                  />
+                </td>
+                {!readOnly && (
+                  <td className="px-2 py-1.5 align-top">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        className="text-[#1A56DB] hover:opacity-80"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(a.id)}
+                        className="text-red-600 hover:opacity-80"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {exibirResumoIA && (
+        <div className="mt-6">
+          <ResumoIA texto={CI_RESUMO_IA} processo={processo} orgao={orgao} />
+        </div>
+      )}
+
+      <div className="mt-6 space-y-2">
+        <Label className="text-sm font-semibold">
+          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
+        </Label>
+        <textarea
+          value={texto}
+          readOnly={readOnly}
+          onChange={(e) => setTexto(e.target.value.slice(0, CI_MAX_TEXTO))}
+          maxLength={CI_MAX_TEXTO}
+          rows={6}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+        />
+        <div className="text-right text-xs text-muted-foreground">
+          {textoRestantes} caracteres restantes
+        </div>
+        <div className="flex items-start gap-2 pt-2">
+          <Checkbox
+            id="ci-incluir"
+            checked={incluir}
+            disabled={readOnly}
+            onCheckedChange={(c) => setIncluir(c === true)}
+          />
+          <Label htmlFor="ci-incluir" className="text-sm leading-tight">
+            O texto complementar deverá constar no relatório de conclusão do
+            processo.
+          </Label>
+        </div>
+      </div>
+
+      {/* Modal histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações realizadas neste submenu são registradas para
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CI_HISTORICO.map((h, i) => (
+                  <tr
+                    key={i}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal confirmação exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir apontamento</DialogTitle>
+            <DialogDescription>
+              Deseja excluir este apontamento?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeAp(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
