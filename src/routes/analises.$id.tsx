@@ -6059,3 +6059,398 @@ function OutrasInconformidadesContent({
     </>
   );
 }
+
+// ============ Conclusão ============
+
+const CONCLUSAO_TRANSITO_JULGADO = false;
+const CONCLUSAO_READ_ONLY = CONCLUSAO_TRANSITO_JULGADO;
+const CONCLUSAO_MAX = 4000;
+
+const CONCLUSAO_PDF_REF: { fn: ((processo: string, orgao: string) => void) | null } = {
+  fn: null,
+};
+
+type JulgamentoTipo = "regulares" | "ressalva" | "irregulares";
+
+const JULGAMENTO_OPTS: {
+  v: JulgamentoTipo;
+  label: string;
+  inciso: string;
+  artigo: string;
+}[] = [
+  { v: "regulares", label: "Regulares", inciso: "I", artigo: "art. 48, I, da LC 102/2008" },
+  { v: "ressalva", label: "Regulares com ressalva", inciso: "II", artigo: "art. 48, II, da LC 102/2008" },
+  { v: "irregulares", label: "Irregulares", inciso: "III", artigo: "art. 48, III, da LC 102/2008" },
+];
+
+const CONCLUSAO_APONTAMENTOS: {
+  topico: string;
+  apontamento: string;
+  encaminhamento: string;
+}[] = [
+  {
+    topico: "Controle Interno",
+    apontamento:
+      "Levantamento incompleto dos inventários físicos e financeiros dos bens móveis",
+    encaminhamento:
+      "Determinar que a gestão realize o levantamento completo dos inventários físicos e financeiros dos itens determinados pela legislação",
+  },
+  {
+    topico: "Controle Interno",
+    apontamento: "Imóveis contabilizados incorretamente por valor de R$ 0,01",
+    encaminhamento:
+      "Determinar que sejam apresentados o andamento ou o resultado da tratativa com SEPLAG",
+  },
+  {
+    topico: "Controle Interno",
+    apontamento:
+      "Documentos referentes à execução orçamentária sem assinatura",
+    encaminhamento:
+      "Determinar que a gestão aprimore seus controles para assinatura digital de todos os documentos até o término do exercício financeiro",
+  },
+  {
+    topico: "Restos a Pagar",
+    apontamento:
+      "Registros de Restos a Pagar com ano-origem mais antigo que 5 anos anteriores ao exercício avaliado",
+    encaminhamento:
+      "Recomendar que a gestão reavalie a real persistência desses saldos e o eventual cancelamento dos saldos indevidos",
+  },
+  {
+    topico: "Outras Incoformidades",
+    apontamento: "Divergência em registros de contratos",
+    encaminhamento:
+      "Determinar que o órgão apresente justificativa formal para as divergências identificadas",
+  },
+];
+
+const CONCLUSAO_STORE: {
+  intro: string;
+  julgamento: JulgamentoTipo;
+  entendimento: string;
+  consideracoes: string;
+} = {
+  intro:
+    "O presente exame foi elaborado observando-se os critérios ressaltados no relatório técnico, ou seja, com base nas disposições constitucionais e legislação infraconstitucional vigente durante o exercício de análise, ficando as considerações restritas às exigências da referida legislação.",
+  julgamento: "ressalva",
+  entendimento: "",
+  consideracoes: "",
+};
+
+const ASSINATURA = {
+  data: "17 de junho de 2025",
+  auditor: "Analista 01",
+  tcAuditor: "3284-8",
+  coordenador: "Coordenador 01",
+  tcCoordenador: "3187-6",
+  responsavel: "João Silva Souza",
+  ano: "2025",
+};
+
+function ConclusaoContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = CONCLUSAO_READ_ONLY;
+  const [intro, setIntro] = useState(CONCLUSAO_STORE.intro);
+  const [julgamento, setJulgamento] = useState<JulgamentoTipo>(
+    CONCLUSAO_STORE.julgamento,
+  );
+  const [entendimento, setEntendimento] = useState(CONCLUSAO_STORE.entendimento);
+  const [consideracoes, setConsideracoes] = useState(CONCLUSAO_STORE.consideracoes);
+
+  useEffect(() => {
+    CONCLUSAO_STORE.intro = intro;
+  }, [intro]);
+  useEffect(() => {
+    CONCLUSAO_STORE.julgamento = julgamento;
+  }, [julgamento]);
+  useEffect(() => {
+    CONCLUSAO_STORE.entendimento = entendimento;
+  }, [entendimento]);
+  useEffect(() => {
+    CONCLUSAO_STORE.consideracoes = consideracoes;
+  }, [consideracoes]);
+
+  const julgOpt = JULGAMENTO_OPTS.find((o) => o.v === julgamento)!;
+  const textoJulgamento = `Por todo o exposto, esta Unidade Técnica entende que as contas do ${orgao} referente ao exercício de ${ASSINATURA.ano}, sob a responsabilidade do(a) ${ASSINATURA.responsavel}, devem ser julgadas ${julgOpt.label.toLowerCase()}, nos termos do artigo 48, ${julgOpt.inciso}, da Lei Complementar 102/2008.`;
+
+  function gerarPdfCompleto(proc: string, org: string) {
+    const w = window.open("", "_blank", "width=1024,height=768");
+    if (!w) return;
+    const linhas = CONCLUSAO_APONTAMENTOS.map(
+      (a) =>
+        `<tr><td>${escapeHTML(a.topico)}</td><td>${escapeHTML(
+          a.apontamento,
+        )}</td><td>${escapeHTML(a.encaminhamento)}</td></tr>`,
+    ).join("");
+    const jOpt = JULGAMENTO_OPTS.find((o) => o.v === julgamento)!;
+    const textoJ = `Por todo o exposto, esta Unidade Técnica entende que as contas do ${org} referente ao exercício de ${ASSINATURA.ano}, sob a responsabilidade do(a) ${ASSINATURA.responsavel}, devem ser julgadas ${jOpt.label.toLowerCase()}, nos termos do artigo 48, ${jOpt.inciso}, da Lei Complementar 102/2008.`;
+    w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" />
+<title>Relatório de Avaliação de Contas de Gestão - ${escapeHTML(proc)}</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body { font-family: "Times New Roman", Georgia, serif; color:#0D1B2A; font-size: 12pt; line-height: 1.55; }
+  h1.title { text-align:center; font-size: 14pt; font-weight: 700; margin: 0 0 18px; text-transform: uppercase; }
+  h2 { font-size: 12.5pt; font-weight: 700; margin: 20px 0 8px; border-bottom: 1px solid #0D1B2A; padding-bottom: 4px; }
+  h3 { font-size: 12pt; font-weight: 700; margin: 14px 0 6px; }
+  .meta { border: 1px solid #94a3b8; padding: 10px 14px; margin-bottom: 18px; font-size: 11pt; }
+  .meta div { margin: 2px 0; }
+  p { text-align: justify; margin: 6px 0; }
+  table { width:100%; border-collapse: collapse; margin: 10px 0; font-size: 10.5pt; }
+  th, td { border:1px solid #475569; padding: 6px 8px; vertical-align: top; text-align: left; }
+  th { background:#e2e8f0; }
+  .sign { margin-top: 28px; text-align: center; font-size: 11pt; }
+  .sign .name { margin-top: 36px; font-weight: 700; }
+  .footer { margin-top: 32px; padding-top: 10px; border-top: 1px solid #94a3b8; font-size: 9.5pt; color:#475569; text-align:center; line-height:1.4; }
+</style></head><body>
+<h1 class="title">Relatório de Avaliação de Contas de Gestão</h1>
+<div class="meta">
+  <div><strong>Processo:</strong> ${escapeHTML(proc)}</div>
+  <div><strong>Órgão/Entidade:</strong> IPSEMG — Instituto de Previdência dos Servidores de MG</div>
+  <div><strong>Ano de Referência:</strong> ${ASSINATURA.ano}</div>
+  <div><strong>Data da autuação:</strong> 06/05/2025</div>
+</div>
+
+<h2>1. Introdução</h2>
+<p>Trata-se da análise da prestação de contas anual do exercício de ${ASSINATURA.ano}, em cumprimento ao disposto na Instrução Normativa nº 14/2011 e na Deliberação Normativa nº 01/2025 do Tribunal de Contas do Estado de Minas Gerais, conforme procedimento da Coordenadoria de Análise de Contas de Gestão do Estado e de Auditoria Financeira (CACGEAF).</p>
+
+<h2>2. Considerações Gerais sobre o IPSEMG</h2>
+<p>O IPSEMG é a autarquia responsável pela previdência e assistência aos servidores públicos do Estado de Minas Gerais. As considerações gerais registradas pelo auditor encontram-se consolidadas no submenu correspondente.</p>
+
+<h2>3. Análise orçamentária e financeira</h2>
+<h3>3.1 Receitas</h3>
+<p>Dados consolidados a partir do submenu Receitas, com base nas receitas previstas e arrecadadas no exercício.</p>
+<h3>3.2 Programação e execução</h3>
+<p>Dados consolidados a partir dos submenus Crédito inicial autorizado, Programas, Crédito e Despesas por programa e Despesa por dotação orçamentária.</p>
+<h3>3.3 Restos a pagar</h3>
+<p>Dados consolidados a partir do submenu Restos a Pagar, com avaliação dos saldos por ano de origem.</p>
+
+<h2>4. Análise dos relatórios dos jurisdicionados</h2>
+<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Controle Interno.</p>
+
+<h2>5. Outros assuntos relevantes</h2>
+<p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Incoformidades.</p>
+
+<h2>6. Conclusão</h2>
+<p>${escapeHTML(intro)}</p>
+<p><strong>Julgamento das contas:</strong> ${escapeHTML(jOpt.label)} (${escapeHTML(jOpt.artigo)}).</p>
+<p>${escapeHTML(textoJ)}</p>
+
+<h3>Apontamentos e propostas de encaminhamento</h3>
+<table>
+  <thead><tr><th>Tópico</th><th>Apontamento</th><th>Proposta de encaminhamento</th></tr></thead>
+  <tbody>${linhas}</tbody>
+</table>
+
+${entendimento ? `<h3>Entendimento técnico</h3><p>${escapeHTML(entendimento)}</p>` : ""}
+${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)}</p>` : ""}
+
+<div class="sign">
+  <div>CACGEAF/DACAF, em ${ASSINATURA.data}</div>
+  <div class="name">${ASSINATURA.auditor}</div>
+  <div>Analista de Controle Externo – TC ${ASSINATURA.tcAuditor}</div>
+  <div class="name">${ASSINATURA.coordenador}</div>
+  <div>Coordenador da CACGEAF – TC ${ASSINATURA.tcCoordenador}</div>
+</div>
+
+<div class="footer">
+  Tribunal de Contas do Estado de Minas Gerais<br/>
+  Diretoria de Análise de Contas e Auditoria Financeira<br/>
+  Coordenadoria de Análise de Contas de Gestão do Estado e de Auditoria Financeira
+</div>
+</body></html>`);
+    w.document.close();
+    setTimeout(() => {
+      w.focus();
+      w.print();
+    }, 400);
+  }
+
+  useEffect(() => {
+    CONCLUSAO_PDF_REF.fn = gerarPdfCompleto;
+    return () => {
+      CONCLUSAO_PDF_REF.fn = null;
+    };
+  });
+
+  const introRest = CONCLUSAO_MAX - intro.length;
+  const entRest = CONCLUSAO_MAX - entendimento.length;
+  const consRest = CONCLUSAO_MAX - consideracoes.length;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <h2 className="mb-4 text-center text-lg font-semibold text-foreground">
+        <span className="border-b-2 border-[#0D1B2A] pb-1">Conclusão:</span>
+      </h2>
+
+      {readOnly && (
+        <div className="mb-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          ⚠️ Este processo possui Trânsito e Julgado. Nenhuma alteração é permitida.
+        </div>
+      )}
+
+      {/* Bloco 1 - Introdução */}
+      <div className="mb-6">
+        <Label className="mb-2 block text-sm font-semibold">
+          Texto introdutório da conclusão
+        </Label>
+        <textarea
+          value={intro}
+          onChange={(e) => setIntro(e.target.value.slice(0, CONCLUSAO_MAX))}
+          disabled={readOnly}
+          rows={6}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/40 disabled:bg-muted disabled:opacity-70"
+        />
+        <div className="mt-1 text-right text-xs text-muted-foreground">
+          {introRest} caracteres restantes
+        </div>
+      </div>
+
+      {/* Bloco 2 - Julgamento */}
+      <div className="mb-6 rounded-md border border-border bg-slate-50 p-4">
+        <Label className="mb-2 block text-sm font-semibold">
+          Julgamento das contas
+        </Label>
+        <div className="mb-2 text-sm">As contas devem ser julgadas:</div>
+        <div className="space-y-2">
+          {JULGAMENTO_OPTS.map((o) => (
+            <label
+              key={o.v}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <input
+                type="radio"
+                name="julgamento"
+                value={o.v}
+                checked={julgamento === o.v}
+                onChange={() => setJulgamento(o.v)}
+                disabled={readOnly}
+                className="h-4 w-4 accent-[#1A56DB]"
+              />
+              <span className="font-medium">{o.label}</span>
+              <span className="text-xs text-muted-foreground">→ {o.artigo}</span>
+            </label>
+          ))}
+        </div>
+        <div className="mt-4 rounded-md border border-border bg-white p-3 text-sm leading-relaxed text-foreground">
+          {textoJulgamento}
+        </div>
+      </div>
+
+      {/* Bloco 3 - Apontamentos */}
+      <div className="mb-6">
+        <Label className="mb-2 block text-sm font-semibold">
+          Apontamentos e propostas de encaminhamento
+        </Label>
+        <div className="mb-3 flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#1A56DB]">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            Tabela preenchida automaticamente com os apontamentos marcados como
+            "Inserir no Relatório" em cada submenu.
+          </span>
+        </div>
+        <div className="overflow-x-auto rounded-md border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-[#0D1B2A] text-white">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Tópico</th>
+                <th className="px-3 py-2 text-left font-semibold">Apontamento</th>
+                <th className="px-3 py-2 text-left font-semibold">
+                  Proposta de encaminhamento
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {CONCLUSAO_APONTAMENTOS.map((a, i) => (
+                <tr
+                  key={i}
+                  className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}
+                >
+                  <td className="border-t border-border px-3 py-2 align-top font-medium">
+                    {a.topico}
+                  </td>
+                  <td className="border-t border-border px-3 py-2 align-top">
+                    {a.apontamento}
+                  </td>
+                  <td className="border-t border-border px-3 py-2 align-top">
+                    {a.encaminhamento}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Bloco 4 - Entendimento */}
+      <div className="mb-6">
+        <Label className="mb-2 block text-sm font-semibold">
+          Entendimento técnico:
+        </Label>
+        <textarea
+          value={entendimento}
+          onChange={(e) =>
+            setEntendimento(e.target.value.slice(0, CONCLUSAO_MAX))
+          }
+          disabled={readOnly}
+          rows={5}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/40 disabled:bg-muted disabled:opacity-70"
+        />
+        <div className="mt-1 text-right text-xs text-muted-foreground">
+          {entRest} caracteres restantes
+        </div>
+      </div>
+
+      {/* Bloco 5 - Considerações finais */}
+      <div className="mb-6">
+        <Label className="mb-2 block text-sm font-semibold">
+          Considerações finais:
+        </Label>
+        <textarea
+          value={consideracoes}
+          onChange={(e) =>
+            setConsideracoes(e.target.value.slice(0, CONCLUSAO_MAX))
+          }
+          disabled={readOnly}
+          rows={5}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/40 disabled:bg-muted disabled:opacity-70"
+        />
+        <div className="mt-1 text-right text-xs text-muted-foreground">
+          {consRest} caracteres restantes
+        </div>
+      </div>
+
+      {/* Bloco 6 - Assinatura */}
+      <div className="mt-8 rounded-md border border-border bg-white p-6 text-center text-sm leading-relaxed">
+        <p className="mb-6">CACGEAF/DACAF, em {ASSINATURA.data}</p>
+        <p className="font-semibold">{ASSINATURA.auditor}</p>
+        <p className="mb-6 text-muted-foreground">
+          Analista de Controle Externo – TC {ASSINATURA.tcAuditor}
+        </p>
+        <p className="font-semibold">{ASSINATURA.coordenador}</p>
+        <p className="text-muted-foreground">
+          Coordenador da CACGEAF – TC {ASSINATURA.tcCoordenador}
+        </p>
+      </div>
+    </>
+  );
+}
