@@ -473,7 +473,9 @@ function AnaliseDetalhePage() {
               !(active === "credito-despesas-prg" && despesaTab !== "principal") &&
               !(active === "dsp-dotacao" && DSP_DOTACAO_READ_ONLY) &&
               !(active === "dsp-dotacao" && dotacaoTab !== "principal") &&
-              !(active === "restos-pagar" && RESTOS_PAGAR_READ_ONLY) && (
+              !(active === "restos-pagar" && RESTOS_PAGAR_READ_ONLY) &&
+              !(active === "controle-interno" && CI_READ_ONLY) && (
+
 
 
                 <>
