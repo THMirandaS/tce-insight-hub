@@ -418,6 +418,15 @@ function AnaliseDetalhePage() {
             />
           ) : active === "programas" ? (
             <ProgramasContent processo={processoLabel} orgao={orgao} />
+          ) : active === "credito-despesas-prg" ? (
+            <CreditoDespesasContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={despesaTab}
+              onTabChange={setDespesaTab}
+            />
+
+
 
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
