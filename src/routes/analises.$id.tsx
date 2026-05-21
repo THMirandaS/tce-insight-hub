@@ -450,6 +450,8 @@ function AnaliseDetalhePage() {
               view={outrasView}
               onViewChange={setOutrasView}
             />
+          ) : active === "conclusao" ? (
+            <ConclusaoContent processo={processoLabel} orgao={orgao} />
           ) : active === "anteriores" ? (
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
