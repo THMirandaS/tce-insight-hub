@@ -433,6 +433,9 @@ function AnaliseDetalhePage() {
               tab={dotacaoTab}
               onTabChange={setDotacaoTab}
             />
+          ) : active === "restos-pagar" ? (
+            <RestosPagarContent processo={processoLabel} orgao={orgao} />
+
 
 
 
