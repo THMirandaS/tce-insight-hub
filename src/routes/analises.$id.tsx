@@ -453,7 +453,9 @@ function AnaliseDetalhePage() {
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
               !(active === "credito-inicial" && creditoTab !== "principal") &&
-              !(active === "programas" && PROGRAMAS_READ_ONLY) && (
+              !(active === "programas" && PROGRAMAS_READ_ONLY) &&
+              !(active === "credito-despesas-prg" && CREDITO_DESPESAS_READ_ONLY) &&
+              !(active === "credito-despesas-prg" && despesaTab !== "principal") && (
 
                 <>
                   <Button
