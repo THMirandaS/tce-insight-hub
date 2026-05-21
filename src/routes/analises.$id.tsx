@@ -442,7 +442,9 @@ function AnaliseDetalhePage() {
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
-              !(active === "credito-inicial" && creditoTab !== "principal") && (
+              !(active === "credito-inicial" && creditoTab !== "principal") &&
+              !(active === "programas" && PROGRAMAS_READ_ONLY) && (
+
                 <>
                   <Button
                     type="button"
