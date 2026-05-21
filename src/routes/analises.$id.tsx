@@ -435,6 +435,9 @@ function AnaliseDetalhePage() {
             />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
+          ) : active === "controle-interno" ? (
+            <ControleInternoContent processo={processoLabel} orgao={orgao} />
+
 
 
 
