@@ -43,6 +43,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ORGAOS } from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
@@ -53,23 +54,6 @@ type Perfil = "Coordenador" | "Auditor";
 const PERFIL: Perfil = "Coordenador";
 const USUARIO_AUDITOR = "Analista 01";
 
-const ORGAOS = [
-  "Secretaria de Estado de Fazenda (SEF)",
-  "Secretaria de Estado de Saúde (SES)",
-  "Secretaria de Estado de Educação (SEE)",
-  "Secretaria de Estado de Infraestrutura (SEINFRA)",
-  "Secretaria de Estado de Segurança Pública (SSP)",
-  "Secretaria de Estado de Meio Ambiente (SEMAD)",
-  "Fundação João Pinheiro (FJP)",
-  "Instituto Estadual de Florestas (IEF)",
-  "IPSEMG — Instituto de Previdência dos Servidores de MG",
-  "FHEMIG — Fundação Hospitalar do Estado de MG",
-  "CEMIG — Companhia Energética de MG",
-  "COPASA — Companhia de Saneamento de MG",
-  "BDMG — Banco de Desenvolvimento de MG",
-  "Defensoria Pública do Estado de MG",
-  "Tribunal de Justiça de MG (TJMG)",
-];
 
 const ANALISTAS = [
   "Analista 01", "Analista 02", "Analista 03", "Analista 04", "Analista 05",
