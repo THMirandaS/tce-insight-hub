@@ -812,14 +812,18 @@ function ResponsaveisTable() {
       <div className="overflow-hidden rounded-lg border border-border">
         <table className="w-full table-fixed text-sm">
           <colgroup>
-            <col style={{ width: "45%" }} />
-            <col style={{ width: "40%" }} />
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "27%" }} />
+            <col style={{ width: "28%" }} />
             <col style={{ width: "15%" }} />
           </colgroup>
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                 Gestor
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                Cargo
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                 Período
