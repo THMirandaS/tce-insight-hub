@@ -137,6 +137,17 @@ function StatusIcon({ status }: { status: SubmenuStatus }) {
 
 function AnaliseDetalhePage() {
   const { id } = Route.useParams();
+
+  // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
+  const row = useMemo(() => ALL_ROWS.find((r) => r.numero === id), [id]);
+  const orgao = row?.orgao ?? "—";
+  const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
+  const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+  const groups = useMemo<SubGroup[]>(
+    () => [...STATIC_GROUPS, { key: "pce", label: "PCE", items: pceItems }],
+    [pceItems]
+  );
+
   const [active, setActive] = useState<string>("anteriores");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     anteriores: false,
@@ -148,10 +159,20 @@ function AnaliseDetalhePage() {
   // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
   const [perfil] = useState<Perfil>("Coordenador");
 
-  // Status por submenu PCE (persistido ao navegar entre submenus)
+  // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
-    () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
+    () => Object.fromEntries(pceItems.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
   );
+
+  // Mantém o mapa de status sincronizado quando os tópicos visíveis mudam.
+  useEffect(() => {
+    setStatuses((prev) => {
+      const next: Record<string, SubmenuStatus> = {};
+      for (const i of pceItems) next[i.key] = prev[i.key] ?? "nao-iniciado";
+      return next;
+    });
+  }, [pceItems]);
+
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
