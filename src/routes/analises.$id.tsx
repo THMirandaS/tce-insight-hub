@@ -728,8 +728,8 @@ function nowStamp() {
 
 function ResponsaveisTable() {
   const [rows, setRows] = useState<Responsavel[]>([
-    { id: "r1", gestor: "Gestor 01", inicio: "2025-01-01", fim: "2025-10-31" },
-    { id: "r2", gestor: "Gestor 01", inicio: "2025-11-01", fim: "2025-12-31" },
+    { id: "r1", gestor: "Gestor 01", cargo: "Secretário de Estado", inicio: "2025-01-01", fim: "2025-10-31" },
+    { id: "r2", gestor: "Gestor 01", cargo: "Secretário de Estado", inicio: "2025-11-01", fim: "2025-12-31" },
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Responsavel | null>(null);
