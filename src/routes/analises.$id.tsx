@@ -36,6 +36,11 @@ import {
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { toast } from "sonner";
+import {
+  getJurisdicionado,
+  GRUPO_ABREVIADO,
+  type Jurisdicionado,
+} from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
   component: AnaliseDetalhePage,
