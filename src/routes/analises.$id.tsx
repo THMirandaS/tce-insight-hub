@@ -837,7 +837,7 @@ function ResponsaveisTable() {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-4 py-6 text-center text-sm text-muted-foreground"
                 >
                   Nenhum responsável cadastrado.
