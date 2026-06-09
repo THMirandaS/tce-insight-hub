@@ -440,7 +440,24 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Processo" value={processoLabel} />
             <Divider />
-            <InfoCell label="Órgão" value={orgao} />
+            <div className="flex items-center gap-2">
+              <InfoCell
+                label="Órgão"
+                value={
+                  jurisdicionado.sigla
+                    ? `${orgao} (${jurisdicionado.sigla})`
+                    : orgao
+                }
+              />
+              <span className="inline-flex items-center rounded-full bg-[#1A56DB]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1A56DB] ring-1 ring-[#1A56DB]/20">
+                {GRUPO_ABREVIADO[jurisdicionado.grupoEntidade]}
+              </span>
+              {jurisdicionado.entidadePrevidenciaria && (
+                <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-semibold text-purple-700 ring-1 ring-purple-200">
+                  Previdenciária
+                </span>
+              )}
+            </div>
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
