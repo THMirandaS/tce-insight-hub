@@ -321,7 +321,7 @@ function AnaliseDetalhePage() {
       <aside className="sticky top-0 z-20 flex h-screen w-[220px] shrink-0 flex-col overflow-y-auto bg-[#0D1B2A] text-white">
         <nav className="flex-1">
           <ul className="py-2">
-            {GROUPS.map((g) => {
+            {groups.map((g) => {
               const open = expanded[g.key];
               const isGroupActive = g.items.length === 0 && active === g.key;
               return (
