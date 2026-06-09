@@ -862,6 +862,16 @@ function ResponsaveisTable() {
                         />
                       </td>
                       <td className="px-4 py-3 align-middle">
+                        <Input
+                          value={draft!.cargo}
+                          onChange={(e) =>
+                            setDraft({ ...draft!, cargo: e.target.value })
+                          }
+                          placeholder="Cargo do gestor"
+                          className="h-9"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-middle">
                         <div className="flex items-center gap-2">
                           <Input
                             type="date"
