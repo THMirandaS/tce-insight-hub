@@ -936,6 +936,7 @@ function ResponsaveisTable() {
                   ) : (
                     <>
                       <td className="px-4 py-3 align-middle">{r.gestor}</td>
+                      <td className="px-4 py-3 align-middle">{r.cargo}</td>
                       <td className="px-4 py-3 align-middle text-muted-foreground">
                         {toBR(r.inicio)} a {toBR(r.fim)}
                       </td>
