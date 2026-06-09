@@ -55,27 +55,57 @@ function escapeHTML(s: string) {
     .replace(/'/g, "&#39;");
 }
 
-type SubItem = { key: string; label: string; hasActions?: boolean };
+type SubItem = {
+  key: string;
+  label: string;
+  hasActions?: boolean;
+  // Regra de exibição condicional (RF03). Ausente => sempre visível.
+  condicional?: (j: Jurisdicionado) => boolean;
+  // Tópico previsto para evolução futura: aparece no menu, mas ainda não
+  // renderiza conteúdo próprio.
+  futuro?: boolean;
+};
 type SubGroup = { key: string; label: string; items: SubItem[] };
 
-const PCE_ITEMS: SubItem[] = [
+const GRUPO_PODERES =
+  "ÓRGÃOS DOS PODERES LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA PÚBLICA";
+
+// Lista completa de tópicos PCE com suas regras de exibição (RF03).
+const PCE_ITEMS_BASE: SubItem[] = [
   { key: "responsavel", label: "Responsável", hasActions: true },
   { key: "consid-gerais", label: "Consid. Gerais", hasActions: true },
-  { key: "receitas", label: "Receitas", hasActions: true },
+  // Receitas: apenas para entidades previdenciárias.
+  {
+    key: "receitas",
+    label: "Receitas",
+    hasActions: true,
+    condicional: (j) => j.entidadePrevidenciaria,
+  },
   { key: "credito-inicial", label: "Crédito inicial autorizado" },
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  // Despesas com pessoal: apenas para Órgãos de Poder. Tópico futuro.
+  {
+    key: "despesas-pessoal",
+    label: "Despesas com pessoal",
+    futuro: true,
+    condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
+  },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   { key: "controle-interno", label: "Controle Interno" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
 ];
 
-const GROUPS: SubGroup[] = [
+// Aplica as regras condicionais do RF03 para um jurisdicionado.
+function getPceItems(j: Jurisdicionado): SubItem[] {
+  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(j));
+}
+
+const STATIC_GROUPS: SubGroup[] = [
   { key: "anteriores", label: "PCE's Anteriores", items: [] },
   { key: "demais", label: "Demais Processos", items: [] },
-  { key: "pce", label: "PCE", items: PCE_ITEMS },
 ];
 
 type SubmenuStatus =
