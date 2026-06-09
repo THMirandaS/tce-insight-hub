@@ -224,19 +224,13 @@ function AnaliseDetalhePage() {
 
   const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
-  const row = useMemo(
-    () => ALL_ROWS.find((r) => r.numero === id),
-    [id]
-  );
-
   const processoLabel = id;
-  const orgao = row?.orgao ?? "—";
   const relator = "CONS. JOÃO DA SILVA";
   const auditor = "Auditor 01";
 
   const activeLabel =
-    GROUPS.find((g) => g.key === active)?.label ??
-    PCE_ITEMS.find((i) => i.key === active)?.label ??
+    groups.find((g) => g.key === active)?.label ??
+    pceItems.find((i) => i.key === active)?.label ??
     "";
 
   function handleGerarPDF() {
