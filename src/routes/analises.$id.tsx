@@ -780,7 +780,7 @@ function ResponsaveisTable() {
     setRows((rs) => rs.filter((r) => r.id !== confirmDelete.id));
     log({
       acao: "Exclusão",
-      detalhe: `${confirmDelete.gestor} (${toBR(confirmDelete.inicio)} a ${toBR(confirmDelete.fim)})`,
+      detalhe: `${confirmDelete.gestor} — ${confirmDelete.cargo} (${toBR(confirmDelete.inicio)} a ${toBR(confirmDelete.fim)})`,
     });
     setConfirmDelete(null);
   };
