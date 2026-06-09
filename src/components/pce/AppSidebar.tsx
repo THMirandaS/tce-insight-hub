@@ -5,6 +5,7 @@ import {
   FileStack,
   Search,
   ShieldCheck,
+  Building2,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +24,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/autuacao", label: "Autuação", icon: FileStack, roles: ["Coordenador"] },
+  { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2, roles: ["Coordenador"] },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 

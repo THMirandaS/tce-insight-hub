@@ -36,6 +36,11 @@ import {
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { toast } from "sonner";
+import {
+  getJurisdicionado,
+  GRUPO_ABREVIADO,
+  type Jurisdicionado,
+} from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
   component: AnaliseDetalhePage,
@@ -50,27 +55,57 @@ function escapeHTML(s: string) {
     .replace(/'/g, "&#39;");
 }
 
-type SubItem = { key: string; label: string; hasActions?: boolean };
+type SubItem = {
+  key: string;
+  label: string;
+  hasActions?: boolean;
+  // Regra de exibição condicional (RF03). Ausente => sempre visível.
+  condicional?: (j: Jurisdicionado) => boolean;
+  // Tópico previsto para evolução futura: aparece no menu, mas ainda não
+  // renderiza conteúdo próprio.
+  futuro?: boolean;
+};
 type SubGroup = { key: string; label: string; items: SubItem[] };
 
-const PCE_ITEMS: SubItem[] = [
+const GRUPO_PODERES =
+  "ÓRGÃOS DOS PODERES LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA PÚBLICA";
+
+// Lista completa de tópicos PCE com suas regras de exibição (RF03).
+const PCE_ITEMS_BASE: SubItem[] = [
   { key: "responsavel", label: "Responsável", hasActions: true },
   { key: "consid-gerais", label: "Consid. Gerais", hasActions: true },
-  { key: "receitas", label: "Receitas", hasActions: true },
+  // Receitas: apenas para entidades previdenciárias.
+  {
+    key: "receitas",
+    label: "Receitas",
+    hasActions: true,
+    condicional: (j) => j.entidadePrevidenciaria,
+  },
   { key: "credito-inicial", label: "Crédito inicial autorizado" },
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  // Despesas com pessoal: apenas para Órgãos de Poder. Tópico futuro.
+  {
+    key: "despesas-pessoal",
+    label: "Despesas com pessoal",
+    futuro: true,
+    condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
+  },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   { key: "controle-interno", label: "Controle Interno" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
 ];
 
-const GROUPS: SubGroup[] = [
+// Aplica as regras condicionais do RF03 para um jurisdicionado.
+function getPceItems(j: Jurisdicionado): SubItem[] {
+  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(j));
+}
+
+const STATIC_GROUPS: SubGroup[] = [
   { key: "anteriores", label: "PCE's Anteriores", items: [] },
   { key: "demais", label: "Demais Processos", items: [] },
-  { key: "pce", label: "PCE", items: PCE_ITEMS },
 ];
 
 type SubmenuStatus =
@@ -102,6 +137,17 @@ function StatusIcon({ status }: { status: SubmenuStatus }) {
 
 function AnaliseDetalhePage() {
   const { id } = Route.useParams();
+
+  // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
+  const row = useMemo(() => ALL_ROWS.find((r) => r.numero === id), [id]);
+  const orgao = row?.orgao ?? "—";
+  const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
+  const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+  const groups = useMemo<SubGroup[]>(
+    () => [...STATIC_GROUPS, { key: "pce", label: "PCE", items: pceItems }],
+    [pceItems]
+  );
+
   const [active, setActive] = useState<string>("anteriores");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     anteriores: false,
@@ -113,10 +159,20 @@ function AnaliseDetalhePage() {
   // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
   const [perfil] = useState<Perfil>("Coordenador");
 
-  // Status por submenu PCE (persistido ao navegar entre submenus)
+  // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
-    () => Object.fromEntries(PCE_ITEMS.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
+    () => Object.fromEntries(pceItems.map((i) => [i.key, "nao-iniciado" as SubmenuStatus]))
   );
+
+  // Mantém o mapa de status sincronizado quando os tópicos visíveis mudam.
+  useEffect(() => {
+    setStatuses((prev) => {
+      const next: Record<string, SubmenuStatus> = {};
+      for (const i of pceItems) next[i.key] = prev[i.key] ?? "nao-iniciado";
+      return next;
+    });
+  }, [pceItems]);
+
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
@@ -168,19 +224,13 @@ function AnaliseDetalhePage() {
 
   const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
-  const row = useMemo(
-    () => ALL_ROWS.find((r) => r.numero === id),
-    [id]
-  );
-
   const processoLabel = id;
-  const orgao = row?.orgao ?? "—";
   const relator = "CONS. JOÃO DA SILVA";
   const auditor = "Auditor 01";
 
   const activeLabel =
-    GROUPS.find((g) => g.key === active)?.label ??
-    PCE_ITEMS.find((i) => i.key === active)?.label ??
+    groups.find((g) => g.key === active)?.label ??
+    pceItems.find((i) => i.key === active)?.label ??
     "";
 
   function handleGerarPDF() {
@@ -271,7 +321,7 @@ function AnaliseDetalhePage() {
       <aside className="sticky top-0 z-20 flex h-screen w-[220px] shrink-0 flex-col overflow-y-auto bg-[#0D1B2A] text-white">
         <nav className="flex-1">
           <ul className="py-2">
-            {GROUPS.map((g) => {
+            {groups.map((g) => {
               const open = expanded[g.key];
               const isGroupActive = g.items.length === 0 && active === g.key;
               return (
@@ -390,7 +440,24 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Processo" value={processoLabel} />
             <Divider />
-            <InfoCell label="Órgão" value={orgao} />
+            <div className="flex items-center gap-2">
+              <InfoCell
+                label="Órgão"
+                value={
+                  jurisdicionado.sigla
+                    ? `${orgao} (${jurisdicionado.sigla})`
+                    : orgao
+                }
+              />
+              <span className="inline-flex items-center rounded-full bg-[#1A56DB]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1A56DB] ring-1 ring-[#1A56DB]/20">
+                {GRUPO_ABREVIADO[jurisdicionado.grupoEntidade]}
+              </span>
+              {jurisdicionado.entidadePrevidenciaria && (
+                <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-semibold text-purple-700 ring-1 ring-purple-200">
+                  Previdenciária
+                </span>
+              )}
+            </div>
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
@@ -456,11 +523,21 @@ function AnaliseDetalhePage() {
             <AnterioresContent processo={processoLabel} orgao={orgao} />
           ) : active === "demais" ? (
             <DemaisContent orgao={orgao} />
+          ) : active === "despesas-pessoal" ? (
+            <div className="mx-auto max-w-2xl rounded-lg border border-dashed border-border bg-muted/30 p-10 text-center">
+              <h2 className="text-lg font-semibold text-foreground">
+                Despesas com pessoal
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Tópico aplicável aos Órgãos de Poder. Conteúdo em
+                desenvolvimento — será disponibilizado em versão futura.
+              </p>
+            </div>
           ) : (
             <PlaceholderContent
               label={
-                GROUPS.find((g) => g.key === active)?.label ??
-                PCE_ITEMS.find((i) => i.key === active)?.label ??
+                groups.find((g) => g.key === active)?.label ??
+                pceItems.find((i) => i.key === active)?.label ??
                 ""
               }
             />
@@ -473,6 +550,7 @@ function AnaliseDetalhePage() {
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
             {active !== "anteriores" &&
               active !== "demais" &&
+              active !== "despesas-pessoal" &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
