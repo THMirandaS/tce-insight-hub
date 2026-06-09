@@ -700,6 +700,7 @@ function ResponsavelContent({
 type Responsavel = {
   id: string;
   gestor: string;
+  cargo: string;
   inicio: string; // yyyy-mm-dd
   fim: string;
 };
@@ -727,8 +728,8 @@ function nowStamp() {
 
 function ResponsaveisTable() {
   const [rows, setRows] = useState<Responsavel[]>([
-    { id: "r1", gestor: "Gestor 01", inicio: "2025-01-01", fim: "2025-10-31" },
-    { id: "r2", gestor: "Gestor 01", inicio: "2025-11-01", fim: "2025-12-31" },
+    { id: "r1", gestor: "Gestor 01", cargo: "Secretário de Estado", inicio: "2025-01-01", fim: "2025-10-31" },
+    { id: "r2", gestor: "Gestor 01", cargo: "Secretário de Estado", inicio: "2025-11-01", fim: "2025-12-31" },
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Responsavel | null>(null);
@@ -756,12 +757,12 @@ function ResponsaveisTable() {
     if (isNew) {
       log({
         acao: "Inclusão",
-        detalhe: `${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+        detalhe: `${draft.gestor} — ${draft.cargo} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
       });
     } else if (existing) {
       log({
         acao: "Edição",
-        detalhe: `De: ${existing.gestor} (${toBR(existing.inicio)} a ${toBR(existing.fim)}) → Para: ${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+        detalhe: `De: ${existing.gestor} — ${existing.cargo} (${toBR(existing.inicio)} a ${toBR(existing.fim)}) → Para: ${draft.gestor} — ${draft.cargo} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
       });
     }
     setEditingId(null);
@@ -769,7 +770,7 @@ function ResponsaveisTable() {
   };
   const addNew = () => {
     const id = `r${Date.now()}`;
-    const novo: Responsavel = { id, gestor: "", inicio: "", fim: "" };
+    const novo: Responsavel = { id, gestor: "", cargo: "", inicio: "", fim: "" };
     setRows((rs) => [...rs, novo]);
     setEditingId(id);
     setDraft(novo);
@@ -779,7 +780,7 @@ function ResponsaveisTable() {
     setRows((rs) => rs.filter((r) => r.id !== confirmDelete.id));
     log({
       acao: "Exclusão",
-      detalhe: `${confirmDelete.gestor} (${toBR(confirmDelete.inicio)} a ${toBR(confirmDelete.fim)})`,
+      detalhe: `${confirmDelete.gestor} — ${confirmDelete.cargo} (${toBR(confirmDelete.inicio)} a ${toBR(confirmDelete.fim)})`,
     });
     setConfirmDelete(null);
   };
@@ -811,14 +812,18 @@ function ResponsaveisTable() {
       <div className="overflow-hidden rounded-lg border border-border">
         <table className="w-full table-fixed text-sm">
           <colgroup>
-            <col style={{ width: "45%" }} />
-            <col style={{ width: "40%" }} />
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "27%" }} />
+            <col style={{ width: "28%" }} />
             <col style={{ width: "15%" }} />
           </colgroup>
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                 Gestor
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                Cargo
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                 Período
@@ -832,7 +837,7 @@ function ResponsaveisTable() {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-4 py-6 text-center text-sm text-muted-foreground"
                 >
                   Nenhum responsável cadastrado.
@@ -853,6 +858,16 @@ function ResponsaveisTable() {
                             setDraft({ ...draft!, gestor: e.target.value })
                           }
                           placeholder="Nome do gestor"
+                          className="h-9"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <Input
+                          value={draft!.cargo}
+                          onChange={(e) =>
+                            setDraft({ ...draft!, cargo: e.target.value })
+                          }
+                          placeholder="Cargo do gestor"
                           className="h-9"
                         />
                       </td>
@@ -921,6 +936,7 @@ function ResponsaveisTable() {
                   ) : (
                     <>
                       <td className="px-4 py-3 align-middle">{r.gestor}</td>
+                      <td className="px-4 py-3 align-middle">{r.cargo}</td>
                       <td className="px-4 py-3 align-middle text-muted-foreground">
                         {toBR(r.inicio)} a {toBR(r.fim)}
                       </td>
@@ -976,6 +992,10 @@ function ResponsaveisTable() {
               <div>
                 <span className="font-semibold">Gestor:</span>{" "}
                 {confirmDelete.gestor}
+              </div>
+              <div>
+                <span className="font-semibold">Cargo:</span>{" "}
+                {confirmDelete.cargo}
               </div>
               <div>
                 <span className="font-semibold">Período:</span>{" "}
