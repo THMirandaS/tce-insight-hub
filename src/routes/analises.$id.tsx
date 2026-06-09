@@ -757,12 +757,12 @@ function ResponsaveisTable() {
     if (isNew) {
       log({
         acao: "Inclusão",
-        detalhe: `${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+        detalhe: `${draft.gestor} — ${draft.cargo} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
       });
     } else if (existing) {
       log({
         acao: "Edição",
-        detalhe: `De: ${existing.gestor} (${toBR(existing.inicio)} a ${toBR(existing.fim)}) → Para: ${draft.gestor} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
+        detalhe: `De: ${existing.gestor} — ${existing.cargo} (${toBR(existing.inicio)} a ${toBR(existing.fim)}) → Para: ${draft.gestor} — ${draft.cargo} (${toBR(draft.inicio)} a ${toBR(draft.fim)})`,
       });
     }
     setEditingId(null);
