@@ -700,6 +700,7 @@ function ResponsavelContent({
 type Responsavel = {
   id: string;
   gestor: string;
+  cargo: string;
   inicio: string; // yyyy-mm-dd
   fim: string;
 };
