@@ -994,6 +994,10 @@ function ResponsaveisTable() {
                 {confirmDelete.gestor}
               </div>
               <div>
+                <span className="font-semibold">Cargo:</span>{" "}
+                {confirmDelete.cargo}
+              </div>
+              <div>
                 <span className="font-semibold">Período:</span>{" "}
                 {toBR(confirmDelete.inicio)} a {toBR(confirmDelete.fim)}
               </div>
