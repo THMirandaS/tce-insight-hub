@@ -770,7 +770,7 @@ function ResponsaveisTable() {
   };
   const addNew = () => {
     const id = `r${Date.now()}`;
-    const novo: Responsavel = { id, gestor: "", inicio: "", fim: "" };
+    const novo: Responsavel = { id, gestor: "", cargo: "", inicio: "", fim: "" };
     setRows((rs) => [...rs, novo]);
     setEditingId(id);
     setDraft(novo);
