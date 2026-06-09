@@ -5,6 +5,7 @@ import {
   FileStack,
   Search,
   ShieldCheck,
+  Building2,
   LogOut,
   ChevronLeft,
   ChevronRight,
