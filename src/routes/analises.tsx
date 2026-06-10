@@ -179,6 +179,7 @@ type Filters = {
   relator: string;
   situacao: string;
   tipo: string;
+  tipoAnalise: string;
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -190,6 +191,7 @@ const EMPTY_FILTERS: Filters = {
   relator: "all",
   situacao: "all",
   tipo: "all",
+  tipoAnalise: "all",
 };
 
 type SortKey = keyof Row;
