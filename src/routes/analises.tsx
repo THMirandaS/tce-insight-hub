@@ -93,10 +93,12 @@ const PROC_BASE = [
 ];
 
 type Row = {
+  id: string;
   orgao: string;
   numero: string;
   exercicio: string;
   tipo: string;
+  tipoAnalise: TipoAnalise;
   dtConsol: string;
   dtCriacao: string;
   dtConclusao: string;
@@ -122,11 +124,14 @@ function makeRows(): Row[] {
     const conclusao = new Date(consol);
     conclusao.setDate(conclusao.getDate() + 15 + (i % 30));
     const concluida = sit === "Concluído" || sit === "Validado";
+    const numero = String(baseProc + n++);
     rows.push({
+      id: numero,
       orgao: pick(ORGAOS, i),
-      numero: String(baseProc + n++),
+      numero,
       exercicio: pick(EXERCICIOS, i + 3),
       tipo: pick(TIPOS, i),
+      tipoAnalise: "Análise Inicial",
       dtConsol: fmt(consol),
       dtCriacao: fmt(criacao),
       dtConclusao: concluida ? fmt(conclusao) : "—",
@@ -136,6 +141,21 @@ function makeRows(): Row[] {
       relator: pick(RELATORES, i + 1),
     });
   }
+
+  // RF23 — análises de defesa vinculadas ao MESMO número de processo de
+  // análises iniciais existentes (a defesa herda processo, órgão e relator).
+  [rows[0], rows[1]].forEach((src) => {
+    const criacao = new Date(2026, 4, 12);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D`,
+      tipoAnalise: "Análise de Defesa",
+      situacao: "Em Análise",
+      dtCriacao: fmt(criacao),
+      dtConclusao: "—",
+    });
+  });
+
   return rows;
 }
 
