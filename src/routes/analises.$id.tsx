@@ -85,14 +85,14 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
-  // Despesas com pessoal: apenas para Órgãos de Poder. Tópico futuro.
+  { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
+  // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
   {
     key: "despesas-pessoal",
     label: "Despesas com pessoal",
-    futuro: true,
+    hasActions: true,
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
-  { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   { key: "controle-interno", label: "Controle Interno" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
