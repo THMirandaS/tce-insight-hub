@@ -524,15 +524,11 @@ function AnaliseDetalhePage() {
           ) : active === "demais" ? (
             <DemaisContent orgao={orgao} />
           ) : active === "despesas-pessoal" ? (
-            <div className="mx-auto max-w-2xl rounded-lg border border-dashed border-border bg-muted/30 p-10 text-center">
-              <h2 className="text-lg font-semibold text-foreground">
-                Despesas com pessoal
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tópico aplicável aos Órgãos de Poder. Conteúdo em
-                desenvolvimento — será disponibilizado em versão futura.
-              </p>
-            </div>
+            <DespesasPessoalContent
+              processo={processoLabel}
+              orgao={orgao}
+              jurisdicionado={jurisdicionado}
+            />
           ) : (
             <PlaceholderContent
               label={
