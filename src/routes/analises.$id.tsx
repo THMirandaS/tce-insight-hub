@@ -665,7 +665,21 @@ function AnaliseDetalhePage() {
               }
             />
           )}
+          </fieldset>
+          </div>
+          {defesaTopicEnabled && (
+            <div
+              data-defesa-aba
+              className={defesaSubTab === "analise" ? "hidden" : ""}
+            >
+              <AbaDefesa
+                value={activeDefesaTexts}
+                onChange={setActiveDefesaTexts}
+              />
+            </div>
+          )}
         </section>
+
 
 
         {/* Rodapé fixo de ações */}
