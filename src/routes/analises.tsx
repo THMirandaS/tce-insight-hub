@@ -223,7 +223,7 @@ function ProcessosPage() {
   const [novoAnalista, setNovoAnalista] = useState<string>("");
 
   const applyOverride = (r: Row): Row => {
-    const o = overrides[r.numero];
+    const o = overrides[r.id];
     if (!o) return r;
     return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}), ...(o.analista ? { analista: o.analista } : {}) };
   };
