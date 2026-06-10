@@ -432,11 +432,19 @@ function ProcessosPage() {
             />
           </FilterField>
 
-          <FilterField label="Tipo de Análise">
+          <FilterField label="Modalidade">
             <SimpleSelect
               value={draft.tipo}
               onValueChange={(v) => set("tipo", v)}
               options={TIPOS}
+            />
+          </FilterField>
+
+          <FilterField label="Tipo de Análise">
+            <SimpleSelect
+              value={draft.tipoAnalise}
+              onValueChange={(v) => set("tipoAnalise", v)}
+              options={[...TIPOS_ANALISE]}
             />
           </FilterField>
         </div>
