@@ -566,6 +566,44 @@ function AnaliseDetalhePage() {
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
+          {isDefesa && podeSelecionarDefesa && (
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm text-amber-800">
+                <strong>Análise de Defesa.</strong> Selecione os tópicos que farão
+                parte da defesa para habilitá-los no menu lateral.
+              </p>
+              <Button
+                type="button"
+                onClick={abrirSelecaoDefesa}
+                className="shrink-0 gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+              >
+                <Plus className="h-4 w-4" /> Selecionar tópicos para defesa
+              </Button>
+            </div>
+          )}
+          {defesaTopicEnabled && (
+            <div data-defesa-tabs className="mb-4 flex gap-1 border-b border-border">
+              {(["analise", "defesa"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setDefesaSubTab(t)}
+                  className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+                    defesaSubTab === t
+                      ? "border-[#1A56DB] text-[#1A56DB]"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t === "analise" ? "Análise (leitura)" : "Defesa"}
+                </button>
+              ))}
+            </div>
+          )}
+          <div
+            data-defesa-original
+            className={defesaTopicEnabled && defesaSubTab === "defesa" ? "hidden" : ""}
+          >
+          <fieldset disabled={defesaTopicEnabled} className="contents">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
