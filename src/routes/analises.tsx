@@ -488,11 +488,11 @@ function ProcessosPage() {
             </thead>
             <tbody>
               {pageRows.map((r) => {
-                const isSel = selectedId === r.numero;
+                const isSel = selectedId === r.id;
                 return (
                   <tr
-                    key={r.numero}
-                    onClick={() => setSelectedId(isSel ? null : r.numero)}
+                    key={r.id}
+                    onClick={() => setSelectedId(isSel ? null : r.id)}
                     className={`cursor-pointer transition-colors ${
                       isSel
                         ? "bg-blue-100 hover:bg-blue-100"
@@ -503,6 +503,17 @@ function ProcessosPage() {
                     <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
+                    <td className="px-3 py-2.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          r.tipoAnalise === "Análise de Defesa"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {r.tipoAnalise}
+                      </span>
+                    </td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
@@ -521,7 +532,7 @@ function ProcessosPage() {
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
