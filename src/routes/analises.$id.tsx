@@ -687,6 +687,7 @@ function AnaliseDetalhePage() {
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
             {active !== "anteriores" &&
               active !== "demais" &&
+              !isDefesa &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
