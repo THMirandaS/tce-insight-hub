@@ -415,19 +415,42 @@ function AnaliseDetalhePage() {
                       {g.items.map((it) => {
                         const isActive = active === it.key;
                         const st = statuses[it.key];
+                        // RF23 — em análise de defesa os tópicos do PCE iniciam
+                        // desabilitados; só habilitam após seleção do executor.
+                        const isPce = g.key === "pce";
+                        const disabledDefesa =
+                          isDefesa && isPce && !defesaEnabled.has(it.key);
+                        if (disabledDefesa) {
+                          return (
+                            <li key={it.key}>
+                              <div
+                                title="Tópico não selecionado para a defesa"
+                                className="flex w-full cursor-not-allowed items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-white/30"
+                              >
+                                <Circle className="h-4 w-4 shrink-0 text-white/20" />
+                                <span className="truncate">{it.label}</span>
+                              </div>
+                            </li>
+                          );
+                        }
+                        const hideStatus = isDefesa && isPce;
                         return (
                           <li key={it.key}>
                             <button
                               type="button"
                               onClick={() => openSubmenu(it.key)}
-                              title={`Status: ${STATUS_META[st].label}`}
+                              title={hideStatus ? it.label : `Status: ${STATUS_META[st].label}`}
                               className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
                                 isActive
                                   ? "bg-[#1A56DB] font-medium text-white"
                                   : "text-white/80 hover:bg-white/10 hover:text-white"
                               }`}
                             >
-                              <StatusIcon status={st} />
+                              {hideStatus ? (
+                                <Circle className="h-4 w-4 shrink-0 text-white/70" />
+                              ) : (
+                                <StatusIcon status={st} />
+                              )}
                               <span className="truncate">{it.label}</span>
 
                             </button>
