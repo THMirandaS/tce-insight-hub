@@ -363,7 +363,10 @@ function AnaliseDetalhePage() {
 </body></html>`);
     w.document.close();
     const mount = w.document.getElementById("pdf-content");
-    if (mount) mount.appendChild(clone);
+    if (mount) {
+      mount.appendChild(clone);
+      if (defesaBlockHTML) mount.insertAdjacentHTML("beforeend", defesaBlockHTML);
+    }
     const trigger = () => {
       w.focus();
       w.print();
