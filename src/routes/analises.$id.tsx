@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
+import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
