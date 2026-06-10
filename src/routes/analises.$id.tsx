@@ -749,6 +749,50 @@ function AnaliseDetalhePage() {
           </div>
         </footer>
       </div>
+
+      {/* RF23 — Diálogo de seleção de tópicos para a defesa */}
+      <Dialog open={selecaoOpen} onOpenChange={setSelecaoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Selecionar tópicos para defesa</DialogTitle>
+            <DialogDescription>
+              Marque os tópicos que serão habilitados nesta análise de defesa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[50vh] space-y-1 overflow-y-auto py-1">
+            {pceItems.map((it) => (
+              <label
+                key={it.key}
+                htmlFor={`def-${it.key}`}
+                className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-gray-50"
+              >
+                <Checkbox
+                  id={`def-${it.key}`}
+                  checked={selecaoDraft.has(it.key)}
+                  onCheckedChange={() => toggleSelecao(it.key)}
+                />
+                <span className="text-sm text-foreground">{it.label}</span>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSelecaoOpen(false)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={salvarSelecaoDefesa}
+              className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              <Check className="mr-1 h-4 w-4" /> Salvar seleção
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
