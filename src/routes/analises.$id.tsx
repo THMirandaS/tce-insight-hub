@@ -546,7 +546,12 @@ function AnaliseDetalhePage() {
             <InfoCell label="Relator" value={relator} />
             <Divider />
             <InfoCell label="Auditor" value="Auditor 01" />
-            {currentStatus && (
+            <Divider />
+            <InfoCell
+              label="Tipo de Análise"
+              value={row?.tipoAnalise ?? "Análise Inicial"}
+            />
+            {!isDefesa && currentStatus && (
               <>
                 <Divider />
                 <span
