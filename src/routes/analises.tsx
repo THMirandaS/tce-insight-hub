@@ -249,6 +249,7 @@ function ProcessosPage() {
       if (f.relator !== "all" && r.relator !== f.relator) return false;
       if (f.situacao !== "all" && r.situacao !== f.situacao) return false;
       if (f.tipo !== "all" && r.tipo !== f.tipo) return false;
+      if (f.tipoAnalise !== "all" && r.tipoAnalise !== f.tipoAnalise) return false;
       return true;
     });
   }, [applied, base]);
