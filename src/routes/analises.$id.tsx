@@ -308,6 +308,24 @@ function AnaliseDetalhePage() {
       el.setAttribute("data-state", src.getAttribute("data-state") ?? "unchecked");
     });
 
+    // RF23 — em análise de defesa, o PDF inclui o conteúdo original (leitura)
+    // seguido dos dois textos da aba Defesa, identificados com seus títulos.
+    let defesaBlockHTML = "";
+    if (defesaTopicEnabled) {
+      clone.querySelector("[data-defesa-original]")?.classList.remove("hidden");
+      clone.querySelector("[data-defesa-aba]")?.remove();
+      clone.querySelector("[data-defesa-tabs]")?.remove();
+      const dt = activeDefesaTexts;
+      const fmtTxt = (t: string) => escapeHTML(t || "—").replace(/\n/g, "<br/>");
+      defesaBlockHTML = `
+        <div style="margin-top:24px;border-top:2px solid #1A56DB;padding-top:16px;">
+          <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;color:#b45309;letter-spacing:.04em;margin-bottom:6px;">Defesa do Jurisdicionado</h2>
+          <p style="font-size:12px;line-height:1.5;margin:0 0 16px;">${fmtTxt(dt.defesa)}</p>
+          <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;color:#1A56DB;letter-spacing:.04em;margin-bottom:6px;">Análise Técnica</h2>
+          <p style="font-size:12px;line-height:1.5;margin:0;">${fmtTxt(dt.tecnica)}</p>
+        </div>`;
+    }
+
     const now = new Date();
     const dataHora = now.toLocaleString("pt-BR");
 
