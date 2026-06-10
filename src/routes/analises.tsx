@@ -85,15 +85,20 @@ type Situacao = (typeof SITUACOES)[number];
 const TIPOS = ["Análise Inicial", "Análise Documental"];
 const EXERCICIOS = ["2021", "2022", "2023", "2024", "2025"];
 
+export const TIPOS_ANALISE = ["Análise Inicial", "Análise de Defesa"] as const;
+export type TipoAnalise = (typeof TIPOS_ANALISE)[number];
+
 const PROC_BASE = [
   1207949, 1207950, 1207958, 1207959, 1208469, 1208470, 1208870, 1208871, 1209646,
 ];
 
 type Row = {
+  id: string;
   orgao: string;
   numero: string;
   exercicio: string;
   tipo: string;
+  tipoAnalise: TipoAnalise;
   dtConsol: string;
   dtCriacao: string;
   dtConclusao: string;
@@ -119,11 +124,14 @@ function makeRows(): Row[] {
     const conclusao = new Date(consol);
     conclusao.setDate(conclusao.getDate() + 15 + (i % 30));
     const concluida = sit === "Concluído" || sit === "Validado";
+    const numero = String(baseProc + n++);
     rows.push({
+      id: numero,
       orgao: pick(ORGAOS, i),
-      numero: String(baseProc + n++),
+      numero,
       exercicio: pick(EXERCICIOS, i + 3),
       tipo: pick(TIPOS, i),
+      tipoAnalise: "Análise Inicial",
       dtConsol: fmt(consol),
       dtCriacao: fmt(criacao),
       dtConclusao: concluida ? fmt(conclusao) : "—",
@@ -133,6 +141,21 @@ function makeRows(): Row[] {
       relator: pick(RELATORES, i + 1),
     });
   }
+
+  // RF23 — análises de defesa vinculadas ao MESMO número de processo de
+  // análises iniciais existentes (a defesa herda processo, órgão e relator).
+  [rows[0], rows[1]].forEach((src) => {
+    const criacao = new Date(2026, 4, 12);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D`,
+      tipoAnalise: "Análise de Defesa",
+      situacao: "Em Análise",
+      dtCriacao: fmt(criacao),
+      dtConclusao: "—",
+    });
+  });
+
   return rows;
 }
 
@@ -156,6 +179,7 @@ type Filters = {
   relator: string;
   situacao: string;
   tipo: string;
+  tipoAnalise: string;
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -167,6 +191,7 @@ const EMPTY_FILTERS: Filters = {
   relator: "all",
   situacao: "all",
   tipo: "all",
+  tipoAnalise: "all",
 };
 
 type SortKey = keyof Row;
@@ -198,7 +223,7 @@ function ProcessosPage() {
   const [novoAnalista, setNovoAnalista] = useState<string>("");
 
   const applyOverride = (r: Row): Row => {
-    const o = overrides[r.numero];
+    const o = overrides[r.id];
     if (!o) return r;
     return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}), ...(o.analista ? { analista: o.analista } : {}) };
   };
@@ -224,6 +249,7 @@ function ProcessosPage() {
       if (f.relator !== "all" && r.relator !== f.relator) return false;
       if (f.situacao !== "all" && r.situacao !== f.situacao) return false;
       if (f.tipo !== "all" && r.tipo !== f.tipo) return false;
+      if (f.tipoAnalise !== "all" && r.tipoAnalise !== f.tipoAnalise) return false;
       return true;
     });
   }, [applied, base]);
@@ -246,7 +272,7 @@ function ProcessosPage() {
   const pageRows = sorted.slice(start, start + perPage);
 
   const selectedRow = useMemo(
-    () => (selectedId ? base.find((r) => r.numero === selectedId) ?? null : null),
+    () => (selectedId ? base.find((r) => r.id === selectedId) ?? null : null),
     [selectedId, base]
   );
 
@@ -284,19 +310,19 @@ function ProcessosPage() {
 
   const handleCriar = () => {
     if (!selectedRow) return;
-    setSituacao(selectedRow.numero, "Em Análise");
-    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+    setSituacao(selectedRow.id, "Em Análise");
+    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
   const handleVisualizar = () => {
     if (!selectedRow) return;
-    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
   const handleReabrir = () => {
     if (!selectedRow || selectedRow.situacao !== "Concluído") return;
-    setSituacao(selectedRow.numero, "Em Análise");
+    setSituacao(selectedRow.id, "Em Análise");
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.numero, "Disponível");
+    if (selectedRow) setSituacao(selectedRow.id, "Disponível");
     setConfirmReinit(false);
   };
   const openAlterar = () => {
@@ -308,7 +334,7 @@ function ProcessosPage() {
     if (selectedRow && novoAnalista) {
       setOverrides((p) => ({
         ...p,
-        [selectedRow.numero]: { ...p[selectedRow.numero], analista: novoAnalista },
+        [selectedRow.id]: { ...p[selectedRow.id], analista: novoAnalista },
       }));
     }
     setAlterarOpen(false);
@@ -406,11 +432,19 @@ function ProcessosPage() {
             />
           </FilterField>
 
-          <FilterField label="Tipo de Análise">
+          <FilterField label="Modalidade">
             <SimpleSelect
               value={draft.tipo}
               onValueChange={(v) => set("tipo", v)}
               options={TIPOS}
+            />
+          </FilterField>
+
+          <FilterField label="Tipo de Análise">
+            <SimpleSelect
+              value={draft.tipoAnalise}
+              onValueChange={(v) => set("tipoAnalise", v)}
+              options={[...TIPOS_ANALISE]}
             />
           </FilterField>
         </div>
@@ -441,7 +475,8 @@ function ProcessosPage() {
                 <Th label="Órgão" k="orgao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Nº Processo" k="numero" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Exercício" k="exercicio" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Tipo de Análise" k="tipo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Modalidade" k="tipo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Tipo de Análise" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Data Consolidação" k="dtConsol" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Data Criação" k="dtCriacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Data Conclusão" k="dtConclusao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
@@ -453,11 +488,11 @@ function ProcessosPage() {
             </thead>
             <tbody>
               {pageRows.map((r) => {
-                const isSel = selectedId === r.numero;
+                const isSel = selectedId === r.id;
                 return (
                   <tr
-                    key={r.numero}
-                    onClick={() => setSelectedId(isSel ? null : r.numero)}
+                    key={r.id}
+                    onClick={() => setSelectedId(isSel ? null : r.id)}
                     className={`cursor-pointer transition-colors ${
                       isSel
                         ? "bg-blue-100 hover:bg-blue-100"
@@ -468,6 +503,17 @@ function ProcessosPage() {
                     <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
+                    <td className="px-3 py-2.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          r.tipoAnalise === "Análise de Defesa"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {r.tipoAnalise}
+                      </span>
+                    </td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
@@ -486,7 +532,7 @@ function ProcessosPage() {
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>

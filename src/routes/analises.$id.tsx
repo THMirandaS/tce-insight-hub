@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
+import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -139,10 +140,21 @@ function AnaliseDetalhePage() {
   const { id } = Route.useParams();
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
-  const row = useMemo(() => ALL_ROWS.find((r) => r.numero === id), [id]);
+  const row = useMemo(() => ALL_ROWS.find((r) => r.id === id), [id]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
   const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+
+  // RF23 — Análise de Defesa.
+  const isDefesa = row?.tipoAnalise === "Análise de Defesa";
+  // Tópicos habilitados para a defesa (selecionados pelo executor).
+  const [defesaEnabled, setDefesaEnabled] = useState<Set<string>>(new Set());
+  // Textos da aba Defesa por tópico.
+  const [defesaTexts, setDefesaTexts] = useState<Record<string, DefesaTexts>>({});
+  // Sub-aba do tópico em defesa: análise (leitura) ou defesa (editável).
+  const [defesaSubTab, setDefesaSubTab] = useState<"analise" | "defesa">("analise");
+  const [selecaoOpen, setSelecaoOpen] = useState(false);
+  const [selecaoDraft, setSelecaoDraft] = useState<Set<string>>(new Set());
   const groups = useMemo<SubGroup[]>(
     () => [...STATIC_GROUPS, { key: "pce", label: "PCE", items: pceItems }],
     [pceItems]
@@ -184,9 +196,31 @@ function AnaliseDetalhePage() {
 
   function openSubmenu(key: string) {
     setActive(key);
+    setDefesaSubTab("analise");
+    // Em análise de defesa os tópicos não seguem o fluxo de status.
+    if (isDefesa) return;
     setStatuses((p) =>
       p[key] === "nao-iniciado" ? { ...p, [key]: "em-andamento" } : p
     );
+  }
+
+  // Habilitação dos tópicos de defesa (executor/auditor responsável).
+  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Auditor";
+  function abrirSelecaoDefesa() {
+    setSelecaoDraft(new Set(defesaEnabled));
+    setSelecaoOpen(true);
+  }
+  function toggleSelecao(key: string) {
+    setSelecaoDraft((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function salvarSelecaoDefesa() {
+    setDefesaEnabled(new Set(selecaoDraft));
+    setSelecaoOpen(false);
   }
 
   function handleSalvar() {
@@ -224,14 +258,20 @@ function AnaliseDetalhePage() {
 
   const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
-  const processoLabel = id;
-  const relator = "CONS. JOÃO DA SILVA";
+  const processoLabel = row?.numero ?? id;
+  const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
   const auditor = "Auditor 01";
 
   const activeLabel =
     groups.find((g) => g.key === active)?.label ??
     pceItems.find((i) => i.key === active)?.label ??
     "";
+
+  const isPceTopic = pceItems.some((i) => i.key === active);
+  const defesaTopicEnabled = isDefesa && isPceTopic && defesaEnabled.has(active);
+  const activeDefesaTexts = defesaTexts[active] ?? { defesa: "", tecnica: "" };
+  const setActiveDefesaTexts = (next: DefesaTexts) =>
+    setDefesaTexts((p) => ({ ...p, [active]: next }));
 
   function handleGerarPDF() {
     if (active === "conclusao" && CONCLUSAO_PDF_REF.fn) {
@@ -267,6 +307,24 @@ function AnaliseDetalhePage() {
       if (!src) return;
       el.setAttribute("data-state", src.getAttribute("data-state") ?? "unchecked");
     });
+
+    // RF23 — em análise de defesa, o PDF inclui o conteúdo original (leitura)
+    // seguido dos dois textos da aba Defesa, identificados com seus títulos.
+    let defesaBlockHTML = "";
+    if (defesaTopicEnabled) {
+      clone.querySelector("[data-defesa-original]")?.classList.remove("hidden");
+      clone.querySelector("[data-defesa-aba]")?.remove();
+      clone.querySelector("[data-defesa-tabs]")?.remove();
+      const dt = activeDefesaTexts;
+      const fmtTxt = (t: string) => escapeHTML(t || "—").replace(/\n/g, "<br/>");
+      defesaBlockHTML = `
+        <div style="margin-top:24px;border-top:2px solid #1A56DB;padding-top:16px;">
+          <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;color:#b45309;letter-spacing:.04em;margin-bottom:6px;">Defesa do Jurisdicionado</h2>
+          <p style="font-size:12px;line-height:1.5;margin:0 0 16px;">${fmtTxt(dt.defesa)}</p>
+          <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;color:#1A56DB;letter-spacing:.04em;margin-bottom:6px;">Análise Técnica</h2>
+          <p style="font-size:12px;line-height:1.5;margin:0;">${fmtTxt(dt.tecnica)}</p>
+        </div>`;
+    }
 
     const now = new Date();
     const dataHora = now.toLocaleString("pt-BR");
@@ -305,7 +363,10 @@ function AnaliseDetalhePage() {
 </body></html>`);
     w.document.close();
     const mount = w.document.getElementById("pdf-content");
-    if (mount) mount.appendChild(clone);
+    if (mount) {
+      mount.appendChild(clone);
+      if (defesaBlockHTML) mount.insertAdjacentHTML("beforeend", defesaBlockHTML);
+    }
     const trigger = () => {
       w.focus();
       w.print();
@@ -354,19 +415,42 @@ function AnaliseDetalhePage() {
                       {g.items.map((it) => {
                         const isActive = active === it.key;
                         const st = statuses[it.key];
+                        // RF23 — em análise de defesa os tópicos do PCE iniciam
+                        // desabilitados; só habilitam após seleção do executor.
+                        const isPce = g.key === "pce";
+                        const disabledDefesa =
+                          isDefesa && isPce && !defesaEnabled.has(it.key);
+                        if (disabledDefesa) {
+                          return (
+                            <li key={it.key}>
+                              <div
+                                title="Tópico não selecionado para a defesa"
+                                className="flex w-full cursor-not-allowed items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-white/30"
+                              >
+                                <Circle className="h-4 w-4 shrink-0 text-white/20" />
+                                <span className="truncate">{it.label}</span>
+                              </div>
+                            </li>
+                          );
+                        }
+                        const hideStatus = isDefesa && isPce;
                         return (
                           <li key={it.key}>
                             <button
                               type="button"
                               onClick={() => openSubmenu(it.key)}
-                              title={`Status: ${STATUS_META[st].label}`}
+                              title={hideStatus ? it.label : `Status: ${STATUS_META[st].label}`}
                               className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
                                 isActive
                                   ? "bg-[#1A56DB] font-medium text-white"
                                   : "text-white/80 hover:bg-white/10 hover:text-white"
                               }`}
                             >
-                              <StatusIcon status={st} />
+                              {hideStatus ? (
+                                <Circle className="h-4 w-4 shrink-0 text-white/70" />
+                              ) : (
+                                <StatusIcon status={st} />
+                              )}
                               <span className="truncate">{it.label}</span>
 
                             </button>
@@ -462,7 +546,12 @@ function AnaliseDetalhePage() {
             <InfoCell label="Relator" value={relator} />
             <Divider />
             <InfoCell label="Auditor" value="Auditor 01" />
-            {currentStatus && (
+            <Divider />
+            <InfoCell
+              label="Tipo de Análise"
+              value={row?.tipoAnalise ?? "Análise Inicial"}
+            />
+            {!isDefesa && currentStatus && (
               <>
                 <Divider />
                 <span
@@ -477,6 +566,44 @@ function AnaliseDetalhePage() {
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
+          {isDefesa && podeSelecionarDefesa && (
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm text-amber-800">
+                <strong>Análise de Defesa.</strong> Selecione os tópicos que farão
+                parte da defesa para habilitá-los no menu lateral.
+              </p>
+              <Button
+                type="button"
+                onClick={abrirSelecaoDefesa}
+                className="shrink-0 gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+              >
+                <Plus className="h-4 w-4" /> Selecionar tópicos para defesa
+              </Button>
+            </div>
+          )}
+          {defesaTopicEnabled && (
+            <div data-defesa-tabs className="mb-4 flex gap-1 border-b border-border">
+              {(["analise", "defesa"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setDefesaSubTab(t)}
+                  className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+                    defesaSubTab === t
+                      ? "border-[#1A56DB] text-[#1A56DB]"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t === "analise" ? "Análise (leitura)" : "Defesa"}
+                </button>
+              ))}
+            </div>
+          )}
+          <div
+            data-defesa-original
+            className={defesaTopicEnabled && defesaSubTab === "defesa" ? "hidden" : ""}
+          >
+          <fieldset disabled={defesaTopicEnabled} className="contents">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
@@ -538,7 +665,21 @@ function AnaliseDetalhePage() {
               }
             />
           )}
+          </fieldset>
+          </div>
+          {defesaTopicEnabled && (
+            <div
+              data-defesa-aba
+              className={defesaSubTab === "analise" ? "hidden" : ""}
+            >
+              <AbaDefesa
+                value={activeDefesaTexts}
+                onChange={setActiveDefesaTexts}
+              />
+            </div>
+          )}
         </section>
+
 
 
         {/* Rodapé fixo de ações */}
@@ -546,6 +687,7 @@ function AnaliseDetalhePage() {
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
             {active !== "anteriores" &&
               active !== "demais" &&
+              !isDefesa &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
@@ -607,6 +749,50 @@ function AnaliseDetalhePage() {
           </div>
         </footer>
       </div>
+
+      {/* RF23 — Diálogo de seleção de tópicos para a defesa */}
+      <Dialog open={selecaoOpen} onOpenChange={setSelecaoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Selecionar tópicos para defesa</DialogTitle>
+            <DialogDescription>
+              Marque os tópicos que serão habilitados nesta análise de defesa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[50vh] space-y-1 overflow-y-auto py-1">
+            {pceItems.map((it) => (
+              <label
+                key={it.key}
+                htmlFor={`def-${it.key}`}
+                className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-gray-50"
+              >
+                <Checkbox
+                  id={`def-${it.key}`}
+                  checked={selecaoDraft.has(it.key)}
+                  onCheckedChange={() => toggleSelecao(it.key)}
+                />
+                <span className="text-sm text-foreground">{it.label}</span>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSelecaoOpen(false)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={salvarSelecaoDefesa}
+              className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              <Check className="mr-1 h-4 w-4" /> Salvar seleção
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
