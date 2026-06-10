@@ -258,8 +258,8 @@ function AnaliseDetalhePage() {
 
   const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
 
-  const processoLabel = id;
-  const relator = "CONS. JOÃO DA SILVA";
+  const processoLabel = row?.numero ?? id;
+  const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
   const auditor = "Auditor 01";
 
   const activeLabel =
