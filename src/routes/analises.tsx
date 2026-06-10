@@ -85,6 +85,9 @@ type Situacao = (typeof SITUACOES)[number];
 const TIPOS = ["Análise Inicial", "Análise Documental"];
 const EXERCICIOS = ["2021", "2022", "2023", "2024", "2025"];
 
+export const TIPOS_ANALISE = ["Análise Inicial", "Análise de Defesa"] as const;
+export type TipoAnalise = (typeof TIPOS_ANALISE)[number];
+
 const PROC_BASE = [
   1207949, 1207950, 1207958, 1207959, 1208469, 1208470, 1208870, 1208871, 1209646,
 ];
