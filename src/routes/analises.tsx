@@ -272,7 +272,7 @@ function ProcessosPage() {
   const pageRows = sorted.slice(start, start + perPage);
 
   const selectedRow = useMemo(
-    () => (selectedId ? base.find((r) => r.numero === selectedId) ?? null : null),
+    () => (selectedId ? base.find((r) => r.id === selectedId) ?? null : null),
     [selectedId, base]
   );
 
