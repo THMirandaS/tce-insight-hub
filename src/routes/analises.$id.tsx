@@ -140,10 +140,21 @@ function AnaliseDetalhePage() {
   const { id } = Route.useParams();
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
-  const row = useMemo(() => ALL_ROWS.find((r) => r.numero === id), [id]);
+  const row = useMemo(() => ALL_ROWS.find((r) => r.id === id), [id]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
   const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+
+  // RF23 — Análise de Defesa.
+  const isDefesa = row?.tipoAnalise === "Análise de Defesa";
+  // Tópicos habilitados para a defesa (selecionados pelo executor).
+  const [defesaEnabled, setDefesaEnabled] = useState<Set<string>>(new Set());
+  // Textos da aba Defesa por tópico.
+  const [defesaTexts, setDefesaTexts] = useState<Record<string, DefesaTexts>>({});
+  // Sub-aba do tópico em defesa: análise (leitura) ou defesa (editável).
+  const [defesaSubTab, setDefesaSubTab] = useState<"analise" | "defesa">("analise");
+  const [selecaoOpen, setSelecaoOpen] = useState(false);
+  const [selecaoDraft, setSelecaoDraft] = useState<Set<string>>(new Set());
   const groups = useMemo<SubGroup[]>(
     () => [...STATIC_GROUPS, { key: "pce", label: "PCE", items: pceItems }],
     [pceItems]
