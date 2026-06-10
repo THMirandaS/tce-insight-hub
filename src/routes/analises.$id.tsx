@@ -85,14 +85,14 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
-  // Despesas com pessoal: apenas para Órgãos de Poder. Tópico futuro.
+  { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
+  // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
   {
     key: "despesas-pessoal",
     label: "Despesas com pessoal",
-    futuro: true,
+    hasActions: true,
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
-  { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   { key: "controle-interno", label: "Controle Interno" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
@@ -524,15 +524,11 @@ function AnaliseDetalhePage() {
           ) : active === "demais" ? (
             <DemaisContent orgao={orgao} />
           ) : active === "despesas-pessoal" ? (
-            <div className="mx-auto max-w-2xl rounded-lg border border-dashed border-border bg-muted/30 p-10 text-center">
-              <h2 className="text-lg font-semibold text-foreground">
-                Despesas com pessoal
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tópico aplicável aos Órgãos de Poder. Conteúdo em
-                desenvolvimento — será disponibilizado em versão futura.
-              </p>
-            </div>
+            <DespesasPessoalContent
+              processo={processoLabel}
+              orgao={orgao}
+              jurisdicionado={jurisdicionado}
+            />
           ) : (
             <PlaceholderContent
               label={
@@ -550,7 +546,6 @@ function AnaliseDetalhePage() {
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
             {active !== "anteriores" &&
               active !== "demais" &&
-              active !== "despesas-pessoal" &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
               !(active === "receitas" && RECEITAS_READ_ONLY) &&
               !(active === "credito-inicial" && CREDITO_INICIAL_READ_ONLY) &&
@@ -4779,6 +4774,252 @@ function RestosPagarContent({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+/* ===================== Despesas com Pessoal ===================== */
+
+const DESPESAS_PESSOAL_MAX_TEXTO = 4000;
+
+type DespesaPessoalMock = {
+  limiteLegal: number; // %
+  limitePrudencial: number; // %
+  limiteAlerta: number; // %
+  despesaPessoal: number; // R$
+  rcl: number; // R$
+};
+
+// Mocks por jurisdicionado (sigla). Assembleia conforme; TJ não conforme.
+function getDespesaPessoalMock(j: Jurisdicionado): DespesaPessoalMock {
+  if (j.sigla === "ALMG") {
+    // 140.000.000 / 5.000.000.000 = 2,8% (limite 3%) → CONFORME
+    return {
+      limiteLegal: 3,
+      limitePrudencial: 2.85,
+      limiteAlerta: 2.7,
+      despesaPessoal: 140_000_000,
+      rcl: 5_000_000_000,
+    };
+  }
+  if (j.sigla === "TJMG") {
+    // 640.000.000 / 10.000.000.000 = 6,4% (limite 6%) → NÃO CONFORME
+    return {
+      limiteLegal: 6,
+      limitePrudencial: 5.7,
+      limiteAlerta: 5.4,
+      despesaPessoal: 640_000_000,
+      rcl: 10_000_000_000,
+    };
+  }
+  // Demais Órgãos de Poder (padrão conforme).
+  return {
+    limiteLegal: 3,
+    limitePrudencial: 2.85,
+    limiteAlerta: 2.7,
+    despesaPessoal: 120_000_000,
+    rcl: 5_000_000_000,
+  };
+}
+
+function fmtPct(n: number): string {
+  return `${n.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`;
+}
+
+function DespCard({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: "red" | "green";
+}) {
+  const valueCls =
+    highlight === "red"
+      ? "text-red-700"
+      : highlight === "green"
+        ? "text-green-700"
+        : "text-foreground";
+  return (
+    <div className="rounded-md border border-border bg-white p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className={`mt-1 text-xl font-bold ${valueCls}`}>{value}</p>
+    </div>
+  );
+}
+
+function AvaliacaoInconformidade({
+  percentualRcl,
+  limiteLegal,
+}: {
+  percentualRcl: number;
+  limiteLegal: number;
+}) {
+  const [providencias, setProvidencias] = useState("");
+  const excedente = percentualRcl - limiteLegal;
+  return (
+    <div className="mt-6 rounded-md border border-red-300 bg-red-50 p-4">
+      <div className="mb-3 flex items-start gap-3">
+        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
+        <div>
+          <h3 className="text-base font-semibold text-red-800">
+            Avaliação da Inconformidade
+          </h3>
+          <p className="mt-1 text-sm text-red-800">
+            A despesa com pessoal corresponde a {fmtPct(percentualRcl)} da RCL,
+            excedendo em {fmtPct(excedente)} o limite legal de{" "}
+            {fmtPct(limiteLegal)}.
+          </p>
+        </div>
+      </div>
+      <Label className="text-sm font-semibold text-red-900">
+        Providências / Justificativas:
+      </Label>
+      <textarea
+        value={providencias}
+        onChange={(e) =>
+          setProvidencias(e.target.value.slice(0, DESPESAS_PESSOAL_MAX_TEXTO))
+        }
+        maxLength={DESPESAS_PESSOAL_MAX_TEXTO}
+        rows={4}
+        className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+      />
+      <div className="text-right text-xs text-red-700">
+        {DESPESAS_PESSOAL_MAX_TEXTO - providencias.length} caracteres restantes
+      </div>
+    </div>
+  );
+}
+
+function ConsideracoesAdicionais() {
+  const [texto, setTexto] = useState("");
+  const [incluir, setIncluir] = useState(true);
+  return (
+    <div className="mt-6 space-y-2">
+      <Label className="text-sm font-semibold">Considerações adicionais:</Label>
+      <textarea
+        value={texto}
+        onChange={(e) =>
+          setTexto(e.target.value.slice(0, DESPESAS_PESSOAL_MAX_TEXTO))
+        }
+        maxLength={DESPESAS_PESSOAL_MAX_TEXTO}
+        rows={6}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+      />
+      <div className="text-right text-xs text-muted-foreground">
+        {DESPESAS_PESSOAL_MAX_TEXTO - texto.length} caracteres restantes
+      </div>
+      <div className="flex items-start gap-2 pt-2">
+        <Checkbox
+          id="desp-pessoal-incluir"
+          checked={incluir}
+          onCheckedChange={(c) => setIncluir(c === true)}
+        />
+        <Label htmlFor="desp-pessoal-incluir" className="text-sm leading-tight">
+          O texto complementar deverá constar no relatório de conclusão do
+          processo.
+        </Label>
+      </div>
+    </div>
+  );
+}
+
+function DespesasPessoalContent({
+  processo,
+  orgao,
+  jurisdicionado,
+}: {
+  processo: string;
+  orgao: string;
+  jurisdicionado: Jurisdicionado;
+}) {
+  const mock = useMemo(
+    () => getDespesaPessoalMock(jurisdicionado),
+    [jurisdicionado]
+  );
+  const percentualRcl = (mock.despesaPessoal / mock.rcl) * 100;
+  const ocultarConformidade = jurisdicionado.poder === "DEFENSORIA PÚBLICA";
+  const conforme = percentualRcl <= mock.limiteLegal;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> {GRUPO_PODERES}
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <h2 className="mb-3 text-base font-semibold underline">
+        Despesas com pessoal:
+      </h2>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <DespCard label="Limite legal (%)" value={fmtPct(mock.limiteLegal)} />
+        <DespCard
+          label="Limite prudencial (%)"
+          value={fmtPct(mock.limitePrudencial)}
+        />
+        <DespCard label="Limite de alerta (%)" value={fmtPct(mock.limiteAlerta)} />
+        <DespCard
+          label="Despesa com pessoal (R$)"
+          value={fmtBRL(mock.despesaPessoal)}
+        />
+        <DespCard
+          label="Receita Corrente Líquida (R$)"
+          value={fmtBRL(mock.rcl)}
+        />
+        <DespCard
+          label="Percentual da RCL (%)"
+          value={fmtPct(percentualRcl)}
+          highlight={
+            ocultarConformidade ? undefined : conforme ? "green" : "red"
+          }
+        />
+      </div>
+
+      {!ocultarConformidade && (
+        <div
+          className={`mt-6 flex items-center gap-3 rounded-md border p-4 ${
+            conforme
+              ? "border-green-300 bg-green-50 text-green-800"
+              : "border-red-300 bg-red-50 text-red-800"
+          }`}
+        >
+          {conforme ? (
+            <CheckCircle2 className="h-5 w-5 shrink-0" />
+          ) : (
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+          )}
+          <p className="text-sm font-semibold">
+            Cumprimento do limite legal:{" "}
+            {conforme ? "CONFORME" : "NÃO CONFORME"}
+          </p>
+        </div>
+      )}
+
+      {!ocultarConformidade && !conforme && (
+        <AvaliacaoInconformidade
+          percentualRcl={percentualRcl}
+          limiteLegal={mock.limiteLegal}
+        />
+      )}
+
+      <ConsideracoesAdicionais />
     </>
   );
 }
