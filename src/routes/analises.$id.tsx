@@ -196,9 +196,31 @@ function AnaliseDetalhePage() {
 
   function openSubmenu(key: string) {
     setActive(key);
+    setDefesaSubTab("analise");
+    // Em análise de defesa os tópicos não seguem o fluxo de status.
+    if (isDefesa) return;
     setStatuses((p) =>
       p[key] === "nao-iniciado" ? { ...p, [key]: "em-andamento" } : p
     );
+  }
+
+  // Habilitação dos tópicos de defesa (executor/auditor responsável).
+  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Auditor";
+  function abrirSelecaoDefesa() {
+    setSelecaoDraft(new Set(defesaEnabled));
+    setSelecaoOpen(true);
+  }
+  function toggleSelecao(key: string) {
+    setSelecaoDraft((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function salvarSelecaoDefesa() {
+    setDefesaEnabled(new Set(selecaoDraft));
+    setSelecaoOpen(false);
   }
 
   function handleSalvar() {
