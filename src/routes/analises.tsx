@@ -310,19 +310,19 @@ function ProcessosPage() {
 
   const handleCriar = () => {
     if (!selectedRow) return;
-    setSituacao(selectedRow.numero, "Em Análise");
-    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+    setSituacao(selectedRow.id, "Em Análise");
+    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
   const handleVisualizar = () => {
     if (!selectedRow) return;
-    navigate({ to: "/analises/$id", params: { id: selectedRow.numero } });
+    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
   const handleReabrir = () => {
     if (!selectedRow || selectedRow.situacao !== "Concluído") return;
-    setSituacao(selectedRow.numero, "Em Análise");
+    setSituacao(selectedRow.id, "Em Análise");
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.numero, "Disponível");
+    if (selectedRow) setSituacao(selectedRow.id, "Disponível");
     setConfirmReinit(false);
   };
   const openAlterar = () => {
@@ -334,7 +334,7 @@ function ProcessosPage() {
     if (selectedRow && novoAnalista) {
       setOverrides((p) => ({
         ...p,
-        [selectedRow.numero]: { ...p[selectedRow.numero], analista: novoAnalista },
+        [selectedRow.id]: { ...p[selectedRow.id], analista: novoAnalista },
       }));
     }
     setAlterarOpen(false);
