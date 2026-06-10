@@ -267,6 +267,12 @@ function AnaliseDetalhePage() {
     pceItems.find((i) => i.key === active)?.label ??
     "";
 
+  const isPceTopic = pceItems.some((i) => i.key === active);
+  const defesaTopicEnabled = isDefesa && isPceTopic && defesaEnabled.has(active);
+  const activeDefesaTexts = defesaTexts[active] ?? { defesa: "", tecnica: "" };
+  const setActiveDefesaTexts = (next: DefesaTexts) =>
+    setDefesaTexts((p) => ({ ...p, [active]: next }));
+
   function handleGerarPDF() {
     if (active === "conclusao" && CONCLUSAO_PDF_REF.fn) {
       CONCLUSAO_PDF_REF.fn(processoLabel, orgao);
