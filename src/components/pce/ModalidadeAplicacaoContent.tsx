@@ -193,7 +193,7 @@ export function ModalidadeAplicacaoContent({
                 </tr>
                 {Array.from(grupos.entries()).flatMap(([modalidade, linhas]) => {
                   const subtotal = linhas.reduce((s, l) => s + l.valorPago, 0);
-                  const rows: JSX.Element[] = [];
+                  const rows: ReactElement[] = [];
                   linhas.forEach((l, i) => {
                     rows.push(
                       <tr
