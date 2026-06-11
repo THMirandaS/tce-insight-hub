@@ -636,6 +636,13 @@ function AnaliseDetalhePage() {
               tab={dotacaoTab}
               onTabChange={setDotacaoTab}
             />
+          ) : active === "modalidade-aplicacao" ? (
+            <ModalidadeAplicacaoContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={modalidadeTab}
+              onTabChange={setModalidadeTab}
+            />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
