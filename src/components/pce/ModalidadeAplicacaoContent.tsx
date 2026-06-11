@@ -191,29 +191,30 @@ export function ModalidadeAplicacaoContent({
                   <td colSpan={4} className="px-3 py-2">TOTAL</td>
                   <td className="px-3 py-2 text-right">{fmtBRL(totalGeral)}</td>
                 </tr>
-                {Array.from(grupos.entries()).map(([modalidade, linhas]) => {
+                {Array.from(grupos.entries()).flatMap(([modalidade, linhas]) => {
                   const subtotal = linhas.reduce((s, l) => s + l.valorPago, 0);
-                  return (
-                    <>
-                      {linhas.map((l, i) => (
-                        <tr
-                          key={l.id}
-                          className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                        >
-                          <td className="px-3 py-2">{l.programa}</td>
-                          <td className="px-3 py-2">{l.categoria}</td>
-                          <td className="px-3 py-2">{l.grupo}</td>
-                          <td className="px-3 py-2">{l.modalidade}</td>
-                          <td className="px-3 py-2 text-right">{fmtBRL(l.valorPago)}</td>
-                        </tr>
-                      ))}
-                      {/* SUBTOTAL ao final do bloco */}
-                      <tr className="bg-[#F4F5F7] font-semibold">
-                        <td colSpan={4} className="px-3 py-2">SUBTOTAL — {modalidade}</td>
-                        <td className="px-3 py-2 text-right">{fmtBRL(subtotal)}</td>
+                  const rows: JSX.Element[] = [];
+                  linhas.forEach((l, i) => {
+                    rows.push(
+                      <tr
+                        key={l.id}
+                        className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
+                        <td className="px-3 py-2">{l.programa}</td>
+                        <td className="px-3 py-2">{l.categoria}</td>
+                        <td className="px-3 py-2">{l.grupo}</td>
+                        <td className="px-3 py-2">{l.modalidade}</td>
+                        <td className="px-3 py-2 text-right">{fmtBRL(l.valorPago)}</td>
                       </tr>
-                    </>
+                    );
+                  });
+                  rows.push(
+                    <tr key={`sub-${modalidade}`} className="bg-[#F4F5F7] font-semibold">
+                      <td colSpan={4} className="px-3 py-2">SUBTOTAL — {modalidade}</td>
+                      <td className="px-3 py-2 text-right">{fmtBRL(subtotal)}</td>
+                    </tr>
                   );
+                  return rows;
                 })}
               </tbody>
             </table>
