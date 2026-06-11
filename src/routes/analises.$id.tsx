@@ -36,6 +36,7 @@ import {
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
+import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -86,6 +87,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  { key: "modalidade-aplicacao", label: "Modalidade de aplicação", hasActions: true },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
   {
@@ -189,6 +191,7 @@ function AnaliseDetalhePage() {
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
   const [dotacaoTab, setDotacaoTab] = useState<"principal" | "memoria">("principal");
+  const [modalidadeTab, setModalidadeTab] = useState<"principal" | "memoria">("principal");
   const [outrasView, setOutrasView] = useState<"form" | "lista">("lista");
 
   const currentStatus: SubmenuStatus | null =
@@ -633,6 +636,13 @@ function AnaliseDetalhePage() {
               tab={dotacaoTab}
               onTabChange={setDotacaoTab}
             />
+          ) : active === "modalidade-aplicacao" ? (
+            <ModalidadeAplicacaoContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={modalidadeTab}
+              onTabChange={setModalidadeTab}
+            />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
@@ -697,6 +707,7 @@ function AnaliseDetalhePage() {
               !(active === "credito-despesas-prg" && despesaTab !== "principal") &&
               !(active === "dsp-dotacao" && DSP_DOTACAO_READ_ONLY) &&
               !(active === "dsp-dotacao" && dotacaoTab !== "principal") &&
+              !(active === "modalidade-aplicacao" && modalidadeTab !== "principal") &&
               !(active === "restos-pagar" && RESTOS_PAGAR_READ_ONLY) &&
               !(active === "controle-interno" && CI_READ_ONLY) &&
               !(active === "outras-inconformidades" && OUTRAS_INCO_READ_ONLY) &&
