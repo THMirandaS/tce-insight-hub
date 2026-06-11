@@ -36,6 +36,7 @@ import {
 import { ALL_ROWS } from "./analises";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
+import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
