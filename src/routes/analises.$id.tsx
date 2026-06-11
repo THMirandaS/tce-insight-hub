@@ -191,6 +191,7 @@ function AnaliseDetalhePage() {
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
   const [dotacaoTab, setDotacaoTab] = useState<"principal" | "memoria">("principal");
+  const [modalidadeTab, setModalidadeTab] = useState<"principal" | "memoria">("principal");
   const [outrasView, setOutrasView] = useState<"form" | "lista">("lista");
 
   const currentStatus: SubmenuStatus | null =
