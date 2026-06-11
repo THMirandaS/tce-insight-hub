@@ -87,6 +87,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  { key: "modalidade-aplicacao", label: "Modalidade de aplicação", hasActions: true },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
   {
