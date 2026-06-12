@@ -33,9 +33,9 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ALL_ROWS } from "./analises";
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
+import { useDefesas } from "@/lib/defesas-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
