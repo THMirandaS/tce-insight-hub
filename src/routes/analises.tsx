@@ -16,6 +16,8 @@ import {
   RefreshCw,
   UserCog,
   FileText,
+  Loader2,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +53,8 @@ import {
 } from "@/components/ui/tooltip";
 import { ORGAOS } from "@/lib/pce-data";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
+import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
