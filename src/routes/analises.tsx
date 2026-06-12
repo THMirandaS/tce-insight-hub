@@ -268,16 +268,14 @@ function ProcessosPage() {
   const [perPage, setPerPage] = useState(10);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<
-    Record<string, { situacao?: Situacao; analista?: string }>
+    Record<string, { situacao?: Situacao }>
   >({});
   const [confirmReinit, setConfirmReinit] = useState(false);
-  const [alterarOpen, setAlterarOpen] = useState(false);
-  const [novoAnalista, setNovoAnalista] = useState<string>("");
 
   const applyOverride = (r: Row): Row => {
     const o = overrides[r.id];
     if (!o) return r;
-    return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}), ...(o.analista ? { analista: o.analista } : {}) };
+    return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}) };
   };
 
   const base = useMemo(
