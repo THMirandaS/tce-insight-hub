@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -174,6 +175,11 @@ function AnaliseDetalhePage() {
   // Perfil atual e atribuição do processo (contexto compartilhado).
   const { perfil, usuario, getAtribuicao } = useAtribuicoes();
   const atribuicao = getAtribuicao(id);
+
+  // Consolidação dos dados do processo. A análise só é editável após a
+  // consolidação estar "Concluída"; antes disso abre em modo visualização.
+  const { getStatus: getConsolStatus } = useConsolidacao();
+  const aguardandoConsolidacao = getConsolStatus(id) !== "Concluída";
 
   // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
