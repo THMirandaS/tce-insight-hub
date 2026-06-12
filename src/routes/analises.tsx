@@ -54,6 +54,7 @@ import {
 import { ORGAOS } from "@/lib/pce-data";
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
+import { useDefesas } from "@/lib/defesas-store";
 import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
