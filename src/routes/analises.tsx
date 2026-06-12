@@ -14,7 +14,6 @@ import {
   Eye,
   RotateCcw,
   RefreshCw,
-  UserCog,
   FileText,
   Loader2,
   Layers,
@@ -250,7 +249,13 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao, perfil } = useAtribuicoes();
+  const { getAtribuicao, setAtribuicao, perfil, usuarios } = useAtribuicoes();
+  const usuariosAtivos = useMemo(
+    () => usuarios.filter((u) => u.ativo).map((u) => u.nome),
+    [usuarios]
+  );
+  const podeAtribuir = perfil === "Coordenador";
+  const [erroAtrib, setErroAtrib] = useState<string | null>(null);
   const { getStatus, consolidar } = useConsolidacao();
   const { allRows, criarDefesa, defesasDoProcesso } = useDefesas();
   const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
@@ -262,16 +267,14 @@ function ProcessosPage() {
   const [perPage, setPerPage] = useState(10);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<
-    Record<string, { situacao?: Situacao; analista?: string }>
+    Record<string, { situacao?: Situacao }>
   >({});
   const [confirmReinit, setConfirmReinit] = useState(false);
-  const [alterarOpen, setAlterarOpen] = useState(false);
-  const [novoAnalista, setNovoAnalista] = useState<string>("");
 
   const applyOverride = (r: Row): Row => {
     const o = overrides[r.id];
     if (!o) return r;
-    return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}), ...(o.analista ? { analista: o.analista } : {}) };
+    return { ...r, ...(o.situacao ? { situacao: o.situacao } : {}) };
   };
 
   const base = useMemo(
@@ -290,15 +293,15 @@ function ProcessosPage() {
       if (f.exercicios.length && !f.exercicios.includes(r.exercicio)) return false;
       if (f.numero && !r.numero.includes(f.numero.trim())) return false;
       if (f.orgao !== "all" && r.orgao !== f.orgao) return false;
-      if (f.analista !== "all" && r.analista !== f.analista) return false;
-      if (f.revisor !== "all" && r.revisor !== f.revisor) return false;
+      if (f.analista !== "all" && getAtribuicao(r.id).executor !== f.analista) return false;
+      if (f.revisor !== "all" && getAtribuicao(r.id).revisor !== f.revisor) return false;
       if (f.relator !== "all" && r.relator !== f.relator) return false;
       if (f.situacao !== "all" && r.situacao !== f.situacao) return false;
       if (f.tipo !== "all" && r.tipo !== f.tipo) return false;
       if (f.tipoAnalise !== "all" && r.tipoAnalise !== f.tipoAnalise) return false;
       return true;
     });
-  }, [applied, base]);
+  }, [applied, base, getAtribuicao]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -406,19 +409,22 @@ function ProcessosPage() {
     if (selectedRow) setSituacao(selectedRow.id, "Disponível");
     setConfirmReinit(false);
   };
-  const openAlterar = () => {
-    if (!selectedRow) return;
-    setNovoAnalista(selectedRow.analista);
-    setAlterarOpen(true);
-  };
-  const saveAlterar = () => {
-    if (selectedRow && novoAnalista) {
-      setOverrides((p) => ({
-        ...p,
-        [selectedRow.id]: { ...p[selectedRow.id], analista: novoAnalista },
-      }));
+
+  // RF — atribuição inline de Responsável (executor) e Revisor pelo
+  // Coordenador. Executor e Revisor não podem ser a mesma pessoa.
+  const setCampoAtribuicao = (
+    id: string,
+    campo: "executor" | "revisor",
+    valor: string | null
+  ) => {
+    const atual = getAtribuicao(id);
+    const novo = { ...atual, [campo]: valor };
+    if (novo.executor && novo.revisor && novo.executor === novo.revisor) {
+      setErroAtrib("Executor e Revisor não podem ser a mesma pessoa.");
+      return;
     }
-    setAlterarOpen(false);
+    setErroAtrib(null);
+    setAtribuicao(id, novo);
   };
 
 
@@ -481,11 +487,11 @@ function ProcessosPage() {
             />
           </FilterField>
 
-          <FilterField label="Analista Responsável">
+          <FilterField label="Responsável">
             <SimpleSelect
               value={draft.analista}
               onValueChange={(v) => set("analista", v)}
-              options={ANALISTAS}
+              options={usuariosAtivos}
             />
           </FilterField>
 
@@ -493,7 +499,7 @@ function ProcessosPage() {
             <SimpleSelect
               value={draft.revisor}
               onValueChange={(v) => set("revisor", v)}
-              options={REVISORES}
+              options={usuariosAtivos}
             />
           </FilterField>
 
@@ -548,6 +554,11 @@ function ProcessosPage() {
       </div>
 
       {/* Tabela */}
+      {erroAtrib && (
+        <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive">
+          {erroAtrib}
+        </div>
+      )}
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -565,8 +576,12 @@ function ProcessosPage() {
                 <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Consolidação
                 </th>
-                <Th label="Analista Responsável" k="analista" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Revisor" k="revisor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                  Responsável
+                </th>
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                  Revisor
+                </th>
                 <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
               </tr>
             </thead>
@@ -617,8 +632,26 @@ function ProcessosPage() {
                         onConsolidar={() => consolidar(r.id)}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribSelect
+                        value={getAtribuicao(r.id).executor}
+                        editavel={podeAtribuir}
+                        placeholder="Atribuir responsável"
+                        options={usuariosAtivos}
+                        excluir={getAtribuicao(r.id).revisor}
+                        onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
+                      />
+                    </td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribSelect
+                        value={getAtribuicao(r.id).revisor}
+                        editavel={podeAtribuir}
+                        placeholder="Atribuir revisor"
+                        options={usuariosAtivos}
+                        excluir={getAtribuicao(r.id).executor}
+                        onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
+                      />
+                    </td>
                     <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
                   </tr>
                 );
@@ -705,8 +738,8 @@ function ProcessosPage() {
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Processo sem executor atribuído. Atribua um executor em
-                      "Atribuição de Análises" para abrir.
+                      Processo sem responsável atribuído. Atribua um responsável
+                      na coluna "Responsável" desta listagem para abrir.
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -761,12 +794,6 @@ function ProcessosPage() {
               >
                 <RefreshCw className="h-4 w-4" /> Reinicializar
               </Button>
-              <Button
-                onClick={openAlterar}
-                className="gap-2 bg-[#6B7280] text-white hover:bg-[#6B7280]/90"
-              >
-                <UserCog className="h-4 w-4" /> Alterar Responsável
-              </Button>
               {podeNovaDefesa && (
                 <Button
                   onClick={handleNovaDefesa}
@@ -805,47 +832,6 @@ function ProcessosPage() {
               className="bg-[#EA580C] text-white hover:bg-[#EA580C]/90"
             >
               Confirmar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Alterar Responsável */}
-      <Dialog open={alterarOpen} onOpenChange={setAlterarOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar Analista Responsável</DialogTitle>
-            <DialogDescription>
-              Selecione o novo analista responsável pelo processo{" "}
-              {selectedRow?.numero}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-              Analista
-            </Label>
-            <Select value={novoAnalista} onValueChange={setNovoAnalista}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {ANALISTAS.map((a) => (
-                  <SelectItem key={a} value={a}>
-                    {a}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAlterarOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={saveAlterar}
-              className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-            >
-              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -890,6 +876,54 @@ function SimpleSelect({
             {o}
           </SelectItem>
         ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const NAO_ATRIB = "__none__";
+
+function AtribSelect({
+  value,
+  editavel,
+  placeholder,
+  options,
+  excluir,
+  onChange,
+}: {
+  value: string | null;
+  editavel: boolean;
+  placeholder: string;
+  options: string[];
+  excluir: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  if (!editavel) {
+    return value ? (
+      <span className="text-foreground">{value}</span>
+    ) : (
+      <span className="text-xs italic text-muted-foreground">
+        Não atribuído
+      </span>
+    );
+  }
+  return (
+    <Select
+      value={value ?? NAO_ATRIB}
+      onValueChange={(v) => onChange(v === NAO_ATRIB ? null : v)}
+    >
+      <SelectTrigger className="h-9 w-[180px]">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        <SelectItem value={NAO_ATRIB}>— Não atribuído —</SelectItem>
+        {options
+          .filter((o) => o !== excluir)
+          .map((o) => (
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   );

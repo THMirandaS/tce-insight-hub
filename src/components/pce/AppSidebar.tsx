@@ -5,7 +5,6 @@ import {
   Search,
   ShieldCheck,
   Building2,
-  UserCog,
   Users,
   LogOut,
   ChevronLeft,
@@ -30,7 +29,6 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2, roles: ["Coordenador"] },
-  { to: "/atribuicoes", label: "Atribuição de Análises", icon: UserCog, roles: ["Coordenador"] },
   { to: "/usuarios", label: "Usuários", icon: Users, roles: ["Coordenador"] },
   { to: "/analises", label: "Análises", icon: Search },
 ];
