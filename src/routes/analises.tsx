@@ -155,19 +155,47 @@ function makeRows(): Row[] {
     });
   }
 
-  // RF23 — análises de defesa vinculadas ao MESMO número de processo de
-  // análises iniciais existentes (a defesa herda processo, órgão e relator).
+  // RF23 — Um processo tem 1 análise inicial e pode ter VÁRIAS defesas
+  // documentais (rodadas). A defesa herda processo, órgão e relator.
   [rows[0], rows[1]].forEach((src) => {
     const criacao = new Date(2026, 4, 12);
     rows.push({
       ...src,
-      id: `${src.numero}-D`,
+      id: `${src.numero}-D1`,
       tipoAnalise: "Análise de Defesa",
+      nrDefesa: 1,
       situacao: "Em Análise",
       dtCriacao: fmt(criacao),
       dtConclusao: "—",
     });
   });
+
+  // Mock — processo com 2 rodadas de defesa: nº 1 concluída, nº 2 em
+  // andamento (testa o sequenciamento de rodadas).
+  {
+    const src = rows[2];
+    const c1 = new Date(2026, 1, 10);
+    const conc1 = new Date(2026, 2, 28);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D1`,
+      tipoAnalise: "Análise de Defesa",
+      nrDefesa: 1,
+      situacao: "Concluído",
+      dtCriacao: fmt(c1),
+      dtConclusao: fmt(conc1),
+    });
+    const c2 = new Date(2026, 4, 12);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D2`,
+      tipoAnalise: "Análise de Defesa",
+      nrDefesa: 2,
+      situacao: "Em Análise",
+      dtCriacao: fmt(c2),
+      dtConclusao: "—",
+    });
+  }
 
   return rows;
 }
