@@ -390,6 +390,14 @@ function ProcessosPage() {
     if (!selectedRow) return;
     navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
+  const handleNovaDefesa = () => {
+    if (!selectedRow || !podeNovaDefesa) return;
+    const novoId = criarDefesa(selectedRow.numero);
+    if (novoId) {
+      setSelectedId(novoId);
+      navigate({ to: "/analises/$id", params: { id: novoId } });
+    }
+  };
   const handleReabrir = () => {
     if (!selectedRow || selectedRow.situacao !== "Concluído") return;
     setSituacao(selectedRow.id, "Em Análise");
