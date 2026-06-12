@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AppSidebar } from "@/components/pce/AppSidebar";
+import { AtribuicoesProvider } from "@/lib/atribuicoes";
 
 
 function NotFoundComponent() {
@@ -119,17 +120,19 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {hideChrome ? (
-        <Outlet />
-      ) : (
-        <div className="flex min-h-screen w-full bg-background">
-          <AppSidebar />
-          <div className="flex-1 min-w-0">
-            <Outlet />
+      <AtribuicoesProvider>
+        {hideChrome ? (
+          <Outlet />
+        ) : (
+          <div className="flex min-h-screen w-full bg-background">
+            <AppSidebar />
+            <div className="flex-1 min-w-0">
+              <Outlet />
+            </div>
           </div>
-        </div>
-      )}
-      <Toaster />
+        )}
+        <Toaster />
+      </AtribuicoesProvider>
     </QueryClientProvider>
   );
 }

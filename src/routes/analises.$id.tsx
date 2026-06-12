@@ -34,6 +34,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
+import { useAtribuicoes } from "@/lib/atribuicoes";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -119,7 +120,7 @@ type SubmenuStatus =
   | "corrigido"
   | "revisado";
 
-type Perfil = "Auditor" | "Revisor" | "Coordenador";
+
 
 const STATUS_META: Record<
   SubmenuStatus,
@@ -170,8 +171,9 @@ function AnaliseDetalhePage() {
   });
   const contentRef = useRef<HTMLElement | null>(null);
 
-  // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
-  const [perfil] = useState<Perfil>("Coordenador");
+  // Perfil atual e atribuição do processo (contexto compartilhado).
+  const { perfil, usuario, getAtribuicao } = useAtribuicoes();
+  const atribuicao = getAtribuicao(id);
 
   // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
@@ -207,8 +209,8 @@ function AnaliseDetalhePage() {
     );
   }
 
-  // Habilitação dos tópicos de defesa (executor/auditor responsável).
-  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Auditor";
+  // Habilitação dos tópicos de defesa (executor/coordenador responsável).
+  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Executor";
   function abrirSelecaoDefesa() {
     setSelecaoDraft(new Set(defesaEnabled));
     setSelecaoOpen(true);
@@ -259,11 +261,17 @@ function AnaliseDetalhePage() {
     );
   }
 
-  const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
+  // Permissões: só o Executor atribuído edita; só o Revisor atribuído revisa;
+  // o Coordenador mantém todas as permissões.
+  const executor = atribuicao.executor ?? "Não atribuído";
+  const revisor = atribuicao.revisor ?? "Não atribuído";
+  const podeRevisar =
+    perfil === "Coordenador" ||
+    (perfil === "Revisor" && usuario === atribuicao.revisor);
 
   const processoLabel = row?.numero ?? id;
   const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
-  const auditor = "Auditor 01";
+  const auditor = executor;
 
   const activeLabel =
     groups.find((g) => g.key === active)?.label ??
@@ -355,7 +363,8 @@ function AnaliseDetalhePage() {
   <div class="cell"><div class="lbl">Processo</div><div class="val">${escapeHTML(processoLabel)}</div></div>
   <div class="cell"><div class="lbl">Órgão</div><div class="val">${escapeHTML(orgao)}</div></div>
   <div class="cell"><div class="lbl">Relator</div><div class="val">${escapeHTML(relator)}</div></div>
-  <div class="cell"><div class="lbl">Auditor</div><div class="val">${escapeHTML(auditor)}</div></div>
+  <div class="cell"><div class="lbl">Responsável</div><div class="val">${escapeHTML(executor)}</div></div>
+  <div class="cell"><div class="lbl">Revisor</div><div class="val">${escapeHTML(revisor)}</div></div>
 </div>
 <h1 class="pdf-title">${escapeHTML(activeLabel)}</h1>
 <div id="pdf-content"></div>
@@ -548,7 +557,9 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
-            <InfoCell label="Auditor" value="Auditor 01" />
+            <InfoCell label="Responsável" value={executor} />
+            <Divider />
+            <InfoCell label="Revisor" value={revisor} />
             <Divider />
             <InfoCell
               label="Tipo de Análise"

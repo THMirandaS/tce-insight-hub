@@ -43,7 +43,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ORGAOS } from "@/lib/pce-data";
+import { useAtribuicoes } from "@/lib/atribuicoes";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
@@ -208,6 +215,7 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
+  const { getAtribuicao } = useAtribuicoes();
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
@@ -275,6 +283,11 @@ function ProcessosPage() {
     () => (selectedId ? base.find((r) => r.id === selectedId) ?? null : null),
     [selectedId, base]
   );
+
+  // Processo sem executor atribuído: abertura bloqueada (RF — atribuições).
+  const semExecutor = selectedRow
+    ? !getAtribuicao(selectedRow.id).executor
+    : false;
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -590,7 +603,34 @@ function ProcessosPage() {
               </span>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
-              {selectedRow.situacao === "Disponível" ? (
+              {semExecutor ? (
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button
+                          disabled
+                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90 disabled:opacity-40"
+                        >
+                          {selectedRow.situacao === "Disponível" ? (
+                            <>
+                              <Plus className="h-4 w-4" /> Criar
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4" /> Visualizar
+                            </>
+                          )}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Processo sem executor atribuído. Atribua um executor em
+                      "Atribuição de Análises" para abrir.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : selectedRow.situacao === "Disponível" ? (
                 <Button
                   onClick={handleCriar}
                   className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
