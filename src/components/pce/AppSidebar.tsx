@@ -6,13 +6,13 @@ import {
   Search,
   ShieldCheck,
   Building2,
+  UserCog,
   LogOut,
   ChevronLeft,
   ChevronRight,
   UserCircle2,
 } from "lucide-react";
-
-type Perfil = "Coordenador" | "Auditor";
+import { useAtribuicoes, type Perfil } from "@/lib/atribuicoes";
 
 type NavItem = {
   to: string;
@@ -25,18 +25,15 @@ const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/autuacao", label: "Autuação", icon: FileStack, roles: ["Coordenador"] },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2, roles: ["Coordenador"] },
+  { to: "/atribuicoes", label: "Atribuição de Análises", icon: UserCog, roles: ["Coordenador"] },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 
-export function AppSidebar({
-  user = "Coordenador 01",
-  perfil = "Coordenador",
-}: {
-  user?: string;
-  perfil?: Perfil;
-}) {
+export function AppSidebar({ user }: { user?: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
+  const { perfil, usuario } = useAtribuicoes();
+  const nomeUsuario = user ?? usuario;
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
 
