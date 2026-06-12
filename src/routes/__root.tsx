@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AppSidebar } from "@/components/pce/AppSidebar";
 import { AtribuicoesProvider } from "@/lib/atribuicoes";
 import { ConsolidacaoProvider } from "@/lib/consolidacao-store";
+import { DefesasProvider } from "@/lib/defesas-store";
 
 
 function NotFoundComponent() {
