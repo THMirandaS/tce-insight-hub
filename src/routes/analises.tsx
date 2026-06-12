@@ -335,7 +335,7 @@ function ProcessosPage() {
     setOverrides((p) => ({ ...p, [id]: { ...p[id], situacao: s } }));
 
   const handleCriar = () => {
-    if (!selectedRow) return;
+    if (!selectedRow || !podeIniciarAnalise) return;
     setSituacao(selectedRow.id, "Em Análise");
     navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
