@@ -122,17 +122,19 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AtribuicoesProvider>
-        {hideChrome ? (
-          <Outlet />
-        ) : (
-          <div className="flex min-h-screen w-full bg-background">
-            <AppSidebar />
-            <div className="flex-1 min-w-0">
-              <Outlet />
+        <ConsolidacaoProvider>
+          {hideChrome ? (
+            <Outlet />
+          ) : (
+            <div className="flex min-h-screen w-full bg-background">
+              <AppSidebar />
+              <div className="flex-1 min-w-0">
+                <Outlet />
+              </div>
             </div>
-          </div>
-        )}
-        <Toaster />
+          )}
+          <Toaster />
+        </ConsolidacaoProvider>
       </AtribuicoesProvider>
     </QueryClientProvider>
   );
