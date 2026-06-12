@@ -144,7 +144,8 @@ function AnaliseDetalhePage() {
   const { id } = Route.useParams();
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
-  const row = useMemo(() => ALL_ROWS.find((r) => r.id === id), [id]);
+  const { getRow } = useDefesas();
+  const row = useMemo(() => getRow(id), [id, getRow]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
   const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
