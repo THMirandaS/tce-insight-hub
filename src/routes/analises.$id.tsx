@@ -39,6 +39,7 @@ import { useDefesas } from "@/lib/defesas-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
+import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -89,6 +90,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  { key: "despesa-elemento", label: "Despesa por elemento" },
   { key: "modalidade-aplicacao", label: "Modalidade de aplicação", hasActions: true },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
@@ -209,6 +211,7 @@ function AnaliseDetalhePage() {
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
   const [dotacaoTab, setDotacaoTab] = useState<"principal" | "memoria">("principal");
   const [modalidadeTab, setModalidadeTab] = useState<"principal" | "memoria">("principal");
+  const [elementoTab, setElementoTab] = useState<"principal" | "memoria">("principal");
   const [outrasView, setOutrasView] = useState<"form" | "lista">("lista");
 
   const currentStatus: SubmenuStatus | null =
@@ -676,6 +679,13 @@ function AnaliseDetalhePage() {
               tab={dotacaoTab}
               onTabChange={setDotacaoTab}
             />
+          ) : active === "despesa-elemento" ? (
+            <DespesaElementoContent
+              processo={processoLabel}
+              orgao={orgao}
+              tab={elementoTab}
+              onTabChange={setElementoTab}
+            />
           ) : active === "modalidade-aplicacao" ? (
             <ModalidadeAplicacaoContent
               processo={processoLabel}
@@ -748,6 +758,8 @@ function AnaliseDetalhePage() {
               !(active === "credito-despesas-prg" && despesaTab !== "principal") &&
               !(active === "dsp-dotacao" && DSP_DOTACAO_READ_ONLY) &&
               !(active === "dsp-dotacao" && dotacaoTab !== "principal") &&
+              !(active === "despesa-elemento" && DESPESA_ELEMENTO_READ_ONLY) &&
+              !(active === "despesa-elemento" && elementoTab !== "principal") &&
               !(active === "modalidade-aplicacao" && modalidadeTab !== "principal") &&
               !(active === "restos-pagar" && RESTOS_PAGAR_READ_ONLY) &&
               !(active === "controle-interno" && CI_READ_ONLY) &&
@@ -4064,6 +4076,18 @@ function CreditoDespesasContent({
     </>
   );
 }
+
+// ============================================================
+// DESPESA POR ELEMENTO
+// ============================================================
+
+const DESPESA_ELEMENTO_TRANSITO_JULGADO = false;
+const DESPESA_ELEMENTO_SITUACAO_CONCLUIDA = false;
+const DESPESA_ELEMENTO_USUARIO_AUTORIZADO = true;
+const DESPESA_ELEMENTO_READ_ONLY =
+  DESPESA_ELEMENTO_TRANSITO_JULGADO ||
+  DESPESA_ELEMENTO_SITUACAO_CONCLUIDA ||
+  !DESPESA_ELEMENTO_USUARIO_AUTORIZADO;
 
 // ============================================================
 // DSP POR DOTAÇÃO ORÇAMENTÁRIA
