@@ -103,13 +103,15 @@ const PROC_BASE = [
   1207949, 1207950, 1207958, 1207959, 1208469, 1208470, 1208870, 1208871, 1209646,
 ];
 
-type Row = {
+export type Row = {
   id: string;
   orgao: string;
   numero: string;
   exercicio: string;
   tipo: string;
   tipoAnalise: TipoAnalise;
+  // Número da rodada de defesa (1, 2, 3...). Indefinido em análises iniciais.
+  nrDefesa?: number;
   dtConsol: string;
   dtCriacao: string;
   dtConclusao: string;
