@@ -209,8 +209,8 @@ function AnaliseDetalhePage() {
     );
   }
 
-  // Habilitação dos tópicos de defesa (executor/auditor responsável).
-  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Auditor";
+  // Habilitação dos tópicos de defesa (executor/coordenador responsável).
+  const podeSelecionarDefesa = perfil === "Coordenador" || perfil === "Executor";
   function abrirSelecaoDefesa() {
     setSelecaoDraft(new Set(defesaEnabled));
     setSelecaoOpen(true);
