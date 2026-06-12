@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as JurisdicionadosRouteImport } from './routes/jurisdicionados'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AutuacaoRouteImport } from './routes/autuacao'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalisesIdRouteImport } from './routes/analises.$id'
 import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JurisdicionadosRoute = JurisdicionadosRouteImport.update({
   id: '/jurisdicionados',
   path: '/jurisdicionados',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
+  '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
+  '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/autuacao': typeof AutuacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
+  '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/autuacao'
     | '/dashboard'
     | '/jurisdicionados'
+    | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/autuacao'
     | '/dashboard'
     | '/jurisdicionados'
+    | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/autuacao'
     | '/dashboard'
     | '/jurisdicionados'
+    | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
   fileRoutesById: FileRoutesById
@@ -130,11 +142,19 @@ export interface RootRouteChildren {
   AutuacaoRoute: typeof AutuacaoRoute
   DashboardRoute: typeof DashboardRoute
   JurisdicionadosRoute: typeof JurisdicionadosRoute
+  UsuariosRoute: typeof UsuariosRoute
   AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jurisdicionados': {
       id: '/jurisdicionados'
       path: '/jurisdicionados'
@@ -213,6 +233,7 @@ const rootRouteChildren: RootRouteChildren = {
   AutuacaoRoute: AutuacaoRoute,
   DashboardRoute: DashboardRoute,
   JurisdicionadosRoute: JurisdicionadosRoute,
+  UsuariosRoute: UsuariosRoute,
   AnaliseResponsavelRoute: AnaliseResponsavelRoute,
 }
 export const routeTree = rootRouteImport
