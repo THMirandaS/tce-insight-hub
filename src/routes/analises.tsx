@@ -568,7 +568,7 @@ function ProcessosPage() {
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={13} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
