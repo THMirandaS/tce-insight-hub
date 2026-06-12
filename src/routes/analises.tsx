@@ -410,19 +410,22 @@ function ProcessosPage() {
     if (selectedRow) setSituacao(selectedRow.id, "Disponível");
     setConfirmReinit(false);
   };
-  const openAlterar = () => {
-    if (!selectedRow) return;
-    setNovoAnalista(selectedRow.analista);
-    setAlterarOpen(true);
-  };
-  const saveAlterar = () => {
-    if (selectedRow && novoAnalista) {
-      setOverrides((p) => ({
-        ...p,
-        [selectedRow.id]: { ...p[selectedRow.id], analista: novoAnalista },
-      }));
+
+  // RF — atribuição inline de Responsável (executor) e Revisor pelo
+  // Coordenador. Executor e Revisor não podem ser a mesma pessoa.
+  const setCampoAtribuicao = (
+    id: string,
+    campo: "executor" | "revisor",
+    valor: string | null
+  ) => {
+    const atual = getAtribuicao(id);
+    const novo = { ...atual, [campo]: valor };
+    if (novo.executor && novo.revisor && novo.executor === novo.revisor) {
+      setErroAtrib("Executor e Revisor não podem ser a mesma pessoa.");
+      return;
     }
-    setAlterarOpen(false);
+    setErroAtrib(null);
+    setAtribuicao(id, novo);
   };
 
 
