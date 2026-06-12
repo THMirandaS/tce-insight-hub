@@ -790,12 +790,6 @@ function ProcessosPage() {
               >
                 <RefreshCw className="h-4 w-4" /> Reinicializar
               </Button>
-              <Button
-                onClick={openAlterar}
-                className="gap-2 bg-[#6B7280] text-white hover:bg-[#6B7280]/90"
-              >
-                <UserCog className="h-4 w-4" /> Alterar Responsável
-              </Button>
               {podeNovaDefesa && (
                 <Button
                   onClick={handleNovaDefesa}
