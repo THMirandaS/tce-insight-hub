@@ -507,6 +507,9 @@ function ProcessosPage() {
                 <Th label="Data Criação" k="dtCriacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Data Conclusão" k="dtConclusao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                  Consolidação
+                </th>
                 <Th label="Analista Responsável" k="analista" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Revisor" k="revisor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
