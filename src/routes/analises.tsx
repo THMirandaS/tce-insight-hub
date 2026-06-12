@@ -43,7 +43,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ORGAOS } from "@/lib/pce-data";
+import { useAtribuicoes } from "@/lib/atribuicoes";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
