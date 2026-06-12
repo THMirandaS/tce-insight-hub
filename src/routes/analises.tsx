@@ -250,7 +250,13 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao, perfil } = useAtribuicoes();
+  const { getAtribuicao, setAtribuicao, perfil, usuarios } = useAtribuicoes();
+  const usuariosAtivos = useMemo(
+    () => usuarios.filter((u) => u.ativo).map((u) => u.nome),
+    [usuarios]
+  );
+  const podeAtribuir = perfil === "Coordenador";
+  const [erroAtrib, setErroAtrib] = useState<string | null>(null);
   const { getStatus, consolidar } = useConsolidacao();
   const { allRows, criarDefesa, defesasDoProcesso } = useDefesas();
   const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
