@@ -696,7 +696,11 @@ function AnaliseDetalhePage() {
               onTabChange={setModalidadeTab}
             />
           ) : active === "consistencia" ? (
-            <ConsistenciaContent processo={processoLabel} orgao={orgao} />
+            <ConsistenciaContent
+              processo={processoLabel}
+              orgao={orgao}
+              poder={jurisdicionado.poder}
+            />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
