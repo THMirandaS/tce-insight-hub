@@ -334,6 +334,21 @@ function ProcessosPage() {
     : "Concluída";
   const podeIniciarAnalise = consolStatus === "Concluída";
 
+  // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
+  // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
+  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
+  const podeNovaDefesa = useMemo(() => {
+    if (!selectedRow) return false;
+    if (perfil !== "Coordenador") return false;
+    if (selectedRow.tipoAnalise !== "Análise Inicial") return false;
+    if (!concluida(selectedRow.situacao)) return false;
+    // Considera overrides de situação aplicados às defesas existentes.
+    const defesas = defesasDoProcesso(selectedRow.numero).map(
+      (d) => base.find((b) => b.id === d.id) ?? d
+    );
+    return !defesas.some((d) => !concluida(d.situacao));
+  }, [selectedRow, perfil, defesasDoProcesso, base]);
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
