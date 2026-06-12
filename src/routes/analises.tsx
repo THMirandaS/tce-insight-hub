@@ -277,11 +277,11 @@ function ProcessosPage() {
   const base = useMemo(
     () =>
       (PERFIL === "Coordenador"
-        ? ALL_ROWS
-        : ALL_ROWS.filter((r) => r.analista === USUARIO_AUDITOR)
+        ? allRows
+        : allRows.filter((r) => r.analista === USUARIO_AUDITOR)
       ).map(applyOverride),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [overrides]
+    [overrides, allRows]
   );
 
   const filtered = useMemo(() => {
