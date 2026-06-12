@@ -5756,7 +5756,7 @@ function ControleInternoContent({
                   <td className="px-3 py-2 align-top">{a.relatorio}</td>
                   <td className="px-3 py-2 align-top">{a.pagina}</td>
                   <td className="px-3 py-2 text-right align-top">
-                    {a.valor === null ? "—" : fmtMoney(a.valor)}
+                    {a.valor === null ? "—" : fmtBRL(a.valor)}
                   </td>
                   <td className="px-3 py-2 align-top">
                     <MaterialBadge valor={a.valor} />
