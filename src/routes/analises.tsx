@@ -595,7 +595,9 @@ function ProcessosPage() {
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {r.tipoAnalise}
+                        {r.tipoAnalise === "Análise de Defesa" && r.nrDefesa
+                          ? `Análise de Defesa nº ${r.nrDefesa}`
+                          : r.tipoAnalise}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
