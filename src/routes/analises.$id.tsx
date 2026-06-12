@@ -5295,7 +5295,7 @@ function DespesasPessoalContent({
   );
 }
 
-/* ===================== Controle Interno ===================== */
+/* ===================== Adequação dos relatórios ===================== */
 
 const CI_TRANSITO_JULGADO = false;
 const CI_SITUACAO_CONCLUIDA = false;
@@ -5305,118 +5305,151 @@ const CI_READ_ONLY =
 
 const CI_MAX_TEXTO = 4000;
 
-type CIMaterialidade = "Alta" | "Média" | "Baixa";
+// Constante de materialidade (configurável). Default: R$ 1.000.000.
+const CI_MATERIALIDADE = 1_000_000;
+
+// Relatórios que compõem o processo (origem dos apontamentos).
+const CI_RELATORIOS = [
+  "Relatório de Controle Interno (RCI 2024)",
+  "Relatório de Gestão Fiscal",
+  "Demonstrações Contábeis",
+  "Balanço Geral do Estado",
+] as const;
+
 type CISimNao = "Sim" | "Não";
-type CIInciso = "Inciso II" | "Inciso III" | "Não se enquadra";
+type CIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
 
 type CIApontamento = {
   id: string;
   apontamento: string;
+  // Campos descritivos (pré-preenchidos pela IA, editáveis)
   relatorio: string;
-  pecaPagina: string;
+  pagina: string;
   valor: number | null;
-  materialidade: CIMaterialidade;
+  // Questionário S/N
   danoErario: CISimNao;
   quantificado: CISimNao;
-  riscoRelevante: CISimNao;
-  inciso: CIInciso;
-  conclusao: string;
-  inserirRelatorio: boolean;
-  entendimento: string;
+  relevanteMaterial: CISimNao;
+  enquadraIncisos: CISimNao;
+  // Avaliação / encaminhamento
+  encaminhamento: CIEncaminhamento;
+  descEncaminhamento: string;
+  avaliacao: string; // providências da Avaliação da Inconformidade
+  entendimento: string; // NUNCA exibido no relatório/PDF
+  desconsiderado: boolean;
 };
+
+function ciIsMaterial(valor: number | null): boolean {
+  return valor !== null && valor >= CI_MATERIALIDADE;
+}
+
+function ciEncBadge(e: CIEncaminhamento): string {
+  if (e === "Nenhum") return "bg-gray-100 text-gray-700 border border-gray-300";
+  if (e === "Recomendação")
+    return "bg-blue-100 text-blue-800 border border-blue-300";
+  return "bg-orange-100 text-orange-800 border border-orange-300";
+}
 
 const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
   {
     id: "ci1",
     apontamento:
       "Levantamento incompleto dos inventários físicos e financeiros dos bens móveis",
-    relatorio: "RCI 2024",
-    pecaPagina: "Peça 21, págs. 45-46",
+    relatorio: "Relatório de Controle Interno (RCI 2024)",
+    pagina: "Peça 21, págs. 45-46",
     valor: 17371.2,
-    materialidade: "Média",
     danoErario: "Não",
     quantificado: "Sim",
-    riscoRelevante: "Sim",
-    inciso: "Inciso II",
-    conclusao:
-      "Determinar levantamento completo dos inventários físicos e financeiros",
-    inserirRelatorio: true,
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar que a gestão realize o levantamento completo dos inventários físicos e financeiros dos itens determinados pela legislação.",
+    avaliacao: "Impropriedade de natureza formal considerada relevante.",
     entendimento:
-      "Impropriedade de natureza formal considerada relevante",
+      "Impropriedade de natureza formal considerada relevante para o controle patrimonial.",
+    desconsiderado: false,
   },
   {
     id: "ci2",
-    apontamento:
-      "Imóveis contabilizados incorretamente por valor de R$ 0,01",
-    relatorio: "RCI 2024",
-    pecaPagina: "Peça 23, pág. 34",
+    apontamento: "Imóveis contabilizados incorretamente por valor de R$ 0,01",
+    relatorio: "Demonstrações Contábeis",
+    pagina: "Peça 23, pág. 34",
     valor: 0.01,
-    materialidade: "Alta",
     danoErario: "Não",
     quantificado: "Sim",
-    riscoRelevante: "Sim",
-    inciso: "Inciso III",
-    conclusao:
-      "Determinar apresentação do andamento da tratativa com SEPLAG",
-    inserirRelatorio: true,
-    entendimento: "Bens avaliados incorretamente sem regularização",
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar que sejam apresentados o andamento ou o resultado da tratativa com a SEPLAG.",
+    avaliacao: "Bens avaliados incorretamente sem regularização.",
+    entendimento: "Bens avaliados incorretamente sem regularização tempestiva.",
+    desconsiderado: false,
   },
   {
     id: "ci3",
-    apontamento:
-      "Documentos referentes à execução orçamentária sem assinatura",
-    relatorio: "RCI 2024",
-    pecaPagina: "Peça 23, pág. 41",
+    apontamento: "Documentos referentes à execução orçamentária sem assinatura",
+    relatorio: "Relatório de Controle Interno (RCI 2024)",
+    pagina: "Peça 23, pág. 41",
     valor: null,
-    materialidade: "Média",
     danoErario: "Não",
     quantificado: "Não",
-    riscoRelevante: "Sim",
-    inciso: "Inciso II",
-    conclusao:
-      "Determinar assinatura digital de todos os documentos até o término do exercício",
-    inserirRelatorio: true,
-    entendimento: "Descumprimento do art. 13 do Decreto nº 48.934/2024",
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar que a gestão aprimore seus controles para assinatura digital de todos os documentos até o término do exercício financeiro.",
+    avaliacao: "Descumprimento do art. 13 do Decreto nº 48.934/2024.",
+    entendimento: "Descumprimento do art. 13 do Decreto nº 48.934/2024.",
+    desconsiderado: false,
   },
   {
     id: "ci4",
     apontamento: "Divergência de conciliação contábil — R$ 915.603,62",
-    relatorio: "RCI 2024",
-    pecaPagina: "Peça 21 pág. 30 / Peça 23 págs. 19, 28 e 96",
+    relatorio: "Demonstrações Contábeis",
+    pagina: "Peça 21 pág. 30 / Peça 23 págs. 19, 28 e 96",
     valor: 915603.62,
-    materialidade: "Alta",
     danoErario: "Não",
     quantificado: "Sim",
-    riscoRelevante: "Sim",
-    inciso: "Inciso II",
-    conclusao:
-      "Recomendar continuidade da apuração e apresentação dos resultados em futura PCE",
-    inserirRelatorio: true,
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    encaminhamento: "Recomendação",
+    descEncaminhamento:
+      "Recomendar a continuidade da apuração e a apresentação dos resultados em futura PCE.",
+    avaliacao: "Saldo contábil sem correspondência bancária ainda em apuração.",
     entendimento:
-      "Saldo contábil sem correspondência bancária ainda em apuração",
+      "Saldo contábil sem correspondência bancária ainda em apuração.",
+    desconsiderado: false,
   },
   {
     id: "ci5",
     apontamento:
       "Emissão intempestiva do relatório do inventário físico e financeiro dos materiais em almoxarifado",
-    relatorio: "RCI 2024",
-    pecaPagina: "Peça 21",
+    relatorio: "Relatório de Controle Interno (RCI 2024)",
+    pagina: "Peça 21",
     valor: null,
-    materialidade: "Baixa",
     danoErario: "Não",
     quantificado: "Não",
-    riscoRelevante: "Não",
-    inciso: "Não se enquadra",
-    conclusao:
-      "Recomendar aprimoramento dos trabalhos das comissões inventariantes",
-    inserirRelatorio: true,
-    entendimento:
-      "Relatório emitido em 12/01/2025, após prazo legal de 10/01/2025",
+    relevanteMaterial: "Não",
+    enquadraIncisos: "Não",
+    encaminhamento: "Recomendação",
+    descEncaminhamento:
+      "Recomendar o aprimoramento dos trabalhos das comissões inventariantes.",
+    avaliacao: "Relatório emitido após o prazo legal.",
+    entendimento: "Relatório emitido em 12/01/2025, após prazo legal de 10/01/2025.",
+    desconsiderado: false,
   },
 ];
 
+// Store compartilhado para que a Conclusão reflita os apontamentos vigentes.
+const CI_STORE: { apontamentos: CIApontamento[]; adequado: "sim" | "nao" } = {
+  apontamentos: CI_APONTAMENTOS_INICIAL,
+  adequado: "sim",
+};
+
 const CI_RESUMO_IA =
-  "A análise do RCI identificou 5 apontamentos relevantes, sendo 2 de alta materialidade relacionados a imóveis contabilizados incorretamente e divergência de conciliação contábil. Não foram identificados danos ao erário. Recomenda-se atenção especial aos apontamentos dos tópicos 4.3.2 e 4.3.3, que demandam encaminhamento com determinação.";
+  "A análise do RCI identificou 5 apontamentos relevantes, sendo 2 de alta materialidade relacionados a imóveis contabilizados incorretamente e divergência de conciliação contábil. Não foram identificados danos ao erário. Recomenda-se atenção especial aos apontamentos que demandam encaminhamento com determinação.";
 
 const CI_HISTORICO: ReceitasHistorico[] = [
   {
@@ -5429,11 +5462,72 @@ const CI_HISTORICO: ReceitasHistorico[] = [
   {
     ts: "20/05/2026 14:32",
     usuario: "Auditor João Silva",
-    campo: "Apontamento 2 - Conclusão",
+    campo: "Apontamento 2 - Encaminhamento",
     anterior: "Recomendar regularização",
     novo: "Determinar apresentação do andamento da tratativa com SEPLAG",
   },
 ];
+
+const CI_EMPTY_FORM: Omit<CIApontamento, "id" | "desconsiderado"> = {
+  apontamento: "",
+  relatorio: CI_RELATORIOS[0],
+  pagina: "",
+  valor: null,
+  danoErario: "Não",
+  quantificado: "Não",
+  relevanteMaterial: "Não",
+  enquadraIncisos: "Não",
+  encaminhamento: "Nenhum",
+  descEncaminhamento: "",
+  avaliacao: "",
+  entendimento: "",
+};
+
+function MaterialBadge({ valor }: { valor: number | null }) {
+  if (valor === null) return <span className="text-xs text-muted-foreground">—</span>;
+  const material = ciIsMaterial(valor);
+  return (
+    <span
+      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${
+        material
+          ? "border border-red-300 bg-red-100 text-red-800"
+          : "border border-gray-300 bg-gray-100 text-gray-700"
+      }`}
+    >
+      {material ? "Material" : "Não material"}
+    </span>
+  );
+}
+
+function SimNaoRadios({
+  name,
+  value,
+  disabled,
+  onChange,
+}: {
+  name: string;
+  value: CISimNao;
+  disabled?: boolean;
+  onChange: (v: CISimNao) => void;
+}) {
+  return (
+    <div className="flex gap-4">
+      {(["Sim", "Não"] as CISimNao[]).map((o) => (
+        <label key={o} className="inline-flex items-center gap-2 text-sm">
+          <input
+            type="radio"
+            name={name}
+            checked={value === o}
+            disabled={disabled}
+            onChange={() => onChange(o)}
+            className="h-4 w-4 accent-[#1A56DB]"
+          />
+          {o}
+        </label>
+      ))}
+    </div>
+  );
+}
 
 function ControleInternoContent({
   processo,
@@ -5444,55 +5538,83 @@ function ControleInternoContent({
 }) {
   const readOnly = CI_READ_ONLY;
 
-  const [reqMinimos, setReqMinimos] = useState(true);
-  const [pesquisavel, setPesquisavel] = useState(true);
-  const [adequado, setAdequado] = useState<"sim" | "nao" | null>("sim");
-  const [enquadraIncisos, setEnquadraIncisos] = useState<
-    "sim" | "nao" | null
-  >(null);
+  // Pergunta pré-preenchida pela IA, editável pelo auditor.
+  const [adequado, setAdequado] = useState<"sim" | "nao">(CI_STORE.adequado);
 
   const [apontamentos, setApontamentos] = useState<CIApontamento[]>(
-    CI_APONTAMENTOS_INICIAL,
+    CI_STORE.apontamentos,
   );
   const [texto, setTexto] = useState("");
   const [incluir, setIncluir] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  // Diálogo de edição
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState<Omit<CIApontamento, "id" | "desconsiderado">>(
+    CI_EMPTY_FORM,
+  );
+
+  // Persiste no store compartilhado
+  useEffect(() => {
+    CI_STORE.apontamentos = apontamentos;
+  }, [apontamentos]);
+  useEffect(() => {
+    CI_STORE.adequado = adequado;
+  }, [adequado]);
+
   const textoRestantes = CI_MAX_TEXTO - texto.length;
 
   const exibirResumoIA = apontamentos.some(
-    (a) => a.materialidade === "Alta" || a.danoErario === "Sim",
+    (a) => !a.desconsiderado && (ciIsMaterial(a.valor) || a.danoErario === "Sim"),
   );
 
-  function updateAp(id: string, patch: Partial<CIApontamento>) {
-    setApontamentos((arr) =>
-      arr.map((a) => (a.id === id ? { ...a, ...patch } : a)),
-    );
+  function updateForm(patch: Partial<typeof form>) {
+    setForm((f) => ({ ...f, ...patch }));
   }
-  function addAp() {
-    setApontamentos((arr) => [
-      ...arr,
-      {
-        id: `ci${Date.now()}`,
-        apontamento: "",
-        relatorio: "",
-        pecaPagina: "",
-        valor: null,
-        materialidade: "Média",
-        danoErario: "Não",
-        quantificado: "Não",
-        riscoRelevante: "Não",
-        inciso: "Não se enquadra",
-        conclusao: "",
-        inserirRelatorio: false,
-        entendimento: "",
-      },
-    ]);
+
+  function openEdit(a: CIApontamento) {
+    setEditId(a.id);
+    const { id: _id, desconsiderado: _d, ...rest } = a;
+    setForm(rest);
+  }
+  function openNew() {
+    setEditId("__new__");
+    setForm(CI_EMPTY_FORM);
+  }
+  function saveEdit() {
+    if (editId === "__new__") {
+      setApontamentos((arr) => [
+        ...arr,
+        { id: `ci${Date.now()}`, desconsiderado: false, ...form },
+      ]);
+    } else if (editId) {
+      setApontamentos((arr) =>
+        arr.map((a) => (a.id === editId ? { ...a, ...form } : a)),
+      );
+    }
+    setEditId(null);
+  }
+  function toggleDesconsiderar(id: string) {
+    setApontamentos((arr) =>
+      arr.map((a) =>
+        a.id === id ? { ...a, desconsiderado: !a.desconsiderado } : a,
+      ),
+    );
   }
   function removeAp(id: string) {
     setApontamentos((arr) => arr.filter((a) => a.id !== id));
     setConfirmDelete(null);
+  }
+
+  // Linha entra no PDF somente se não desconsiderada e com encaminhamento
+  // Recomendação ou Determinação.
+  function entraNoPdf(a: CIApontamento): boolean {
+    return (
+      !a.desconsiderado &&
+      (a.encaminhamento === "Recomendação" ||
+        a.encaminhamento === "Determinação")
+    );
   }
 
   return (
@@ -5527,123 +5649,65 @@ function ControleInternoContent({
       )}
 
       <h2 className="mb-4 text-base font-semibold underline">
-        Controle Interno:
+        Adequação dos relatórios:
       </h2>
 
-      {/* Bloco 1 - Verificações iniciais */}
-      <div className="space-y-4 rounded-md border border-border bg-white p-4">
-        <div className="space-y-3">
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="ci-req-minimos"
-              checked={reqMinimos}
-              disabled={readOnly}
-              onCheckedChange={(c) => setReqMinimos(c === true)}
-            />
-            <Label htmlFor="ci-req-minimos" className="text-sm leading-tight">
-              O relatório contém as informações mínimas exigidas pela DN.
-            </Label>
-          </div>
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="ci-pesquisavel"
-              checked={pesquisavel}
-              disabled={readOnly}
-              onCheckedChange={(c) => setPesquisavel(c === true)}
-            />
-            <Label htmlFor="ci-pesquisavel" className="text-sm leading-tight">
-              Documento em formato digital pesquisável e não digitalizado como
-              imagem.
-            </Label>
-          </div>
-        </div>
-
-        <div className="border-t border-border" />
-
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold">
-            O relatório está adequado (possui os requisitos técnicos e formais
-            relevantes)?
+      {/* Pergunta pré-preenchida pela IA */}
+      <div className="space-y-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-4">
+        <div className="flex items-start gap-2 text-sm text-[#0D1B2A]">
+          <span aria-hidden className="text-lg leading-none">
+            ✨
+          </span>
+          <Label className="text-sm font-semibold leading-snug">
+            O relatório de controle interno está adequado (possui os requisitos
+            técnicos e formais relevantes)?
           </Label>
-          <div className="flex flex-wrap gap-6">
-            {(
-              [
-                { v: "sim", label: "Sim" },
-                { v: "nao", label: "Não" },
-              ] as const
-            ).map((o) => (
-              <label
-                key={o.v}
-                className="inline-flex items-center gap-2 text-sm"
-              >
-                <input
-                  type="radio"
-                  name="ci-adequado"
-                  value={o.v}
-                  checked={adequado === o.v}
-                  disabled={readOnly}
-                  onChange={() => setAdequado(o.v)}
-                  className="h-4 w-4 accent-[#1A56DB]"
-                />
-                {o.label}
-              </label>
-            ))}
-          </div>
         </div>
-
-        {adequado === "nao" && (
-          <div className="space-y-2 rounded-md bg-[#F4F5F7] p-3">
-            <Label className="text-sm font-semibold">
-              A inadequação identificada se enquadra nos incisos II ou III do
-              Art. 97 do Regimento Interno?
-            </Label>
-            <div className="flex flex-wrap gap-6">
-              {(
-                [
-                  { v: "sim", label: "Sim" },
-                  { v: "nao", label: "Não" },
-                ] as const
-              ).map((o) => (
-                <label
-                  key={o.v}
-                  className="inline-flex items-center gap-2 text-sm"
-                >
-                  <input
-                    type="radio"
-                    name="ci-incisos"
-                    value={o.v}
-                    checked={enquadraIncisos === o.v}
-                    disabled={readOnly}
-                    onChange={() => setEnquadraIncisos(o.v)}
-                    className="h-4 w-4 accent-[#1A56DB]"
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-6 pl-7">
+          {(
+            [
+              { v: "sim", label: "SIM" },
+              { v: "nao", label: "NÃO" },
+            ] as const
+          ).map((o) => (
+            <label key={o.v} className="inline-flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="ci-adequado"
+                value={o.v}
+                checked={adequado === o.v}
+                disabled={readOnly}
+                onChange={() => setAdequado(o.v)}
+                className="h-4 w-4 accent-[#1A56DB]"
+              />
+              {o.label}
+            </label>
+          ))}
+        </div>
+        <p className="pl-7 text-xs text-muted-foreground" data-pdf-hide>
+          Resposta sugerida pela IA. Revise e edite conforme a análise.
+        </p>
       </div>
 
-      {/* Bloco 2 - Tabela de apontamentos */}
+      {/* Tabela de apontamentos */}
       <div className="mt-6 flex items-start gap-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-3 text-sm text-[#0D1B2A]">
         <span aria-hidden className="text-lg leading-none">
           ✨
         </span>
         <p>
-          Apontamentos extraídos automaticamente pela IA a partir da leitura
-          do RCI enviado pelo órgão via e-TCE. Revise, edite ou adicione
-          apontamentos conforme necessário.
+          Apontamentos identificados automaticamente pela IA a partir da leitura
+          dos relatórios enviados pelo órgão via e-TCE. Revise, edite,
+          desconsidere ou adicione apontamentos conforme necessário.
         </p>
       </div>
 
       <div className="mb-3 mt-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Apontamentos do RCI</h3>
+        <h3 className="text-sm font-semibold">Apontamentos</h3>
         <div className="flex items-center gap-2" data-pdf-hide>
           {!readOnly && (
             <Button
               type="button"
-              onClick={addAp}
+              onClick={openNew}
               className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
             >
               + Adicionar Apontamento
@@ -5661,194 +5725,98 @@ function ControleInternoContent({
       </div>
 
       <div className="overflow-x-auto rounded-md border border-border">
-        <table className="w-full min-w-[1800px] text-sm">
+        <table className="w-full min-w-[1100px] text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
               <th className="px-3 py-2 text-left">Apontamento</th>
-              <th className="px-3 py-2 text-left">Relatório</th>
-              <th className="px-3 py-2 text-left">Peça/Página</th>
+              <th className="px-3 py-2 text-left">Relatório de origem</th>
+              <th className="px-3 py-2 text-left">Página</th>
               <th className="px-3 py-2 text-right">Valor</th>
               <th className="px-3 py-2 text-left">Materialidade</th>
-              <th className="px-3 py-2 text-left">Dano ao Erário?</th>
-              <th className="px-3 py-2 text-left">Quantificado?</th>
-              <th className="px-3 py-2 text-left">Risco relevante?</th>
-              <th className="px-3 py-2 text-left">Inciso II ou III?</th>
-              <th className="px-3 py-2 text-left">Conclusão e Encaminhamento</th>
-              <th className="px-3 py-2 text-center">Inserir no Relatório</th>
-              <th className="px-3 py-2 text-left">Entendimento técnico</th>
-              {!readOnly && <th className="px-3 py-2 text-center">Ações</th>}
+              <th className="px-3 py-2 text-left">Encaminhamento</th>
+              <th className="px-3 py-2 text-center" data-pdf-hide>
+                Ações
+              </th>
             </tr>
           </thead>
           <tbody>
-            {apontamentos.map((a, i) => (
-              <tr key={a.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                <td className="min-w-[220px] px-2 py-1.5 align-top">
-                  <textarea
-                    value={a.apontamento}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { apontamento: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  />
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <Input
-                    value={a.relatorio}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { relatorio: e.target.value })
-                    }
-                    className="w-28 text-xs"
-                  />
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <Input
-                    value={a.pecaPagina}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { pecaPagina: e.target.value })
-                    }
-                    className="w-44 text-xs"
-                  />
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <MoneyInput
-                    value={a.valor ?? 0}
-                    readOnly={readOnly}
-                    onChange={(n) => updateAp(a.id, { valor: n })}
-                  />
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <select
-                    value={a.materialidade}
-                    disabled={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, {
-                        materialidade: e.target.value as CIMaterialidade,
-                      })
-                    }
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  >
-                    <option>Alta</option>
-                    <option>Média</option>
-                    <option>Baixa</option>
-                  </select>
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <select
-                    value={a.danoErario}
-                    disabled={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, {
-                        danoErario: e.target.value as CISimNao,
-                      })
-                    }
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  >
-                    <option>Sim</option>
-                    <option>Não</option>
-                  </select>
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <select
-                    value={a.quantificado}
-                    disabled={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, {
-                        quantificado: e.target.value as CISimNao,
-                      })
-                    }
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  >
-                    <option>Sim</option>
-                    <option>Não</option>
-                  </select>
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <select
-                    value={a.riscoRelevante}
-                    disabled={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, {
-                        riscoRelevante: e.target.value as CISimNao,
-                      })
-                    }
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  >
-                    <option>Sim</option>
-                    <option>Não</option>
-                  </select>
-                </td>
-                <td className="px-2 py-1.5 align-top">
-                  <select
-                    value={a.inciso}
-                    disabled={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { inciso: e.target.value as CIInciso })
-                    }
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  >
-                    <option>Inciso II</option>
-                    <option>Inciso III</option>
-                    <option>Não se enquadra</option>
-                  </select>
-                </td>
-                <td className="min-w-[220px] px-2 py-1.5 align-top">
-                  <textarea
-                    value={a.conclusao}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { conclusao: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  />
-                </td>
-                <td className="px-2 py-1.5 text-center align-top">
-                  <Checkbox
-                    checked={a.inserirRelatorio}
-                    disabled={readOnly}
-                    onCheckedChange={(c) =>
-                      updateAp(a.id, { inserirRelatorio: c === true })
-                    }
-                  />
-                </td>
-                <td className="min-w-[220px] px-2 py-1.5 align-top">
-                  <textarea
-                    value={a.entendimento}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      updateAp(a.id, { entendimento: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
-                  />
-                </td>
-                {!readOnly && (
-                  <td className="px-2 py-1.5 align-top">
+            {apontamentos.map((a, i) => {
+              const dim = a.desconsiderado;
+              return (
+                <tr
+                  key={a.id}
+                  data-pdf-hide={!entraNoPdf(a) ? "" : undefined}
+                  className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                    dim ? "text-muted-foreground line-through opacity-60" : ""
+                  }`}
+                >
+                  <td className="min-w-[260px] px-3 py-2 align-top">
+                    {a.apontamento}
+                  </td>
+                  <td className="px-3 py-2 align-top">{a.relatorio}</td>
+                  <td className="px-3 py-2 align-top">{a.pagina}</td>
+                  <td className="px-3 py-2 text-right align-top">
+                    {a.valor === null ? "—" : fmtMoney(a.valor)}
+                  </td>
+                  <td className="px-3 py-2 align-top">
+                    <MaterialBadge valor={a.valor} />
+                  </td>
+                  <td className="px-3 py-2 align-top">
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${ciEncBadge(
+                        a.encaminhamento,
+                      )}`}
+                    >
+                      {a.encaminhamento}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2 align-top" data-pdf-hide>
                     <div className="flex items-center justify-center gap-2">
                       <button
                         type="button"
+                        onClick={() => openEdit(a)}
                         className="text-[#1A56DB] hover:opacity-80"
                         title="Editar"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmDelete(a.id)}
-                        className="text-red-600 hover:opacity-80"
-                        title="Excluir"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => toggleDesconsiderar(a.id)}
+                          className={
+                            dim
+                              ? "text-green-600 hover:opacity-80"
+                              : "text-amber-600 hover:opacity-80"
+                          }
+                          title={
+                            dim
+                              ? "Reconsiderar apontamento"
+                              : "Desconsiderar apontamento"
+                          }
+                        >
+                          {dim ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(a.id)}
+                          className="text-red-600 hover:opacity-80"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
-                )}
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -5860,9 +5828,7 @@ function ControleInternoContent({
       )}
 
       <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
+        <Label className="text-sm font-semibold">Considerações adicionais:</Label>
         <textarea
           value={texto}
           readOnly={readOnly}
@@ -5887,6 +5853,241 @@ function ControleInternoContent({
           </Label>
         </div>
       </div>
+
+      {/* Diálogo de edição do apontamento */}
+      <Dialog
+        open={editId !== null}
+        onOpenChange={(o) => !o && setEditId(null)}
+      >
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editId === "__new__" ? "Novo apontamento" : "Editar apontamento"}
+            </DialogTitle>
+            <DialogDescription>
+              Campos pré-preenchidos pela IA e editáveis pelo auditor.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            {/* Descrição */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Apontamento</Label>
+              <textarea
+                value={form.apontamento}
+                readOnly={readOnly}
+                onChange={(e) => updateForm({ apontamento: e.target.value })}
+                rows={2}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            {/* Campos descritivos */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Relatório de origem
+                </Label>
+                <select
+                  value={form.relatorio}
+                  disabled={readOnly}
+                  onChange={(e) => updateForm({ relatorio: e.target.value })}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {CI_RELATORIOS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Página do relatório
+                </Label>
+                <Input
+                  value={form.pagina}
+                  readOnly={readOnly}
+                  onChange={(e) => updateForm({ pagina: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Valor (R$){" "}
+                  <span className="font-normal text-muted-foreground">
+                    (opcional)
+                  </span>
+                </Label>
+                <MoneyInput
+                  value={form.valor ?? 0}
+                  readOnly={readOnly}
+                  onChange={(n) => updateForm({ valor: n })}
+                />
+              </div>
+              <div className="flex items-end pb-1">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">
+                    Classificação automática
+                  </Label>
+                  <div>
+                    <MaterialBadge valor={form.valor} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Questionário S/N */}
+            <div className="space-y-3 rounded-md border border-border bg-[#F4F5F7] p-4">
+              <h4 className="text-sm font-semibold">Avaliação (Sim / Não)</h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-sm">Dano ao erário?</Label>
+                  <SimNaoRadios
+                    name="ci-dano"
+                    value={form.danoErario}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ danoErario: v })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">Quantificado?</Label>
+                  <SimNaoRadios
+                    name="ci-quant"
+                    value={form.quantificado}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ quantificado: v })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">Relevante ou Material?</Label>
+                  <SimNaoRadios
+                    name="ci-relev"
+                    value={form.relevanteMaterial}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ relevanteMaterial: v })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">
+                    Enquadra-se nos incisos II ou III (art. 48 da LC 102/2008)?
+                  </Label>
+                  <SimNaoRadios
+                    name="ci-incisos"
+                    value={form.enquadraIncisos}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ enquadraIncisos: v })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Encaminhamento */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Encaminhamento</Label>
+                <select
+                  value={form.encaminhamento}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    updateForm({
+                      encaminhamento: e.target.value as CIEncaminhamento,
+                    })
+                  }
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option>Nenhum</option>
+                  <option>Recomendação</option>
+                  <option>Determinação</option>
+                </select>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-sm font-semibold">
+                  Descrição do encaminhamento
+                </Label>
+                <textarea
+                  value={form.descEncaminhamento}
+                  readOnly={readOnly}
+                  onChange={(e) =>
+                    updateForm({ descEncaminhamento: e.target.value })
+                  }
+                  rows={2}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Bloco de avaliação da inconformidade */}
+            <div className="rounded-md border border-red-300 bg-red-50 p-4">
+              <div className="mb-3 flex items-start gap-3">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
+                <div>
+                  <h4 className="text-base font-semibold text-red-800">
+                    Avaliação da Inconformidade
+                  </h4>
+                  <p className="mt-1 text-sm text-red-800">
+                    Registre as providências e justificativas relativas ao
+                    apontamento identificado.
+                  </p>
+                </div>
+              </div>
+              <Label className="text-sm font-semibold text-red-900">
+                Providências / Justificativas:
+              </Label>
+              <textarea
+                value={form.avaliacao}
+                readOnly={readOnly}
+                onChange={(e) =>
+                  updateForm({ avaliacao: e.target.value.slice(0, CI_MAX_TEXTO) })
+                }
+                maxLength={CI_MAX_TEXTO}
+                rows={3}
+                className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
+
+            {/* Entendimento técnico — nunca exibido no relatório/PDF */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Entendimento técnico
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Campo de uso interno. Não é exibido no relatório nem no PDF.
+              </p>
+              <textarea
+                value={form.entendimento}
+                readOnly={readOnly}
+                onChange={(e) =>
+                  updateForm({
+                    entendimento: e.target.value.slice(0, CI_MAX_TEXTO),
+                  })
+                }
+                maxLength={CI_MAX_TEXTO}
+                rows={3}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditId(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            {!readOnly && (
+              <Button
+                type="button"
+                onClick={saveEdit}
+                className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+              >
+                <Check className="mr-1 h-4 w-4" /> Salvar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
