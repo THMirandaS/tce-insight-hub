@@ -553,6 +553,13 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <ConsolidacaoCell
+                        status={getStatus(r.id)}
+                        podeConsolidar={podeConsolidar}
+                        onConsolidar={() => consolidar(r.id)}
+                      />
+                    </td>
                     <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
