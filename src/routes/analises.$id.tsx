@@ -556,7 +556,9 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
-            <InfoCell label="Auditor" value="Auditor 01" />
+            <InfoCell label="Responsável" value={executor} />
+            <Divider />
+            <InfoCell label="Revisor" value={revisor} />
             <Divider />
             <InfoCell
               label="Tipo de Análise"
