@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AppSidebar } from "@/components/pce/AppSidebar";
+import { AtribuicoesProvider } from "@/lib/atribuicoes";
 
 
 function NotFoundComponent() {
