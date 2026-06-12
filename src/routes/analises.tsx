@@ -738,8 +738,8 @@ function ProcessosPage() {
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Processo sem executor atribuído. Atribua um executor em
-                      "Atribuição de Análises" para abrir.
+                      Processo sem responsável atribuído. Atribua um responsável
+                      na coluna "Responsável" desta listagem para abrir.
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
