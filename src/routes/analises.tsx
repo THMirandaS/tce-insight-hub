@@ -876,6 +876,54 @@ function SimpleSelect({
   );
 }
 
+const NAO_ATRIB = "__none__";
+
+function AtribSelect({
+  value,
+  editavel,
+  placeholder,
+  options,
+  excluir,
+  onChange,
+}: {
+  value: string | null;
+  editavel: boolean;
+  placeholder: string;
+  options: string[];
+  excluir: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  if (!editavel) {
+    return value ? (
+      <span className="text-foreground">{value}</span>
+    ) : (
+      <span className="text-xs italic text-muted-foreground">
+        Não atribuído
+      </span>
+    );
+  }
+  return (
+    <Select
+      value={value ?? NAO_ATRIB}
+      onValueChange={(v) => onChange(v === NAO_ATRIB ? null : v)}
+    >
+      <SelectTrigger className="h-9 w-[180px]">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        <SelectItem value={NAO_ATRIB}>— Não atribuído —</SelectItem>
+        {options
+          .filter((o) => o !== excluir)
+          .map((o) => (
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
+          ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function Th({
   label,
   k,
