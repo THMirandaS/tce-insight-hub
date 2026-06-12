@@ -284,6 +284,11 @@ function ProcessosPage() {
     [selectedId, base]
   );
 
+  // Processo sem executor atribuído: abertura bloqueada (RF — atribuições).
+  const semExecutor = selectedRow
+    ? !getAtribuicao(selectedRow.id).executor
+    : false;
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
