@@ -603,7 +603,34 @@ function ProcessosPage() {
               </span>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
-              {selectedRow.situacao === "Disponível" ? (
+              {semExecutor ? (
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button
+                          disabled
+                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90 disabled:opacity-40"
+                        >
+                          {selectedRow.situacao === "Disponível" ? (
+                            <>
+                              <Plus className="h-4 w-4" /> Criar
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4" /> Visualizar
+                            </>
+                          )}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Processo sem executor atribuído. Atribua um executor em
+                      "Atribuição de Análises" para abrir.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : selectedRow.situacao === "Disponível" ? (
                 <Button
                   onClick={handleCriar}
                   className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
