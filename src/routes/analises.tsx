@@ -294,8 +294,8 @@ function ProcessosPage() {
       if (f.exercicios.length && !f.exercicios.includes(r.exercicio)) return false;
       if (f.numero && !r.numero.includes(f.numero.trim())) return false;
       if (f.orgao !== "all" && r.orgao !== f.orgao) return false;
-      if (f.analista !== "all" && r.analista !== f.analista) return false;
-      if (f.revisor !== "all" && r.revisor !== f.revisor) return false;
+      if (f.analista !== "all" && getAtribuicao(r.id).executor !== f.analista) return false;
+      if (f.revisor !== "all" && getAtribuicao(r.id).revisor !== f.revisor) return false;
       if (f.relator !== "all" && r.relator !== f.relator) return false;
       if (f.situacao !== "all" && r.situacao !== f.situacao) return false;
       if (f.tipo !== "all" && r.tipo !== f.tipo) return false;
