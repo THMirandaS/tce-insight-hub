@@ -723,6 +723,8 @@ function AnaliseDetalhePage() {
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
+          ) : active === "outros-assuntos" ? (
+            <OutrosAssuntosContent processo={processoLabel} orgao={orgao} />
           ) : active === "outras-inconformidades" ? (
             <OutrasInconformidadesContent
               processo={processoLabel}
