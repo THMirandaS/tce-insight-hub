@@ -33,9 +33,9 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ALL_ROWS } from "./analises";
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
+import { useDefesas } from "@/lib/defesas-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -144,7 +144,8 @@ function AnaliseDetalhePage() {
   const { id } = Route.useParams();
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
-  const row = useMemo(() => ALL_ROWS.find((r) => r.id === id), [id]);
+  const { getRow } = useDefesas();
+  const row = useMemo(() => getRow(id), [id, getRow]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
   const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
@@ -194,6 +195,14 @@ function AnaliseDetalhePage() {
       return next;
     });
   }, [pceItems]);
+
+  // RF23 — cada rodada de defesa é independente: ao trocar de análise
+  // (id), zera a seleção de tópicos e os textos da aba Defesa.
+  useEffect(() => {
+    setDefesaEnabled(new Set());
+    setDefesaTexts({});
+    setDefesaSubTab("analise");
+  }, [id]);
 
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
@@ -569,7 +578,11 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell
               label="Tipo de Análise"
-              value={row?.tipoAnalise ?? "Análise Inicial"}
+              value={
+                isDefesa && row?.nrDefesa
+                  ? `Análise de Defesa nº ${row.nrDefesa}`
+                  : row?.tipoAnalise ?? "Análise Inicial"
+              }
             />
             {!isDefesa && currentStatus && (
               <>

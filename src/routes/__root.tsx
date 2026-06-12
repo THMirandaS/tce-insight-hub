@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AppSidebar } from "@/components/pce/AppSidebar";
 import { AtribuicoesProvider } from "@/lib/atribuicoes";
 import { ConsolidacaoProvider } from "@/lib/consolidacao-store";
+import { DefesasProvider } from "@/lib/defesas-store";
 
 
 function NotFoundComponent() {
@@ -123,17 +124,19 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AtribuicoesProvider>
         <ConsolidacaoProvider>
-          {hideChrome ? (
-            <Outlet />
-          ) : (
-            <div className="flex min-h-screen w-full bg-background">
-              <AppSidebar />
-              <div className="flex-1 min-w-0">
-                <Outlet />
+          <DefesasProvider>
+            {hideChrome ? (
+              <Outlet />
+            ) : (
+              <div className="flex min-h-screen w-full bg-background">
+                <AppSidebar />
+                <div className="flex-1 min-w-0">
+                  <Outlet />
+                </div>
               </div>
-            </div>
-          )}
-          <Toaster />
+            )}
+            <Toaster />
+          </DefesasProvider>
         </ConsolidacaoProvider>
       </AtribuicoesProvider>
     </QueryClientProvider>

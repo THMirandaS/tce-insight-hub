@@ -54,6 +54,7 @@ import {
 import { ORGAOS } from "@/lib/pce-data";
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
+import { useDefesas } from "@/lib/defesas-store";
 import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
@@ -103,13 +104,15 @@ const PROC_BASE = [
   1207949, 1207950, 1207958, 1207959, 1208469, 1208470, 1208870, 1208871, 1209646,
 ];
 
-type Row = {
+export type Row = {
   id: string;
   orgao: string;
   numero: string;
   exercicio: string;
   tipo: string;
   tipoAnalise: TipoAnalise;
+  // Número da rodada de defesa (1, 2, 3...). Indefinido em análises iniciais.
+  nrDefesa?: number;
   dtConsol: string;
   dtCriacao: string;
   dtConclusao: string;
@@ -153,19 +156,47 @@ function makeRows(): Row[] {
     });
   }
 
-  // RF23 — análises de defesa vinculadas ao MESMO número de processo de
-  // análises iniciais existentes (a defesa herda processo, órgão e relator).
+  // RF23 — Um processo tem 1 análise inicial e pode ter VÁRIAS defesas
+  // documentais (rodadas). A defesa herda processo, órgão e relator.
   [rows[0], rows[1]].forEach((src) => {
     const criacao = new Date(2026, 4, 12);
     rows.push({
       ...src,
-      id: `${src.numero}-D`,
+      id: `${src.numero}-D1`,
       tipoAnalise: "Análise de Defesa",
+      nrDefesa: 1,
       situacao: "Em Análise",
       dtCriacao: fmt(criacao),
       dtConclusao: "—",
     });
   });
+
+  // Mock — processo com 2 rodadas de defesa: nº 1 concluída, nº 2 em
+  // andamento (testa o sequenciamento de rodadas).
+  {
+    const src = rows[2];
+    const c1 = new Date(2026, 1, 10);
+    const conc1 = new Date(2026, 2, 28);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D1`,
+      tipoAnalise: "Análise de Defesa",
+      nrDefesa: 1,
+      situacao: "Concluído",
+      dtCriacao: fmt(c1),
+      dtConclusao: fmt(conc1),
+    });
+    const c2 = new Date(2026, 4, 12);
+    rows.push({
+      ...src,
+      id: `${src.numero}-D2`,
+      tipoAnalise: "Análise de Defesa",
+      nrDefesa: 2,
+      situacao: "Em Análise",
+      dtCriacao: fmt(c2),
+      dtConclusao: "—",
+    });
+  }
 
   return rows;
 }
@@ -221,6 +252,7 @@ function ProcessosPage() {
   const navigate = useNavigate();
   const { getAtribuicao, perfil } = useAtribuicoes();
   const { getStatus, consolidar } = useConsolidacao();
+  const { allRows, criarDefesa, defesasDoProcesso } = useDefesas();
   const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
@@ -245,11 +277,11 @@ function ProcessosPage() {
   const base = useMemo(
     () =>
       (PERFIL === "Coordenador"
-        ? ALL_ROWS
-        : ALL_ROWS.filter((r) => r.analista === USUARIO_AUDITOR)
+        ? allRows
+        : allRows.filter((r) => r.analista === USUARIO_AUDITOR)
       ).map(applyOverride),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [overrides]
+    [overrides, allRows]
   );
 
   const filtered = useMemo(() => {
@@ -302,6 +334,21 @@ function ProcessosPage() {
     : "Concluída";
   const podeIniciarAnalise = consolStatus === "Concluída";
 
+  // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
+  // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
+  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
+  const podeNovaDefesa = useMemo(() => {
+    if (!selectedRow) return false;
+    if (perfil !== "Coordenador") return false;
+    if (selectedRow.tipoAnalise !== "Análise Inicial") return false;
+    if (!concluida(selectedRow.situacao)) return false;
+    // Considera overrides de situação aplicados às defesas existentes.
+    const defesas = defesasDoProcesso(selectedRow.numero).map(
+      (d) => base.find((b) => b.id === d.id) ?? d
+    );
+    return !defesas.some((d) => !concluida(d.situacao));
+  }, [selectedRow, perfil, defesasDoProcesso, base]);
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -342,6 +389,14 @@ function ProcessosPage() {
   const handleVisualizar = () => {
     if (!selectedRow) return;
     navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
+  };
+  const handleNovaDefesa = () => {
+    if (!selectedRow || !podeNovaDefesa) return;
+    const novoId = criarDefesa(selectedRow.numero);
+    if (novoId) {
+      setSelectedId(novoId);
+      navigate({ to: "/analises/$id", params: { id: novoId } });
+    }
   };
   const handleReabrir = () => {
     if (!selectedRow || selectedRow.situacao !== "Concluído") return;
@@ -540,7 +595,9 @@ function ProcessosPage() {
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {r.tipoAnalise}
+                        {r.tipoAnalise === "Análise de Defesa" && r.nrDefesa
+                          ? `Análise de Defesa nº ${r.nrDefesa}`
+                          : r.tipoAnalise}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
@@ -710,6 +767,14 @@ function ProcessosPage() {
               >
                 <UserCog className="h-4 w-4" /> Alterar Responsável
               </Button>
+              {podeNovaDefesa && (
+                <Button
+                  onClick={handleNovaDefesa}
+                  className="gap-2 bg-[#9333EA] text-white hover:bg-[#9333EA]/90"
+                >
+                  <Layers className="h-4 w-4" /> Nova defesa
+                </Button>
+              )}
               <Button
                 disabled={selectedRow.situacao !== "Concluído"}
                 className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 disabled:opacity-40"
