@@ -17,9 +17,27 @@ export type Atribuicao = {
   revisor: string | null;
 };
 
+// Usuário do sistema. O perfil é único por usuário e global (não há
+// vínculo de perfil com processo específico).
+export type Usuario = {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: Perfil;
+  ativo: boolean;
+};
+
 type AtribuicoesContextValue = {
+  // Sessão (usuário/perfil ativo no app).
   perfil: Perfil;
   usuario: string;
+  usuarioAtivoId: string;
+  setUsuarioAtivo: (id: string) => void;
+  // Cadastro de usuários e perfis.
+  usuarios: Usuario[];
+  addUsuario: (u: Omit<Usuario, "id">) => void;
+  updateUsuario: (id: string, patch: Partial<Omit<Usuario, "id">>) => void;
+  // Atribuição de executor/revisor por processo.
   atribuicoes: Record<string, Atribuicao>;
   getAtribuicao: (id: string) => Atribuicao;
   setAtribuicao: (id: string, next: Atribuicao) => void;
@@ -28,9 +46,7 @@ type AtribuicoesContextValue = {
 const VAZIO: Atribuicao = { executor: null, revisor: null };
 
 // Ids de processos que iniciam SEM atribuição (mock: 2 processos).
-const SEM_ATRIBUICAO = new Set(
-  ALL_ROWS.slice(4, 6).map((r) => r.id)
-);
+const SEM_ATRIBUICAO = new Set(ALL_ROWS.slice(4, 6).map((r) => r.id));
 
 function buildInitial(): Record<string, Atribuicao> {
   const map: Record<string, Atribuicao> = {};
@@ -47,27 +63,74 @@ function buildInitial(): Record<string, Atribuicao> {
   return map;
 }
 
+function emailDe(nome: string): string {
+  const slug = nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.|\.$/g, "");
+  return `${slug}@tce.gov.br`;
+}
+
+// Cadastro inicial (mock): um Coordenador + a lista de analistas distribuída
+// entre Executor e Revisor. Inclui 1 usuário inativo.
+function buildUsuarios(): Usuario[] {
+  const lista: Usuario[] = [
+    {
+      id: "u-coord-01",
+      nome: "Coordenador 01",
+      email: emailDe("Coordenador 01"),
+      perfil: "Coordenador",
+      ativo: true,
+    },
+  ];
+  AUDITORES.forEach((nome, i) => {
+    lista.push({
+      id: `u-${i + 1}`,
+      nome,
+      email: emailDe(nome),
+      perfil: i % 2 === 0 ? "Executor" : "Revisor",
+      ativo: i !== AUDITORES.length - 1, // último entra inativo
+    });
+  });
+  return lista;
+}
+
 const AtribuicoesContext = createContext<AtribuicoesContextValue | null>(null);
 
 export function AtribuicoesProvider({ children }: { children: ReactNode }) {
-  // Perfil/usuário logados (mock). Coordenador mantém todas as permissões.
-  const [perfil] = useState<Perfil>("Coordenador");
-  const [usuario] = useState<string>("Coordenador 01");
+  const [usuarios, setUsuarios] = useState<Usuario[]>(buildUsuarios);
+  // Usuário logado (mock): inicia como o Coordenador.
+  const [usuarioAtivoId, setUsuarioAtivoId] = useState<string>("u-coord-01");
   const [atribuicoes, setAtribuicoes] = useState<Record<string, Atribuicao>>(
     buildInitial
   );
 
-  const value = useMemo<AtribuicoesContextValue>(
-    () => ({
-      perfil,
-      usuario,
+  const value = useMemo<AtribuicoesContextValue>(() => {
+    const ativo =
+      usuarios.find((u) => u.id === usuarioAtivoId) ?? usuarios[0];
+    return {
+      perfil: ativo?.perfil ?? "Coordenador",
+      usuario: ativo?.nome ?? "—",
+      usuarioAtivoId: ativo?.id ?? usuarioAtivoId,
+      setUsuarioAtivo: setUsuarioAtivoId,
+      usuarios,
+      addUsuario: (u) =>
+        setUsuarios((prev) => [
+          ...prev,
+          { ...u, id: `u-${Date.now().toString(36)}` },
+        ]),
+      updateUsuario: (id, patch) =>
+        setUsuarios((prev) =>
+          prev.map((x) => (x.id === id ? { ...x, ...patch } : x))
+        ),
       atribuicoes,
       getAtribuicao: (id) => atribuicoes[id] ?? VAZIO,
       setAtribuicao: (id, next) =>
         setAtribuicoes((prev) => ({ ...prev, [id]: next })),
-    }),
-    [perfil, usuario, atribuicoes]
-  );
+    };
+  }, [usuarios, usuarioAtivoId, atribuicoes]);
 
   return (
     <AtribuicoesContext.Provider value={value}>
