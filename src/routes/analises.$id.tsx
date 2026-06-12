@@ -363,7 +363,8 @@ function AnaliseDetalhePage() {
   <div class="cell"><div class="lbl">Processo</div><div class="val">${escapeHTML(processoLabel)}</div></div>
   <div class="cell"><div class="lbl">Órgão</div><div class="val">${escapeHTML(orgao)}</div></div>
   <div class="cell"><div class="lbl">Relator</div><div class="val">${escapeHTML(relator)}</div></div>
-  <div class="cell"><div class="lbl">Auditor</div><div class="val">${escapeHTML(auditor)}</div></div>
+  <div class="cell"><div class="lbl">Responsável</div><div class="val">${escapeHTML(executor)}</div></div>
+  <div class="cell"><div class="lbl">Revisor</div><div class="val">${escapeHTML(revisor)}</div></div>
 </div>
 <h1 class="pdf-title">${escapeHTML(activeLabel)}</h1>
 <div id="pdf-content"></div>
