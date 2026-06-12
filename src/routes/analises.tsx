@@ -295,6 +295,13 @@ function ProcessosPage() {
     ? !getAtribuicao(selectedRow.id).executor
     : false;
 
+  // A análise só pode ser INICIADA após a consolidação dos dados estar
+  // "Concluída". Antes disso o processo abre apenas em modo visualização.
+  const consolStatus: ConsolidacaoStatus = selectedRow
+    ? getStatus(selectedRow.id)
+    : "Concluída";
+  const podeIniciarAnalise = consolStatus === "Concluída";
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
