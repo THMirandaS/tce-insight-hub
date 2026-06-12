@@ -120,7 +120,7 @@ type SubmenuStatus =
   | "corrigido"
   | "revisado";
 
-type Perfil = "Auditor" | "Revisor" | "Coordenador";
+
 
 const STATUS_META: Record<
   SubmenuStatus,
