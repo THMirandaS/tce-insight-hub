@@ -40,10 +40,11 @@ const NAV: NavItem[] = [
 export function AppSidebar({ user }: { user?: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
-  const { perfil, usuario } = useAtribuicoes();
-  const nomeUsuario = user ?? usuario;
+  const { perfil, usuarios, usuarioAtivoId, setUsuarioAtivo } =
+    useAtribuicoes();
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
+  const usuariosAtivos = usuarios.filter((u) => u.ativo);
 
   const forcedCollapsed = /^\/analises\/[^/]+/.test(pathname);
   const isCollapsed = collapsed || forcedCollapsed;
