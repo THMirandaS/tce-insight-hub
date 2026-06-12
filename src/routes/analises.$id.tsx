@@ -6994,7 +6994,7 @@ function ConclusaoContent({
   function gerarPdfCompleto(proc: string, org: string) {
     const w = window.open("", "_blank", "width=1024,height=768");
     if (!w) return;
-    const linhas = CONCLUSAO_APONTAMENTOS.map(
+    const linhas = getConclusaoApontamentos().map(
       (a) =>
         `<tr><td>${escapeHTML(a.topico)}</td><td>${escapeHTML(
           a.apontamento,
