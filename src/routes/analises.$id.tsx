@@ -104,7 +104,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
   { key: "controle-interno", label: "Adequação dos relatórios" },
-  { key: "outras-inconformidades", label: "Outras Incoformidades" },
+  { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
 ];
 
@@ -1377,7 +1377,7 @@ const ANTERIORES: ProcessoAnterior[] = [
     conclusaoLabel: "Rejeição",
     incoformidades: [
       "Ausência de controle interno efetivo no exercício.",
-      "Incoformidades graves em créditos autorizados.",
+      "Inconformidades graves em créditos autorizados.",
       "Despesas sem cobertura orçamentária regular.",
       "Restos a pagar inscritos sem disponibilidade financeira.",
     ],
@@ -1455,7 +1455,7 @@ function AnterioresContent({
 
             <div className="space-y-2">
               <div className="text-sm font-semibold text-foreground">
-                Incoformidades:
+                Inconformidades:
               </div>
               {p.conclusao === "aprovacao" ? (
                 <p className="text-sm text-muted-foreground">
@@ -1606,7 +1606,7 @@ function DemaisContent({ orgao }: { orgao: string }) {
 
               <div className="space-y-2 border-t border-border pt-3">
                 <div className="text-sm font-semibold text-foreground">
-                  Incoformidades encontradas:
+                  Inconformidades encontradas:
                 </div>
                 {p.incoformidades.length === 0 ? (
                   <p className="text-sm italic text-muted-foreground">
@@ -6311,7 +6311,7 @@ function OutrasInconformidadesContent({
     OUTRAS_INCO_STORE.incluir = v;
   }
 
-  function novaIncoformidade() {
+  function novaInconformidade() {
     setForm(emptyForm);
     setEditingId(null);
     setTouched(false);
@@ -6349,7 +6349,7 @@ function OutrasInconformidadesContent({
       ...h,
     ]);
     setConfirmDelete(null);
-    toast.success("Incoformidade excluída.");
+    toast.success("Inconformidade excluída.");
   }
 
   function validar(): boolean {
@@ -6394,7 +6394,7 @@ function OutrasInconformidadesContent({
         ...h,
       ]);
     }
-    toast.success("Incoformidade cadastrada com sucesso!");
+    toast.success("Inconformidade cadastrada com sucesso!");
     return true;
   }
 
@@ -6479,7 +6479,7 @@ function OutrasInconformidadesContent({
         {header}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold underline">
-            Outras Incoformidades:
+            Outras Inconformidades:
           </h2>
           <Button
             type="button"
@@ -6494,7 +6494,7 @@ function OutrasInconformidadesContent({
         <div className="space-y-5 rounded-md border border-border bg-white p-4">
           <div>
             <Label className="text-sm font-semibold">
-              Título da Incoformidade:
+              Título da Inconformidade:
             </Label>
             <Input
               value={form.titulo}
@@ -6650,7 +6650,7 @@ function OutrasInconformidadesContent({
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold underline">
-          Outras Incoformidades:
+          Outras Inconformidades:
         </h2>
         <div className="flex items-center gap-2">
           <button
@@ -6664,10 +6664,10 @@ function OutrasInconformidadesContent({
           {!readOnly && (
             <Button
               type="button"
-              onClick={novaIncoformidade}
+              onClick={novaInconformidade}
               className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
             >
-              <Plus className="h-4 w-4" /> Nova Incoformidade
+              <Plus className="h-4 w-4" /> Nova Inconformidade
             </Button>
           )}
         </div>
@@ -6677,7 +6677,7 @@ function OutrasInconformidadesContent({
         <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Incoformidade</th>
+              <th className="px-3 py-2 text-left">Inconformidade</th>
               <th className="px-3 py-2 text-left">Conclusão</th>
               <th className="px-3 py-2 text-left">Encaminhamento</th>
               <th className="px-3 py-2 text-left">Descrição</th>
@@ -6694,7 +6694,7 @@ function OutrasInconformidadesContent({
                   className="px-3 py-8 text-center text-sm text-muted-foreground"
                 >
                   Nenhuma incoformidade cadastrada. Clique em "+ Nova
-                  Incoformidade" para começar.
+                  Inconformidade" para começar.
                 </td>
               </tr>
             ) : (
@@ -6910,7 +6910,7 @@ const CONCLUSAO_APONTAMENTOS_OUTROS: ConclusaoApontamento[] = [
       "Recomendar que a gestão reavalie a real persistência desses saldos e o eventual cancelamento dos saldos indevidos",
   },
   {
-    topico: "Outras Incoformidades",
+    topico: "Outras Inconformidades",
     apontamento: "Divergência em registros de contratos",
     encaminhamento:
       "Determinar que o órgão apresente justificativa formal para as divergências identificadas",
@@ -7046,7 +7046,7 @@ function ConclusaoContent({
 <p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
-<p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Incoformidades.</p>
+<p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Inconformidades.</p>
 
 <h2>6. Conclusão</h2>
 <p>${escapeHTML(intro)}</p>

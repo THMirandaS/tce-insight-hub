@@ -262,9 +262,9 @@ function getPaginas(processo: string, orgao: string): Pagina[] {
       ),
     },
     {
-      titulo: "Incoformidades",
+      titulo: "Inconformidades",
       render: (highlight) => (
-        <DocPage titulo="4. Incoformidades Apuradas">
+        <DocPage titulo="4. Inconformidades Apuradas">
           <p className="mb-3">
             Durante a análise técnica foram identificadas incoformidades de
             naturezas distintas, conforme detalhado abaixo.
@@ -346,7 +346,7 @@ function DocumentoModal({
   const paginas = useMemo(() => getPaginas(processo, orgao), [processo, orgao]);
   const totalPages = paginas.length;
   const highlightPage =
-    paginas.findIndex((p) => p.titulo === "Incoformidades") + 1 || 1;
+    paginas.findIndex((p) => p.titulo === "Inconformidades") + 1 || 1;
 
   const [page, setPage] = useState(highlightPage);
   const [zoom, setZoom] = useState(1);
@@ -483,7 +483,7 @@ function DocumentoModal({
           >
             <div
               ref={
-                atual.titulo === "Incoformidades" ? highlightRef : undefined
+                atual.titulo === "Inconformidades" ? highlightRef : undefined
               }
               style={{ fontSize: `${14 * zoom}px` }}
             >
@@ -680,8 +680,8 @@ function downloadProcessoPDF(
     y += 18;
   });
 
-  // -------- 4. Incoformidades (com destaque)
-  y = newSection("4. Incoformidades Apuradas");
+  // -------- 4. Inconformidades (com destaque)
+  y = newSection("4. Inconformidades Apuradas");
   y = writeWrapped(
     "Durante a análise técnica foram identificadas incoformidades de naturezas distintas, conforme detalhado abaixo.",
     y,
