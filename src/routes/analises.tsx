@@ -767,6 +767,14 @@ function ProcessosPage() {
               >
                 <UserCog className="h-4 w-4" /> Alterar Responsável
               </Button>
+              {podeNovaDefesa && (
+                <Button
+                  onClick={handleNovaDefesa}
+                  className="gap-2 bg-[#9333EA] text-white hover:bg-[#9333EA]/90"
+                >
+                  <Layers className="h-4 w-4" /> Nova defesa
+                </Button>
+              )}
               <Button
                 disabled={selectedRow.situacao !== "Concluído"}
                 className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 disabled:opacity-40"
