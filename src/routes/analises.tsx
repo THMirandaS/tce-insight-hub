@@ -301,7 +301,7 @@ function ProcessosPage() {
       if (f.tipoAnalise !== "all" && r.tipoAnalise !== f.tipoAnalise) return false;
       return true;
     });
-  }, [applied, base]);
+  }, [applied, base, getAtribuicao]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
