@@ -196,6 +196,14 @@ function AnaliseDetalhePage() {
     });
   }, [pceItems]);
 
+  // RF23 — cada rodada de defesa é independente: ao trocar de análise
+  // (id), zera a seleção de tópicos e os textos da aba Defesa.
+  useEffect(() => {
+    setDefesaEnabled(new Set());
+    setDefesaTexts({});
+    setDefesaSubTab("analise");
+  }, [id]);
+
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
