@@ -722,7 +722,8 @@ function AnaliseDetalhePage() {
         {/* Rodapé fixo de ações */}
         <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
-            {active !== "anteriores" &&
+            {!aguardandoConsolidacao &&
+              active !== "anteriores" &&
               active !== "demais" &&
               !isDefesa &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&
