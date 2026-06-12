@@ -7,11 +7,18 @@ import {
   ShieldCheck,
   Building2,
   UserCog,
+  Users,
   LogOut,
   ChevronLeft,
   ChevronRight,
-  UserCircle2,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAtribuicoes, type Perfil } from "@/lib/atribuicoes";
 
 type NavItem = {
