@@ -570,7 +570,11 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell
               label="Tipo de Análise"
-              value={row?.tipoAnalise ?? "Análise Inicial"}
+              value={
+                isDefesa && row?.nrDefesa
+                  ? `Análise de Defesa nº ${row.nrDefesa}`
+                  : row?.tipoAnalise ?? "Análise Inicial"
+              }
             />
             {!isDefesa && currentStatus && (
               <>
