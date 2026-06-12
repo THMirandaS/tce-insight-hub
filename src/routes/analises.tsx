@@ -554,6 +554,11 @@ function ProcessosPage() {
       </div>
 
       {/* Tabela */}
+      {erroAtrib && (
+        <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive">
+          {erroAtrib}
+        </div>
+      )}
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
