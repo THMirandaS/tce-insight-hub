@@ -488,11 +488,11 @@ function ProcessosPage() {
             />
           </FilterField>
 
-          <FilterField label="Analista Responsável">
+          <FilterField label="Responsável">
             <SimpleSelect
               value={draft.analista}
               onValueChange={(v) => set("analista", v)}
-              options={ANALISTAS}
+              options={usuariosAtivos}
             />
           </FilterField>
 
@@ -500,7 +500,7 @@ function ProcessosPage() {
             <SimpleSelect
               value={draft.revisor}
               onValueChange={(v) => set("revisor", v)}
-              options={REVISORES}
+              options={usuariosAtivos}
             />
           </FilterField>
 
