@@ -653,13 +653,32 @@ function ProcessosPage() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              ) : selectedRow.situacao === "Disponível" ? (
+              ) : selectedRow.situacao === "Disponível" && podeIniciarAnalise ? (
                 <Button
                   onClick={handleCriar}
                   className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
                 >
                   <Plus className="h-4 w-4" /> Criar
                 </Button>
+              ) : selectedRow.situacao === "Disponível" && !podeIniciarAnalise ? (
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button
+                          onClick={handleVisualizar}
+                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                        >
+                          <Eye className="h-4 w-4" /> Visualizar
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Aguardando consolidação dos dados. A análise só pode ser
+                      iniciada após a consolidação ser concluída.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ) : (
                 <Button
                   onClick={handleVisualizar}
