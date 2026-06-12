@@ -219,7 +219,9 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao } = useAtribuicoes();
+  const { getAtribuicao, perfil } = useAtribuicoes();
+  const { getStatus, consolidar } = useConsolidacao();
+  const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
