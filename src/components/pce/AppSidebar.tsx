@@ -7,11 +7,18 @@ import {
   ShieldCheck,
   Building2,
   UserCog,
+  Users,
   LogOut,
   ChevronLeft,
   ChevronRight,
-  UserCircle2,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAtribuicoes, type Perfil } from "@/lib/atribuicoes";
 
 type NavItem = {
@@ -26,16 +33,18 @@ const NAV: NavItem[] = [
   { to: "/autuacao", label: "Autuação", icon: FileStack, roles: ["Coordenador"] },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2, roles: ["Coordenador"] },
   { to: "/atribuicoes", label: "Atribuição de Análises", icon: UserCog, roles: ["Coordenador"] },
+  { to: "/usuarios", label: "Usuários", icon: Users, roles: ["Coordenador"] },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 
 export function AppSidebar({ user }: { user?: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
-  const { perfil, usuario } = useAtribuicoes();
-  const nomeUsuario = user ?? usuario;
+  const { perfil, usuarios, usuarioAtivoId, setUsuarioAtivo } =
+    useAtribuicoes();
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
+  const usuariosAtivos = usuarios.filter((u) => u.ativo);
 
   const forcedCollapsed = /^\/analises\/[^/]+/.test(pathname);
   const isCollapsed = collapsed || forcedCollapsed;
@@ -87,15 +96,32 @@ export function AppSidebar({ user }: { user?: string }) {
 
       {/* Footer */}
       <div className="border-t border-white/5 p-3 space-y-2">
-        <div className={`flex items-center gap-2 ${isCollapsed ? "justify-center" : ""}`}>
-          <UserCircle2 className="h-8 w-8 shrink-0 text-[#00C2CB]" />
-          {!isCollapsed && (
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-medium">{nomeUsuario}</p>
-              <p className="truncate text-[11px] text-white/60">Perfil: {perfil}</p>
-            </div>
-          )}
-        </div>
+        {!isCollapsed ? (
+          <div className="space-y-1.5">
+            <p className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/50">
+              Usuário ativo
+            </p>
+            <Select value={usuarioAtivoId} onValueChange={setUsuarioAtivo}>
+              <SelectTrigger className="h-auto w-full border-white/10 bg-white/5 py-2 text-left text-white hover:bg-white/10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {usuariosAtivos.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.nome} — {u.perfil}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div
+            className="flex h-9 w-9 items-center justify-center rounded-md bg-white/5 text-xs font-semibold text-[#00C2CB]"
+            title={`Perfil: ${perfil}`}
+          >
+            {perfil.slice(0, 1)}
+          </div>
+        )}
 
         <Link
           to="/"
