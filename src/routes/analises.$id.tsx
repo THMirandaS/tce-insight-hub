@@ -6187,7 +6187,94 @@ function ControleInternoContent({
   );
 }
 
+// ============ Outros assuntos relevantes ============
+// RF21 — caixa de texto livre preenchida pelo auditor, sem enquadramento ou
+// encaminhamento, que compõe o relatório. PDF próprio (snapshot do conteúdo).
+
+const OUTROS_ASSUNTOS_MAX = 8000;
+const OUTROS_ASSUNTOS_STORE: { texto: string; incluir: boolean } = {
+  texto: "",
+  incluir: true,
+};
+
+function OutrosAssuntosContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const [texto, setTexto] = useState(OUTROS_ASSUNTOS_STORE.texto);
+  const [incluir, setIncluir] = useState(OUTROS_ASSUNTOS_STORE.incluir);
+
+  function commitTexto(v: string) {
+    setTexto(v);
+    OUTROS_ASSUNTOS_STORE.texto = v;
+  }
+  function commitIncluir(v: boolean) {
+    setIncluir(v);
+    OUTROS_ASSUNTOS_STORE.incluir = v;
+  }
+
+  const rest = OUTROS_ASSUNTOS_MAX - texto.length;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <h2 className="mb-2 text-base font-semibold underline">
+        Outros assuntos relevantes:
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground" data-pdf-hide>
+        Registre, em texto livre, demais assuntos relevantes apurados na
+        análise. Este conteúdo compõe o relatório, sem enquadramento ou proposta
+        de encaminhamento.
+      </p>
+
+      <textarea
+        value={texto}
+        onChange={(e) =>
+          commitTexto(e.target.value.slice(0, OUTROS_ASSUNTOS_MAX))
+        }
+        rows={14}
+        maxLength={OUTROS_ASSUNTOS_MAX}
+        placeholder="Descreva os outros assuntos relevantes..."
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/40"
+      />
+      <div className="mt-1 text-right text-xs text-muted-foreground" data-pdf-hide>
+        {rest} caracteres restantes
+      </div>
+
+      <div className="mt-4 flex items-start gap-2" data-pdf-hide>
+        <Checkbox
+          id="oa-incluir"
+          checked={incluir}
+          onCheckedChange={(c) => commitIncluir(c === true)}
+        />
+        <Label htmlFor="oa-incluir" className="text-sm leading-tight">
+          Este texto deverá constar no relatório de conclusão do processo.
+        </Label>
+      </div>
+    </>
+  );
+}
+
 // ============ Outras Inconformidades ============
+
 
 const OUTRAS_INCO_TRANSITO_JULGADO = false;
 const OUTRAS_INCO_SITUACAO_CONCLUIDA = false;
