@@ -832,47 +832,6 @@ function ProcessosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Modal Alterar Responsável */}
-      <Dialog open={alterarOpen} onOpenChange={setAlterarOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar Analista Responsável</DialogTitle>
-            <DialogDescription>
-              Selecione o novo analista responsável pelo processo{" "}
-              {selectedRow?.numero}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-              Analista
-            </Label>
-            <Select value={novoAnalista} onValueChange={setNovoAnalista}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {ANALISTAS.map((a) => (
-                  <SelectItem key={a} value={a}>
-                    {a}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAlterarOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={saveAlterar}
-              className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-            >
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }
