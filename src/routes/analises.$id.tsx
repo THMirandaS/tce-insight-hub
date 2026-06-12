@@ -39,6 +39,7 @@ import { useDefesas } from "@/lib/defesas-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
+import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -89,6 +90,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "programas", label: "Programas", hasActions: true },
   { key: "credito-despesas-prg", label: "Crédito e Despesas por prg" },
   { key: "dsp-dotacao", label: "Dsp por dot. Orçamentária" },
+  { key: "despesa-elemento", label: "Despesa por elemento" },
   { key: "modalidade-aplicacao", label: "Modalidade de aplicação", hasActions: true },
   { key: "restos-pagar", label: "Restos a pagar", hasActions: true },
   // Despesas com pessoal: apenas para Órgãos de Poder (RF03).
