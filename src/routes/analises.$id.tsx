@@ -633,7 +633,7 @@ function AnaliseDetalhePage() {
             data-defesa-original
             className={defesaTopicEnabled && defesaSubTab === "defesa" ? "hidden" : ""}
           >
-          <fieldset disabled={defesaTopicEnabled} className="contents">
+          <fieldset disabled={defesaTopicEnabled || aguardandoConsolidacao} className="contents">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
