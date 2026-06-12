@@ -261,11 +261,17 @@ function AnaliseDetalhePage() {
     );
   }
 
-  const podeRevisar = perfil === "Revisor" || perfil === "Coordenador";
+  // Permissões: só o Executor atribuído edita; só o Revisor atribuído revisa;
+  // o Coordenador mantém todas as permissões.
+  const executor = atribuicao.executor ?? "Não atribuído";
+  const revisor = atribuicao.revisor ?? "Não atribuído";
+  const podeRevisar =
+    perfil === "Coordenador" ||
+    (perfil === "Revisor" && usuario === atribuicao.revisor);
 
   const processoLabel = row?.numero ?? id;
   const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
-  const auditor = "Auditor 01";
+  const auditor = executor;
 
   const activeLabel =
     groups.find((g) => g.key === active)?.label ??
