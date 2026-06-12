@@ -7043,7 +7043,7 @@ function ConclusaoContent({
 <p>Dados consolidados a partir do submenu Restos a Pagar, com avaliação dos saldos por ano de origem.</p>
 
 <h2>4. Análise dos relatórios dos jurisdicionados</h2>
-<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Controle Interno.</p>
+<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
 <p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Incoformidades.</p>
