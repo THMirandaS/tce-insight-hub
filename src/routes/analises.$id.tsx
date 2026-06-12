@@ -557,7 +557,7 @@ function AnaliseDetalhePage() {
 
         {/* Cabeçalho fixo do processo */}
         <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3 text-sm">
             <Link
               to="/analises"
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-semibold text-[#0D1B2A] shadow-sm hover:bg-gray-50"
@@ -588,18 +588,19 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
+            <InfoCell label="Data de Autuação" value={dataAutuacao} />
+            <Divider />
+            <InfoCell label="Ano de Referência" value={anoReferencia} />
+            <Divider />
+            <InfoCell label="Categoria" value={categoria} />
+            <Divider />
+            <InfoCell label="Tipo de Análise" value={tipoAnalise} />
+            <Divider />
             <InfoCell label="Responsável" value={executor} />
             <Divider />
             <InfoCell label="Revisor" value={revisor} />
             <Divider />
-            <InfoCell
-              label="Tipo de Análise"
-              value={
-                isDefesa && row?.nrDefesa
-                  ? `Análise de Defesa nº ${row.nrDefesa}`
-                  : row?.tipoAnalise ?? "Análise Inicial"
-              }
-            />
+            <InfoCell label="Data de Início da Análise" value={dataInicioAnalise} />
             {!isDefesa && currentStatus && (
               <>
                 <Divider />
