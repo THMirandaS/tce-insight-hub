@@ -16,6 +16,8 @@ import {
   RefreshCw,
   UserCog,
   FileText,
+  Loader2,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +53,8 @@ import {
 } from "@/components/ui/tooltip";
 import { ORGAOS } from "@/lib/pce-data";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
+import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
@@ -215,7 +219,9 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao } = useAtribuicoes();
+  const { getAtribuicao, perfil } = useAtribuicoes();
+  const { getStatus, consolidar } = useConsolidacao();
+  const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
@@ -289,6 +295,13 @@ function ProcessosPage() {
     ? !getAtribuicao(selectedRow.id).executor
     : false;
 
+  // A análise só pode ser INICIADA após a consolidação dos dados estar
+  // "Concluída". Antes disso o processo abre apenas em modo visualização.
+  const consolStatus: ConsolidacaoStatus = selectedRow
+    ? getStatus(selectedRow.id)
+    : "Concluída";
+  const podeIniciarAnalise = consolStatus === "Concluída";
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -322,7 +335,7 @@ function ProcessosPage() {
     setOverrides((p) => ({ ...p, [id]: { ...p[id], situacao: s } }));
 
   const handleCriar = () => {
-    if (!selectedRow) return;
+    if (!selectedRow || !podeIniciarAnalise) return;
     setSituacao(selectedRow.id, "Em Análise");
     navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
   };
@@ -494,6 +507,9 @@ function ProcessosPage() {
                 <Th label="Data Criação" k="dtCriacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Data Conclusão" k="dtConclusao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                  Consolidação
+                </th>
                 <Th label="Analista Responsável" k="analista" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Revisor" k="revisor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
@@ -537,6 +553,13 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <ConsolidacaoCell
+                        status={getStatus(r.id)}
+                        podeConsolidar={podeConsolidar}
+                        onConsolidar={() => consolidar(r.id)}
+                      />
+                    </td>
                     <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
@@ -545,7 +568,7 @@ function ProcessosPage() {
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={13} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -630,13 +653,32 @@ function ProcessosPage() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              ) : selectedRow.situacao === "Disponível" ? (
+              ) : selectedRow.situacao === "Disponível" && podeIniciarAnalise ? (
                 <Button
                   onClick={handleCriar}
                   className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
                 >
                   <Plus className="h-4 w-4" /> Criar
                 </Button>
+              ) : selectedRow.situacao === "Disponível" && !podeIniciarAnalise ? (
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button
+                          onClick={handleVisualizar}
+                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+                        >
+                          <Eye className="h-4 w-4" /> Visualizar
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Aguardando consolidação dos dados. A análise só pode ser
+                      iniciada após a consolidação ser concluída.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ) : (
                 <Button
                   onClick={handleVisualizar}
@@ -868,6 +910,67 @@ function Pager({
       >
         <ChevronsRight className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+const CONSOL_BADGE: Record<ConsolidacaoStatus, string> = {
+  Pendente: "bg-gray-200 text-gray-800",
+  Processando: "bg-blue-100 text-blue-800",
+  Concluída: "bg-emerald-100 text-emerald-800",
+  Erro: "bg-red-100 text-red-800",
+};
+
+function ConsolidacaoCell({
+  status,
+  podeConsolidar,
+  onConsolidar,
+}: {
+  status: ConsolidacaoStatus;
+  podeConsolidar: boolean;
+  onConsolidar: () => void;
+}) {
+  if (status === "Processando") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processando
+      </span>
+    );
+  }
+
+  if (status === "Concluída") {
+    return (
+      <span
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE.Concluída}`}
+      >
+        Concluída
+      </span>
+    );
+  }
+
+  // Pendente ou Erro: exibe badge e, para perfis autorizados, ação.
+  return (
+    <div className="flex flex-col items-start gap-1.5">
+      <span
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE[status]}`}
+      >
+        {status}
+      </span>
+      {status === "Erro" && (
+        <span className="text-[11px] text-red-700">
+          Falha ao consolidar. Tente novamente.
+        </span>
+      )}
+      {podeConsolidar && (
+        <Button
+          size="sm"
+          onClick={onConsolidar}
+          className="h-7 gap-1.5 bg-[#1A56DB] px-2.5 text-xs text-white hover:bg-[#1A56DB]/90"
+        >
+          <Layers className="h-3.5 w-3.5" />
+          {status === "Erro" ? "Tentar novamente" : "Consolidar"}
+        </Button>
+      )}
     </div>
   );
 }

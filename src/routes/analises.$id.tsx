@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROWS } from "./analises";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -174,6 +175,11 @@ function AnaliseDetalhePage() {
   // Perfil atual e atribuição do processo (contexto compartilhado).
   const { perfil, usuario, getAtribuicao } = useAtribuicoes();
   const atribuicao = getAtribuicao(id);
+
+  // Consolidação dos dados do processo. A análise só é editável após a
+  // consolidação estar "Concluída"; antes disso abre em modo visualização.
+  const { getStatus: getConsolStatus } = useConsolidacao();
+  const aguardandoConsolidacao = getConsolStatus(id) !== "Concluída";
 
   // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
@@ -580,6 +586,16 @@ function AnaliseDetalhePage() {
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
+          {aguardandoConsolidacao && (
+            <div className="mb-5 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+              <p className="text-sm text-amber-800">
+                <strong>Aguardando consolidação dos dados.</strong> Este processo
+                está disponível apenas em modo visualização. A análise poderá ser
+                iniciada e editada após a consolidação ser concluída.
+              </p>
+            </div>
+          )}
           {isDefesa && podeSelecionarDefesa && (
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="text-sm text-amber-800">
@@ -617,7 +633,7 @@ function AnaliseDetalhePage() {
             data-defesa-original
             className={defesaTopicEnabled && defesaSubTab === "defesa" ? "hidden" : ""}
           >
-          <fieldset disabled={defesaTopicEnabled} className="contents">
+          <fieldset disabled={defesaTopicEnabled || aguardandoConsolidacao} className="contents">
           {active === "responsavel" ? (
             <ResponsavelContent processo={processoLabel} orgao={orgao} />
           ) : active === "consid-gerais" ? (
@@ -706,7 +722,8 @@ function AnaliseDetalhePage() {
         {/* Rodapé fixo de ações */}
         <footer className="sticky bottom-0 z-30 border-t border-border bg-white shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.08)]">
           <div className="flex flex-wrap justify-end gap-2 px-6 py-3">
-            {active !== "anteriores" &&
+            {!aguardandoConsolidacao &&
+              active !== "anteriores" &&
               active !== "demais" &&
               !isDefesa &&
               !(active === "consid-gerais" && CONSID_READ_ONLY) &&

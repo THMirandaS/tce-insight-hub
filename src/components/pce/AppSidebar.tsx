@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  FileStack,
   Search,
   ShieldCheck,
   Building2,
@@ -30,7 +29,6 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/autuacao", label: "Autuação", icon: FileStack, roles: ["Coordenador"] },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2, roles: ["Coordenador"] },
   { to: "/atribuicoes", label: "Atribuição de Análises", icon: UserCog, roles: ["Coordenador"] },
   { to: "/usuarios", label: "Usuários", icon: Users, roles: ["Coordenador"] },
