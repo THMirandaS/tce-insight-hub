@@ -294,6 +294,16 @@ function AnaliseDetalhePage() {
   const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
   const auditor = executor;
 
+  // RF05 — valores complementares do cabeçalho (mock).
+  const dataAutuacao = "06/05/2025";
+  const anoReferencia = "2025";
+  const categoria = "PCE";
+  const tipoAnalise =
+    isDefesa && row?.nrDefesa
+      ? `Análise de Defesa nº ${row.nrDefesa}`
+      : row?.tipoAnalise ?? "Análise Inicial";
+  const dataInicioAnalise = "12/05/2025";
+
   const activeLabel =
     groups.find((g) => g.key === active)?.label ??
     pceItems.find((i) => i.key === active)?.label ??
