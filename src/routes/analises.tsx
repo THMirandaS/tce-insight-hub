@@ -628,8 +628,26 @@ function ProcessosPage() {
                         onConsolidar={() => consolidar(r.id)}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-foreground">{r.analista}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.revisor}</td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribSelect
+                        value={getAtribuicao(r.id).executor}
+                        editavel={podeAtribuir}
+                        placeholder="Atribuir responsável"
+                        options={usuariosAtivos}
+                        excluir={getAtribuicao(r.id).revisor}
+                        onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
+                      />
+                    </td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribSelect
+                        value={getAtribuicao(r.id).revisor}
+                        editavel={podeAtribuir}
+                        placeholder="Atribuir revisor"
+                        options={usuariosAtivos}
+                        excluir={getAtribuicao(r.id).executor}
+                        onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
+                      />
+                    </td>
                     <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
                   </tr>
                 );
