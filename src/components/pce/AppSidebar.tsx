@@ -91,7 +91,7 @@ export function AppSidebar({ user }: { user?: string }) {
           <UserCircle2 className="h-8 w-8 shrink-0 text-[#00C2CB]" />
           {!isCollapsed && (
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-medium">{user}</p>
+              <p className="truncate text-sm font-medium">{nomeUsuario}</p>
               <p className="truncate text-[11px] text-white/60">Perfil: {perfil}</p>
             </div>
           )}
