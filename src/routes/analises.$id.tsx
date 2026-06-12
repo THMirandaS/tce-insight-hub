@@ -394,8 +394,13 @@ function AnaliseDetalhePage() {
   <div class="cell"><div class="lbl">Processo</div><div class="val">${escapeHTML(processoLabel)}</div></div>
   <div class="cell"><div class="lbl">Órgão</div><div class="val">${escapeHTML(orgao)}</div></div>
   <div class="cell"><div class="lbl">Relator</div><div class="val">${escapeHTML(relator)}</div></div>
+  <div class="cell"><div class="lbl">Data de Autuação</div><div class="val">${escapeHTML(dataAutuacao)}</div></div>
+  <div class="cell"><div class="lbl">Ano de Referência</div><div class="val">${escapeHTML(anoReferencia)}</div></div>
+  <div class="cell"><div class="lbl">Categoria</div><div class="val">${escapeHTML(categoria)}</div></div>
+  <div class="cell"><div class="lbl">Tipo de Análise</div><div class="val">${escapeHTML(tipoAnalise)}</div></div>
   <div class="cell"><div class="lbl">Responsável</div><div class="val">${escapeHTML(executor)}</div></div>
   <div class="cell"><div class="lbl">Revisor</div><div class="val">${escapeHTML(revisor)}</div></div>
+  <div class="cell"><div class="lbl">Data de Início da Análise</div><div class="val">${escapeHTML(dataInicioAnalise)}</div></div>
 </div>
 <h1 class="pdf-title">${escapeHTML(activeLabel)}</h1>
 <div id="pdf-content"></div>
