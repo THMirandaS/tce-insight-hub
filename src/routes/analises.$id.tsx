@@ -40,6 +40,7 @@ import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
 import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
+import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -100,6 +101,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
     hasActions: true,
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
+  { key: "consistencia", label: "Consistência das demonstrações" },
   { key: "controle-interno", label: "Controle Interno" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
@@ -693,6 +695,8 @@ function AnaliseDetalhePage() {
               tab={modalidadeTab}
               onTabChange={setModalidadeTab}
             />
+          ) : active === "consistencia" ? (
+            <ConsistenciaContent processo={processoLabel} orgao={orgao} />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
