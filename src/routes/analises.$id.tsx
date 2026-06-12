@@ -6894,31 +6894,14 @@ const JULGAMENTO_OPTS: {
   { v: "irregulares", label: "Irregulares", inciso: "III", artigo: "art. 48, III, da LC 102/2008" },
 ];
 
-const CONCLUSAO_APONTAMENTOS: {
+type ConclusaoApontamento = {
   topico: string;
   apontamento: string;
   encaminhamento: string;
-}[] = [
-  {
-    topico: "Controle Interno",
-    apontamento:
-      "Levantamento incompleto dos inventários físicos e financeiros dos bens móveis",
-    encaminhamento:
-      "Determinar que a gestão realize o levantamento completo dos inventários físicos e financeiros dos itens determinados pela legislação",
-  },
-  {
-    topico: "Controle Interno",
-    apontamento: "Imóveis contabilizados incorretamente por valor de R$ 0,01",
-    encaminhamento:
-      "Determinar que sejam apresentados o andamento ou o resultado da tratativa com SEPLAG",
-  },
-  {
-    topico: "Controle Interno",
-    apontamento:
-      "Documentos referentes à execução orçamentária sem assinatura",
-    encaminhamento:
-      "Determinar que a gestão aprimore seus controles para assinatura digital de todos os documentos até o término do exercício financeiro",
-  },
+};
+
+// Apontamentos dos demais tópicos (estáticos neste mock).
+const CONCLUSAO_APONTAMENTOS_OUTROS: ConclusaoApontamento[] = [
   {
     topico: "Restos a Pagar",
     apontamento:
@@ -6933,6 +6916,26 @@ const CONCLUSAO_APONTAMENTOS: {
       "Determinar que o órgão apresente justificativa formal para as divergências identificadas",
   },
 ];
+
+// Monta a tabela de conclusão combinando os apontamentos vigentes da
+// Adequação dos relatórios (excluindo desconsiderados e os sem
+// encaminhamento) com os apontamentos dos demais tópicos.
+function getConclusaoApontamentos(): ConclusaoApontamento[] {
+  const ci: ConclusaoApontamento[] = CI_STORE.apontamentos
+    .filter(
+      (a) =>
+        !a.desconsiderado &&
+        (a.encaminhamento === "Recomendação" ||
+          a.encaminhamento === "Determinação"),
+    )
+    .map((a) => ({
+      topico: "Adequação dos relatórios",
+      apontamento: a.apontamento,
+      encaminhamento: a.descEncaminhamento,
+    }));
+  return [...ci, ...CONCLUSAO_APONTAMENTOS_OUTROS];
+}
+
 
 const CONCLUSAO_STORE: {
   intro: string;
