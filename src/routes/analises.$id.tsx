@@ -4078,6 +4078,18 @@ function CreditoDespesasContent({
 }
 
 // ============================================================
+// DESPESA POR ELEMENTO
+// ============================================================
+
+const DESPESA_ELEMENTO_TRANSITO_JULGADO = false;
+const DESPESA_ELEMENTO_SITUACAO_CONCLUIDA = false;
+const DESPESA_ELEMENTO_USUARIO_AUTORIZADO = true;
+const DESPESA_ELEMENTO_READ_ONLY =
+  DESPESA_ELEMENTO_TRANSITO_JULGADO ||
+  DESPESA_ELEMENTO_SITUACAO_CONCLUIDA ||
+  !DESPESA_ELEMENTO_USUARIO_AUTORIZADO;
+
+// ============================================================
 // DSP POR DOTAÇÃO ORÇAMENTÁRIA
 // ============================================================
 
