@@ -103,7 +103,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
-  { key: "controle-interno", label: "Controle Interno" },
+  { key: "controle-interno", label: "Adequação dos relatórios" },
   { key: "outras-inconformidades", label: "Outras Incoformidades" },
   { key: "conclusao", label: "Conclusão" },
 ];
