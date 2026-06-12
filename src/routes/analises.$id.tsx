@@ -7194,7 +7194,7 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
               </tr>
             </thead>
             <tbody>
-              {CONCLUSAO_APONTAMENTOS.map((a, i) => (
+              {getConclusaoApontamentos().map((a, i) => (
                 <tr
                   key={i}
                   className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}
