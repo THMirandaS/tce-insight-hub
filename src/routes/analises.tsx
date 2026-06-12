@@ -14,7 +14,6 @@ import {
   Eye,
   RotateCcw,
   RefreshCw,
-  UserCog,
   FileText,
   Loader2,
   Layers,
