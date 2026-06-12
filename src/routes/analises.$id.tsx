@@ -1904,9 +1904,9 @@ function ConsidGeraisContent({
 
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-baseline gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}:
+    <div className="flex min-w-0 flex-col leading-tight">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
       </span>
       <span className="truncate text-sm font-medium text-foreground">
         {value}
@@ -1916,7 +1916,7 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 }
 
 function Divider() {
-  return <span className="h-4 w-px bg-border" aria-hidden />;
+  return <span className="h-8 w-px self-center bg-border" aria-hidden />;
 }
 
 // ============================================================
