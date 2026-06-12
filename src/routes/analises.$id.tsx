@@ -586,6 +586,16 @@ function AnaliseDetalhePage() {
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
+          {aguardandoConsolidacao && (
+            <div className="mb-5 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+              <p className="text-sm text-amber-800">
+                <strong>Aguardando consolidação dos dados.</strong> Este processo
+                está disponível apenas em modo visualização. A análise poderá ser
+                iniciada e editada após a consolidação ser concluída.
+              </p>
+            </div>
+          )}
           {isDefesa && podeSelecionarDefesa && (
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="text-sm text-amber-800">
