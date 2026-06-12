@@ -171,8 +171,9 @@ function AnaliseDetalhePage() {
   });
   const contentRef = useRef<HTMLElement | null>(null);
 
-  // Perfil atual (poderia vir de auth). Coordenador vê todas as ações.
-  const [perfil] = useState<Perfil>("Coordenador");
+  // Perfil atual e atribuição do processo (contexto compartilhado).
+  const { perfil, usuario, getAtribuicao } = useAtribuicoes();
+  const atribuicao = getAtribuicao(id);
 
   // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
