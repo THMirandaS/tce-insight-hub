@@ -658,17 +658,11 @@ function ProcessosPage() {
                       </span>
                     </td>
                     <td className="px-2 py-1.5">
-                      {getStatus(r.id) !== "Concluída" ? (
-                        <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-                          Aguardando consolidação
-                        </span>
-                      ) : (
-                        <span
-                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
-                        >
-                          {r.situacao}
-                        </span>
-                      )}
+                      <span
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
+                      >
+                        {r.situacao}
+                      </span>
                     </td>
                     <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
                       <AtribInlineCell
