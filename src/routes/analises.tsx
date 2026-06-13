@@ -260,7 +260,7 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao, setAtribuicao, perfil, usuarios } = useAtribuicoes();
+  const { getAtribuicao, setAtribuicao, perfil, usuario, usuarios } = useAtribuicoes();
   const usuariosAtivos = useMemo(
     () => usuarios.filter((u) => u.ativo).map((u) => u.nome),
     [usuarios]
