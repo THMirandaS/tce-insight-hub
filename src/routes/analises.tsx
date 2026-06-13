@@ -50,8 +50,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ORGAOS } from "@/lib/pce-data";
+import {
+  ORGAOS,
+  GRUPOS_ENTIDADE,
+  GRUPO_ABREVIADO,
+  PODERES,
+  getJurisdicionado,
+  type AtributosExercicio,
+  type GrupoEntidade,
+  type Poder,
+} from "@/lib/pce-data";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
 import type { ConsolidacaoStatus } from "@/lib/consolidacao";
