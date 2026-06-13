@@ -7002,31 +7002,75 @@ const JULGAMENTO_OPTS: {
 
 type ConclusaoApontamento = {
   topico: string;
-  apontamento: string;
+  titulo: string;
+  enquadramento: string;
   encaminhamento: string;
 };
 
-// Apontamentos dos demais tópicos (estáticos neste mock).
-const CONCLUSAO_APONTAMENTOS_OUTROS: ConclusaoApontamento[] = [
+// Enquadramento legal padrão conforme o tipo de encaminhamento.
+function enquadramentoPorEncaminhamento(tipo: string): string {
+  if (tipo === "Determinação") return "art. 48, III, da LC 102/2008";
+  return "art. 48, II, da LC 102/2008";
+}
+
+// RF22 — validações automáticas dos tópicos (mock). Cada item já representa
+// uma inconformidade detectada automaticamente com proposta de encaminhamento.
+const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
+  {
+    topico: "Crédito e Despesas por programa",
+    titulo:
+      "Despesa empenhada superior ao crédito autorizado no programa 88 (execução de 110%)",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar à gestão a observância dos limites de crédito autorizado por programa",
+  },
+  {
+    topico: "Despesa por dotação orçamentária",
+    titulo: "Execução de despesa acima da dotação em unidade orçamentária",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar o aprimoramento do controle da execução por dotação orçamentária",
+  },
+  {
+    topico: "Despesa por elemento",
+    titulo:
+      "Valor liquidado superior ao empenhado no elemento Sentenças Judiciais",
+    enquadramento: "art. 48, III, da LC 102/2008",
+    encaminhamento:
+      "Determinar a regularização dos registros de liquidação do elemento de despesa",
+  },
+  {
+    topico: "Despesas com pessoal",
+    titulo: "Despesa com pessoal próxima ao limite prudencial",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar o monitoramento contínuo da despesa com pessoal",
+  },
+  {
+    topico: "Consistência das demonstrações",
+    titulo:
+      "Divergência nos Restos a Pagar Processados (Balanço Financeiro x Balanço Orçamentário)",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar a conciliação das demonstrações contábeis divergentes",
+  },
   {
     topico: "Restos a Pagar",
-    apontamento:
+    titulo:
       "Registros de Restos a Pagar com ano-origem mais antigo que 5 anos anteriores ao exercício avaliado",
+    enquadramento: "art. 48, II, da LC 102/2008",
     encaminhamento:
       "Recomendar que a gestão reavalie a real persistência desses saldos e o eventual cancelamento dos saldos indevidos",
   },
-  {
-    topico: "Outras Inconformidades",
-    apontamento: "Divergência em registros de contratos",
-    encaminhamento:
-      "Determinar que o órgão apresente justificativa formal para as divergências identificadas",
-  },
 ];
 
-// Monta a tabela de conclusão combinando os apontamentos vigentes da
-// Adequação dos relatórios (excluindo desconsiderados e os sem
-// encaminhamento) com os apontamentos dos demais tópicos.
+// Monta a tabela de conclusão agregando TODAS as fontes (RF22): validações
+// automáticas dos tópicos, apontamentos do RCI (não desconsiderados) e Outras
+// Inconformidades — exibindo somente as com encaminhamento Recomendação ou
+// Determinação.
 function getConclusaoApontamentos(): ConclusaoApontamento[] {
+  const auto = CONCLUSAO_VALIDACOES_AUTO;
+
   const ci: ConclusaoApontamento[] = CI_STORE.apontamentos
     .filter(
       (a) =>
@@ -7036,11 +7080,27 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
     )
     .map((a) => ({
       topico: "Adequação dos relatórios",
-      apontamento: a.apontamento,
+      titulo: a.apontamento,
+      enquadramento: enquadramentoPorEncaminhamento(a.encaminhamento),
       encaminhamento: a.descEncaminhamento,
     }));
-  return [...ci, ...CONCLUSAO_APONTAMENTOS_OUTROS];
+
+  const oi: ConclusaoApontamento[] = OUTRAS_INCO_STORE.lista
+    .filter(
+      (o) =>
+        o.encaminhamento === "Recomendação" ||
+        o.encaminhamento === "Determinação",
+    )
+    .map((o) => ({
+      topico: "Outras Inconformidades",
+      titulo: o.titulo,
+      enquadramento: enquadramentoPorEncaminhamento(o.encaminhamento),
+      encaminhamento: o.descEncaminhamento,
+    }));
+
+  return [...auto, ...ci, ...oi];
 }
+
 
 
 const CONCLUSAO_STORE: {
