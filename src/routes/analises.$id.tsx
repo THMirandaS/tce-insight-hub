@@ -45,8 +45,9 @@ import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
+  getAtributos,
   GRUPO_ABREVIADO,
-  type Jurisdicionado,
+  type AtributosExercicio,
 } from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
