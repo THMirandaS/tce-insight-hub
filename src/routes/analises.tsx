@@ -676,7 +676,7 @@ function ProcessosPage() {
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="block max-w-[140px] truncate">{r.relator}</span>
+                            <span className="block max-w-[120px] truncate">{r.relator}</span>
                           </TooltipTrigger>
                           <TooltipContent>{r.relator}</TooltipContent>
                         </Tooltip>
