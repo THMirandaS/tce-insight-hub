@@ -646,11 +646,20 @@ function ProcessosPage() {
             </thead>
             <tbody>
               {pageRows.map((r) => {
+                const selected = selectedId === r.id;
                 return (
                   <tr
                     key={r.id}
-                    className="bg-white transition-colors hover:bg-blue-50"
+                    onClick={() =>
+                      setSelectedId((cur) => (cur === r.id ? null : r.id))
+                    }
+                    className={`cursor-pointer transition-colors ${
+                      selected
+                        ? "bg-blue-100 ring-1 ring-inset ring-[#1A56DB]"
+                        : "bg-white hover:bg-blue-50"
+                    }`}
                   >
+
                     <td className="px-2 py-1.5">
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
