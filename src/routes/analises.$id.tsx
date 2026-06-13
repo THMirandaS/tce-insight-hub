@@ -68,7 +68,7 @@ type SubItem = {
   label: string;
   hasActions?: boolean;
   // Regra de exibição condicional (RF03). Ausente => sempre visível.
-  condicional?: (j: Jurisdicionado) => boolean;
+  condicional?: (a: AtributosExercicio) => boolean;
   // Tópico previsto para evolução futura: aparece no menu, mas ainda não
   // renderiza conteúdo próprio.
   futuro?: boolean;
@@ -110,9 +110,9 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "conclusao", label: "Conclusão" },
 ];
 
-// Aplica as regras condicionais do RF03 para um jurisdicionado.
-function getPceItems(j: Jurisdicionado): SubItem[] {
-  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(j));
+// Aplica as regras condicionais do RF03 para os atributos do ano de referência.
+function getPceItems(a: AtributosExercicio): SubItem[] {
+  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(a));
 }
 
 const STATIC_GROUPS: SubGroup[] = [
