@@ -72,7 +72,6 @@ import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
-import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
