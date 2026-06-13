@@ -37,6 +37,7 @@ import {
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
+import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -46,7 +47,9 @@ import { toast } from "sonner";
 import {
   getJurisdicionado,
   GRUPO_ABREVIADO,
+  type AtributosExercicio,
   type Jurisdicionado,
+  type Poder,
 } from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
@@ -67,7 +70,7 @@ type SubItem = {
   label: string;
   hasActions?: boolean;
   // Regra de exibição condicional (RF03). Ausente => sempre visível.
-  condicional?: (j: Jurisdicionado) => boolean;
+  condicional?: (a: AtributosExercicio) => boolean;
   // Tópico previsto para evolução futura: aparece no menu, mas ainda não
   // renderiza conteúdo próprio.
   futuro?: boolean;
@@ -109,9 +112,9 @@ const PCE_ITEMS_BASE: SubItem[] = [
   { key: "conclusao", label: "Conclusão" },
 ];
 
-// Aplica as regras condicionais do RF03 para um jurisdicionado.
-function getPceItems(j: Jurisdicionado): SubItem[] {
-  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(j));
+// Aplica as regras condicionais do RF03 para os atributos do ano de referência.
+function getPceItems(a: AtributosExercicio): SubItem[] {
+  return PCE_ITEMS_BASE.filter((it) => !it.condicional || it.condicional(a));
 }
 
 const STATIC_GROUPS: SubGroup[] = [
@@ -151,10 +154,17 @@ function AnaliseDetalhePage() {
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
   const { getRow } = useDefesas();
+  const { getAtributos: getAtributosLive } = useJurisdicionados();
   const row = useMemo(() => getRow(id), [id, getRow]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
-  const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+  // Ano de referência do processo: os atributos do jurisdicionado são por ano.
+  const anoReferencia = row?.exercicio ?? "2025";
+  const atributos = useMemo(
+    () => getAtributosLive(orgao, anoReferencia),
+    [getAtributosLive, orgao, anoReferencia]
+  );
+  const pceItems = useMemo(() => getPceItems(atributos), [atributos]);
 
   // RF23 — Análise de Defesa.
   const isDefesa = row?.tipoAnalise === "Análise de Defesa";
@@ -297,7 +307,6 @@ function AnaliseDetalhePage() {
 
   // RF05 — valores complementares do cabeçalho (mock).
   const dataAutuacao = "06/05/2025";
-  const anoReferencia = "2025";
   const categoria = "PCE";
   const tipoAnalise =
     isDefesa && row?.nrDefesa
@@ -583,9 +592,9 @@ function AnaliseDetalhePage() {
                 }
               />
               <span className="inline-flex items-center rounded-full bg-[#1A56DB]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1A56DB] ring-1 ring-[#1A56DB]/20">
-                {GRUPO_ABREVIADO[jurisdicionado.grupoEntidade]}
+                {GRUPO_ABREVIADO[atributos.grupoEntidade]}
               </span>
-              {jurisdicionado.entidadePrevidenciaria && (
+              {atributos.entidadePrevidenciaria && (
                 <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-semibold text-purple-700 ring-1 ring-purple-200">
                   Previdenciária
                 </span>
@@ -717,7 +726,7 @@ function AnaliseDetalhePage() {
             <ConsistenciaContent
               processo={processoLabel}
               orgao={orgao}
-              poder={jurisdicionado.poder}
+              poder={atributos.poder}
             />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
@@ -743,6 +752,7 @@ function AnaliseDetalhePage() {
               processo={processoLabel}
               orgao={orgao}
               jurisdicionado={jurisdicionado}
+              poder={atributos.poder}
             />
           ) : (
             <PlaceholderContent
@@ -5224,17 +5234,19 @@ function DespesasPessoalContent({
   processo,
   orgao,
   jurisdicionado,
+  poder,
 }: {
   processo: string;
   orgao: string;
   jurisdicionado: Jurisdicionado;
+  poder: Poder;
 }) {
   const mock = useMemo(
     () => getDespesaPessoalMock(jurisdicionado),
     [jurisdicionado]
   );
   const percentualRcl = (mock.despesaPessoal / mock.rcl) * 100;
-  const ocultarConformidade = jurisdicionado.poder === "DEFENSORIA PÚBLICA";
+  const ocultarConformidade = poder === "DEFENSORIA PÚBLICA";
   const conforme = percentualRcl <= mock.limiteLegal;
 
   return (

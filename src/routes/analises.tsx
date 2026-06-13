@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowUp,
   ArrowDown,
@@ -50,8 +51,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ORGAOS } from "@/lib/pce-data";
+import {
+  ORGAOS,
+  GRUPOS_ENTIDADE,
+  GRUPO_ABREVIADO,
+  PODERES,
+  getJurisdicionado,
+  type AtributosExercicio,
+  type GrupoEntidade,
+  type Poder,
+} from "@/lib/pce-data";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
 import type { ConsolidacaoStatus } from "@/lib/consolidacao";
@@ -270,6 +283,11 @@ function ProcessosPage() {
     Record<string, { situacao?: Situacao }>
   >({});
   const [confirmReinit, setConfirmReinit] = useState(false);
+  // Diálogo de atributos do jurisdicionado por ano de exercício.
+  const [atribOrgao, setAtribOrgao] = useState<
+    { orgao: string; ano: string } | null
+  >(null);
+  const { getAtributos, setAtributos } = useJurisdicionados();
 
   const applyOverride = (r: Row): Row => {
     const o = overrides[r.id];
@@ -598,7 +616,17 @@ function ProcessosPage() {
                         : "bg-white hover:bg-blue-50"
                     }`}
                   >
-                    <td className="px-3 py-2.5 text-foreground">{r.orgao}</td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
+                        }
+                        className="text-left font-medium text-[#1A56DB] underline-offset-2 hover:underline"
+                      >
+                        {r.orgao}
+                      </button>
+                    </td>
                     <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
@@ -836,6 +864,14 @@ function ProcessosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AtributosDialog
+        target={atribOrgao}
+        onClose={() => setAtribOrgao(null)}
+        canEdit={perfil === "Coordenador"}
+        getAtributos={getAtributos}
+        setAtributos={setAtributos}
+      />
     </main>
   );
 }
@@ -1071,5 +1107,179 @@ function ConsolidacaoCell({
         </Button>
       )}
     </div>
+  );
+}
+
+// Diálogo de atributos do jurisdicionado para o ANO DE REFERÊNCIA do processo.
+// Editável apenas para Coordenador; somente leitura para os demais.
+function AtributosDialog({
+  target,
+  onClose,
+  canEdit,
+  getAtributos,
+  setAtributos,
+}: {
+  target: { orgao: string; ano: string } | null;
+  onClose: () => void;
+  canEdit: boolean;
+  getAtributos: (orgao: string, ano: string) => {
+    grupoEntidade: GrupoEntidade;
+    entidadePrevidenciaria: boolean;
+    poder: Poder;
+    ano: string;
+    herdadoDe?: string;
+  };
+  setAtributos: (orgao: string, ano: string, attrs: AtributosExercicio) => void;
+}) {
+  const [draft, setDraft] = useState<AtributosExercicio | null>(null);
+  const [herdadoDe, setHerdadoDe] = useState<string | undefined>();
+
+  // Reinicializa o rascunho sempre que o alvo muda.
+  const targetKey = target ? `${target.orgao}|${target.ano}` : null;
+  useEffect(() => {
+    if (!target) {
+      setDraft(null);
+      setHerdadoDe(undefined);
+      return;
+    }
+    const a = getAtributos(target.orgao, target.ano);
+    setDraft({
+      grupoEntidade: a.grupoEntidade,
+      entidadePrevidenciaria: a.entidadePrevidenciaria,
+      poder: a.poder,
+    });
+    setHerdadoDe(a.herdadoDe);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetKey]);
+
+  const sigla = target ? getJurisdicionado(target.orgao).sigla : "";
+  const titulo = target
+    ? `${sigla || target.orgao} — Exercício ${target.ano}`
+    : "";
+
+  function salvar() {
+    if (!target || !draft) return;
+    setAtributos(target.orgao, target.ano, draft);
+    toast.success("Atributos atualizados", {
+      description: `${sigla || target.orgao} — Exercício ${target.ano}. Alterações valem para todos os processos deste órgão neste exercício.`,
+    });
+    onClose();
+  }
+
+  return (
+    <Dialog open={!!target} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{titulo}</DialogTitle>
+          <DialogDescription>
+            {target?.orgao}
+            {canEdit && (
+              <span className="mt-1 block text-amber-600">
+                Alterações valem para todos os processos deste órgão neste
+                exercício.
+              </span>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        {herdadoDe && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Atributos herdados de {herdadoDe} — confirme os dados.
+          </div>
+        )}
+
+        {draft && (
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Grupo de Entidade</Label>
+              {canEdit ? (
+                <Select
+                  value={draft.grupoEntidade}
+                  onValueChange={(v) =>
+                    setDraft((d) =>
+                      d ? { ...d, grupoEntidade: v as GrupoEntidade } : d
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GRUPOS_ENTIDADE.map((g) => (
+                      <SelectItem key={g} value={g} className="max-w-[28rem]">
+                        {GRUPO_ABREVIADO[g]} — {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">
+                  <Badge variant="secondary" className="mr-2">
+                    {GRUPO_ABREVIADO[draft.grupoEntidade]}
+                  </Badge>
+                  {draft.grupoEntidade}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Poder</Label>
+              {canEdit ? (
+                <Select
+                  value={draft.poder}
+                  onValueChange={(v) =>
+                    setDraft((d) => (d ? { ...d, poder: v as Poder } : d))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PODERES.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-foreground">{draft.poder}</p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+              <div>
+                <Label htmlFor="prev-switch">Entidade previdenciária</Label>
+                <p className="text-xs text-muted-foreground">
+                  Habilita o tópico "Receitas" na análise.
+                </p>
+              </div>
+              <Switch
+                id="prev-switch"
+                disabled={!canEdit}
+                checked={draft.entidadePrevidenciaria}
+                onCheckedChange={(c) =>
+                  setDraft((d) => (d ? { ...d, entidadePrevidenciaria: c } : d))
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            {canEdit ? "Cancelar" : "Fechar"}
+          </Button>
+          {canEdit && (
+            <Button
+              className="bg-[#1A56DB] hover:bg-[#1A56DB]/90"
+              onClick={salvar}
+            >
+              Salvar
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
