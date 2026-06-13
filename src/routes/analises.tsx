@@ -342,6 +342,9 @@ function ProcessosPage() {
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * perPage;
   const pageRows = sorted.slice(start, start + perPage);
+  const selectedRow = selectedId
+    ? base.find((r) => r.id === selectedId) ?? null
+    : null;
 
   // Situações iniciais (processo ainda sem análise iniciada).
   const ehInicial = (s: Situacao) =>
