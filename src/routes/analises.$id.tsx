@@ -7355,7 +7355,10 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
             <thead className="bg-[#0D1B2A] text-white">
               <tr>
                 <th className="px-3 py-2 text-left font-semibold">Tópico</th>
-                <th className="px-3 py-2 text-left font-semibold">Apontamento</th>
+                <th className="px-3 py-2 text-left font-semibold">Título</th>
+                <th className="px-3 py-2 text-left font-semibold">
+                  Enquadramento
+                </th>
                 <th className="px-3 py-2 text-left font-semibold">
                   Proposta de encaminhamento
                 </th>
@@ -7371,7 +7374,10 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
                     {a.topico}
                   </td>
                   <td className="border-t border-border px-3 py-2 align-top">
-                    {a.apontamento}
+                    {a.titulo}
+                  </td>
+                  <td className="border-t border-border px-3 py-2 align-top">
+                    {a.enquadramento}
                   </td>
                   <td className="border-t border-border px-3 py-2 align-top">
                     {a.encaminhamento}
