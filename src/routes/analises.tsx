@@ -278,11 +278,7 @@ function ProcessosPage() {
     Record<string, { situacao?: Situacao }>
   >({});
   const [confirmReinit, setConfirmReinit] = useState(false);
-  // Diálogo de atributos do jurisdicionado por ano de exercício.
-  const [atribOrgao, setAtribOrgao] = useState<
-    { orgao: string; ano: string } | null
-  >(null);
-  const { getAtributos, setAtributos } = useJurisdicionados();
+
 
   const applyOverride = (r: Row): Row => {
     const o = overrides[r.id];
