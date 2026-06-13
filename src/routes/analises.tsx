@@ -615,77 +615,84 @@ function ProcessosPage() {
                         : "bg-white hover:bg-blue-50"
                     }`}
                   >
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
-                        }
-                        className="text-left font-medium text-[#1A56DB] underline-offset-2 hover:underline"
-                      >
-                        {r.orgao}
-                      </button>
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
+                              }
+                              className="whitespace-nowrap font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
+                            >
+                              {getJurisdicionado(r.orgao).sigla || r.orgao}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>{r.orgao}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </td>
-                    <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="whitespace-nowrap px-2 py-1.5 font-mono text-foreground">{r.numero}</td>
+                    <td className="px-2 py-1.5 text-foreground">{r.exercicio}</td>
+                    <td className="px-2 py-1.5">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           r.tipoAnalise === "Análise de Defesa"
                             ? "bg-amber-100 text-amber-800"
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {r.tipoAnalise === "Análise de Defesa" && r.nrDefesa
-                          ? `Análise de Defesa nº ${r.nrDefesa}`
-                          : r.tipoAnalise}
+                        {r.tipoAnalise === "Análise de Defesa"
+                          ? `Defesa nº ${r.nrDefesa ?? 1}`
+                          : "Inicial"}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
-                    <td className="px-3 py-2.5">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
-                      >
-                        {r.situacao}
-                      </span>
+                    <td className="px-2 py-1.5">
+                      {getStatus(r.id) !== "Concluída" ? (
+                        <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                          Aguardando consolidação
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
+                        >
+                          {r.situacao}
+                        </span>
+                      )}
                     </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <ConsolidacaoCell
-                        status={getStatus(r.id)}
-                        podeConsolidar={podeConsolidar}
-                        onConsolidar={() => consolidar(r.id)}
-                      />
-                    </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <AtribSelect
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
-                        placeholder="Atribuir responsável"
                         options={usuariosAtivos}
                         excluir={getAtribuicao(r.id).revisor}
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <AtribSelect
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
-                        placeholder="Atribuir revisor"
                         options={usuariosAtivos}
                         excluir={getAtribuicao(r.id).executor}
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
+                    <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <DetalhesPopover
+                        r={r}
+                        status={getStatus(r.id)}
+                        podeConsolidar={podeConsolidar}
+                        onConsolidar={() => consolidar(r.id)}
+                      />
+                    </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={13} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
