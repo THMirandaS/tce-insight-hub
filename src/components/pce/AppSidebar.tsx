@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Users,
   Building2,
+  RefreshCcw,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAtribuicoes, type Perfil } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
 
 type NavItem = {
   to: string;
@@ -30,6 +32,7 @@ const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/usuarios", label: "Usuários", icon: Users, roles: ["Coordenador"] },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2 },
+  { to: "/consolidacao", label: "Consolidação", icon: RefreshCcw },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 
@@ -38,6 +41,7 @@ export function AppSidebar({ user }: { user?: string }) {
   const { pathname } = useLocation();
   const { perfil, usuarios, usuarioAtivoId, setUsuarioAtivo } =
     useAtribuicoes();
+  const { pendenteCount } = useConsolidacao();
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
   const usuariosAtivos = usuarios.filter((u) => u.ativo);
@@ -70,19 +74,34 @@ export function AppSidebar({ user }: { user?: string }) {
         <ul className="space-y-1">
           {items.map(({ to, label, icon: Icon }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
+            const badge = to === "/consolidacao" ? pendenteCount : 0;
             return (
               <li key={to}>
                 <Link
                   to={to}
                   title={isCollapsed ? label : undefined}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-[#1A56DB] text-white shadow-sm"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {!isCollapsed && <span className="truncate">{label}</span>}
+                  <span className="relative shrink-0">
+                    <Icon className="h-5 w-5" />
+                    {badge > 0 && isCollapsed && (
+                      <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F59E0B] px-1 text-[10px] font-bold text-[#0D1B2A]">
+                        {badge}
+                      </span>
+                    )}
+                  </span>
+                  {!isCollapsed && (
+                    <span className="flex-1 truncate">{label}</span>
+                  )}
+                  {!isCollapsed && badge > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F59E0B] px-1.5 text-[11px] font-bold text-[#0D1B2A]">
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               </li>
             );

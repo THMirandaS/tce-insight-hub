@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as JurisdicionadosRouteImport } from './routes/jurisdicionados'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ConsolidacaoRouteImport } from './routes/consolidacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalisesIdRouteImport } from './routes/analises.$id'
@@ -30,6 +31,11 @@ const JurisdicionadosRoute = JurisdicionadosRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsolidacaoRoute = ConsolidacaoRouteImport.update({
+  id: '/consolidacao',
+  path: '/consolidacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalisesRoute = AnalisesRouteImport.update({
@@ -56,6 +62,7 @@ const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRouteWithChildren
+  '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRouteWithChildren
+  '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analises': typeof AnalisesRouteWithChildren
+  '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
   '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analises'
+    | '/consolidacao'
     | '/dashboard'
     | '/jurisdicionados'
     | '/usuarios'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analises'
+    | '/consolidacao'
     | '/dashboard'
     | '/jurisdicionados'
     | '/usuarios'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analises'
+    | '/consolidacao'
     | '/dashboard'
     | '/jurisdicionados'
     | '/usuarios'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalisesRoute: typeof AnalisesRouteWithChildren
+  ConsolidacaoRoute: typeof ConsolidacaoRoute
   DashboardRoute: typeof DashboardRoute
   JurisdicionadosRoute: typeof JurisdicionadosRoute
   UsuariosRoute: typeof UsuariosRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consolidacao': {
+      id: '/consolidacao'
+      path: '/consolidacao'
+      fullPath: '/consolidacao'
+      preLoaderRoute: typeof ConsolidacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analises': {
@@ -189,6 +209,7 @@ const AnalisesRouteWithChildren = AnalisesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalisesRoute: AnalisesRouteWithChildren,
+  ConsolidacaoRoute: ConsolidacaoRoute,
   DashboardRoute: DashboardRoute,
   JurisdicionadosRoute: JurisdicionadosRoute,
   UsuariosRoute: UsuariosRoute,

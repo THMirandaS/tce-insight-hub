@@ -16,7 +16,6 @@ import {
   RotateCcw,
   RefreshCw,
   FileText,
-  Loader2,
   Layers,
   Info,
 } from "lucide-react";
@@ -73,7 +72,6 @@ import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
-import type { ConsolidacaoStatus } from "@/lib/consolidacao";
 
 export const Route = createFileRoute("/analises")({
   component: AnalisesRouteShell,
@@ -103,6 +101,7 @@ const RELATORES = [
 ];
 
 const SITUACOES = [
+  "Não Iniciado",
   "Disponível",
   "Em Análise",
   "Em Correção",
@@ -222,6 +221,7 @@ function makeRows(): Row[] {
 export const ALL_ROWS = makeRows();
 
 const SIT_BADGE: Record<Situacao, string> = {
+  "Não Iniciado": "bg-gray-200 text-gray-800",
   "Disponível": "bg-gray-200 text-gray-800",
   "Em Análise": "bg-blue-100 text-blue-800",
   "Em Correção": "bg-yellow-100 text-yellow-900",
@@ -275,9 +275,8 @@ function ProcessosPage() {
   );
   const podeAtribuir = perfil === "Coordenador";
   const [erroAtrib, setErroAtrib] = useState<string | null>(null);
-  const { getStatus, consolidar } = useConsolidacao();
+  const { isConsolidado, wasPendente } = useConsolidacao();
   const { allRows, criarDefesa, defesasDoProcesso } = useDefesas();
-  const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
@@ -306,10 +305,20 @@ function ProcessosPage() {
       (PERFIL === "Coordenador"
         ? allRows
         : allRows.filter((r) => r.analista === USUARIO_AUDITOR)
-      ).map(applyOverride),
+      )
+        // Somente análises de processos já consolidados.
+        .filter((r) => isConsolidado(r.numero))
+        // Processo recém-consolidado começa com situação "Não Iniciado".
+        .map((r) =>
+          wasPendente(r.numero) && r.tipoAnalise === "Análise Inicial"
+            ? { ...r, situacao: "Não Iniciado" as Situacao }
+            : r
+        )
+        .map(applyOverride),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [overrides, allRows]
+    [overrides, allRows, isConsolidado, wasPendente]
   );
+
 
   const filtered = useMemo(() => {
     const f = applied;
@@ -354,12 +363,12 @@ function ProcessosPage() {
     ? !getAtribuicao(selectedRow.id).executor
     : false;
 
-  // A análise só pode ser INICIADA após a consolidação dos dados estar
-  // "Concluída". Antes disso o processo abre apenas em modo visualização.
-  const consolStatus: ConsolidacaoStatus = selectedRow
-    ? getStatus(selectedRow.id)
-    : "Concluída";
-  const podeIniciarAnalise = consolStatus === "Concluída";
+  // Todos os processos exibidos já estão consolidados, logo a análise pode
+  // sempre ser iniciada.
+  const podeIniciarAnalise = true;
+  // Situações iniciais (processo ainda sem análise iniciada).
+  const ehInicial = (s: Situacao) =>
+    s === "Disponível" || s === "Não Iniciado";
 
   // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
   // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
@@ -430,7 +439,7 @@ function ProcessosPage() {
     setSituacao(selectedRow.id, "Em Análise");
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.id, "Disponível");
+    if (selectedRow) setSituacao(selectedRow.id, "Não Iniciado");
     setConfirmReinit(false);
   };
 
@@ -649,17 +658,11 @@ function ProcessosPage() {
                       </span>
                     </td>
                     <td className="px-2 py-1.5">
-                      {getStatus(r.id) !== "Concluída" ? (
-                        <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-                          Aguardando consolidação
-                        </span>
-                      ) : (
-                        <span
-                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
-                        >
-                          {r.situacao}
-                        </span>
-                      )}
+                      <span
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
+                      >
+                        {r.situacao}
+                      </span>
                     </td>
                     <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
                       <AtribInlineCell
@@ -680,12 +683,7 @@ function ProcessosPage() {
                       />
                     </td>
                     <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <DetalhesPopover
-                        r={r}
-                        status={getStatus(r.id)}
-                        podeConsolidar={podeConsolidar}
-                        onConsolidar={() => consolidar(r.id)}
-                      />
+                      <DetalhesPopover r={r} />
                     </td>
                   </tr>
                 );
@@ -759,7 +757,7 @@ function ProcessosPage() {
                           disabled
                           className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90 disabled:opacity-40"
                         >
-                          {selectedRow.situacao === "Disponível" ? (
+                          {ehInicial(selectedRow.situacao) ? (
                             <>
                               <Plus className="h-4 w-4" /> Criar
                             </>
@@ -777,32 +775,13 @@ function ProcessosPage() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              ) : selectedRow.situacao === "Disponível" && podeIniciarAnalise ? (
+              ) : ehInicial(selectedRow.situacao) ? (
                 <Button
                   onClick={handleCriar}
                   className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
                 >
                   <Plus className="h-4 w-4" /> Criar
                 </Button>
-              ) : selectedRow.situacao === "Disponível" && !podeIniciarAnalise ? (
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0}>
-                        <Button
-                          onClick={handleVisualizar}
-                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-                        >
-                          <Eye className="h-4 w-4" /> Visualizar
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Aguardando consolidação dos dados. A análise só pode ser
-                      iniciada após a consolidação ser concluída.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               ) : (
                 <Button
                   onClick={handleVisualizar}
@@ -990,18 +969,8 @@ function AtribInlineCell({
   );
 }
 
-// Popover de detalhes (ⓘ): datas e status/ação de consolidação.
-function DetalhesPopover({
-  r,
-  status,
-  podeConsolidar,
-  onConsolidar,
-}: {
-  r: Row;
-  status: ConsolidacaoStatus;
-  podeConsolidar: boolean;
-  onConsolidar: () => void;
-}) {
+// Popover de detalhes (ⓘ): datas do processo.
+function DetalhesPopover({ r }: { r: Row }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -1024,18 +993,6 @@ function DetalhesPopover({
               <DetalheLinha label="Consolidação" valor={r.dtConsol} />
               <DetalheLinha label="Conclusão" valor={r.dtConclusao} />
             </dl>
-          </div>
-          <div className="border-t border-border pt-2.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Consolidação
-            </p>
-            <div className="mt-1.5">
-              <ConsolidacaoCell
-                status={status}
-                podeConsolidar={podeConsolidar}
-                onConsolidar={onConsolidar}
-              />
-            </div>
           </div>
         </div>
       </PopoverContent>
@@ -1132,67 +1089,6 @@ function Pager({
       >
         <ChevronsRight className="h-4 w-4" />
       </button>
-    </div>
-  );
-}
-
-const CONSOL_BADGE: Record<ConsolidacaoStatus, string> = {
-  Pendente: "bg-gray-200 text-gray-800",
-  Processando: "bg-blue-100 text-blue-800",
-  Concluída: "bg-emerald-100 text-emerald-800",
-  Erro: "bg-red-100 text-red-800",
-};
-
-function ConsolidacaoCell({
-  status,
-  podeConsolidar,
-  onConsolidar,
-}: {
-  status: ConsolidacaoStatus;
-  podeConsolidar: boolean;
-  onConsolidar: () => void;
-}) {
-  if (status === "Processando") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processando
-      </span>
-    );
-  }
-
-  if (status === "Concluída") {
-    return (
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE.Concluída}`}
-      >
-        Concluída
-      </span>
-    );
-  }
-
-  // Pendente ou Erro: exibe badge e, para perfis autorizados, ação.
-  return (
-    <div className="flex flex-col items-start gap-1.5">
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE[status]}`}
-      >
-        {status}
-      </span>
-      {status === "Erro" && (
-        <span className="text-[11px] text-red-700">
-          Falha ao consolidar. Tente novamente.
-        </span>
-      )}
-      {podeConsolidar && (
-        <Button
-          size="sm"
-          onClick={onConsolidar}
-          className="h-7 gap-1.5 bg-[#1A56DB] px-2.5 text-xs text-white hover:bg-[#1A56DB]/90"
-        >
-          <Layers className="h-3.5 w-3.5" />
-          {status === "Erro" ? "Tentar novamente" : "Consolidar"}
-        </Button>
-      )}
     </div>
   );
 }

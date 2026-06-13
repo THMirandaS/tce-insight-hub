@@ -193,10 +193,10 @@ function AnaliseDetalhePage() {
   const { perfil, usuario, getAtribuicao } = useAtribuicoes();
   const atribuicao = getAtribuicao(id);
 
-  // Consolidação dos dados do processo. A análise só é editável após a
-  // consolidação estar "Concluída"; antes disso abre em modo visualização.
-  const { getStatus: getConsolStatus } = useConsolidacao();
-  const aguardandoConsolidacao = getConsolStatus(id) !== "Concluída";
+  // Consolidação dos dados do processo. Só processos já consolidados chegam
+  // a esta tela; a flag permanece para o aviso de cortesia, mas será falsa.
+  const { isConsolidado } = useConsolidacao();
+  const aguardandoConsolidacao = !isConsolidado(id.split("-")[0]);
 
   // Status por submenu PCE, inicializado a partir dos itens visíveis.
   const [statuses, setStatuses] = useState<Record<string, SubmenuStatus>>(
