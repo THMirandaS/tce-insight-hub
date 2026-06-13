@@ -925,6 +925,108 @@ function AtribInlineCell({
   );
 }
 
+// Coluna "Ações": botões que EXECUTAM a ação diretamente. "Abrir" (todos os
+// perfis) fica sempre visível; as demais ações ficam no menu "⋯" e só
+// aparecem para os perfis autorizados, respeitando o responsável atribuído.
+function AcoesCell({
+  r,
+  ehInicial,
+  podeReabrir,
+  podeReinit,
+  podePdf,
+  podeNovaDefesa,
+  onAbrir,
+  onReabrir,
+  onReinit,
+  onPdf,
+  onNovaDefesa,
+}: {
+  r: Row;
+  ehInicial: boolean;
+  podeReabrir: boolean;
+  podeReinit: boolean;
+  podePdf: boolean;
+  podeNovaDefesa: boolean;
+  onAbrir: () => void;
+  onReabrir: () => void;
+  onReinit: () => void;
+  onPdf: () => void;
+  onNovaDefesa: () => void;
+}) {
+  const temMenu = podeReabrir || podeReinit || podePdf || podeNovaDefesa;
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 text-[#1A56DB] hover:bg-[#1A56DB]/10"
+              onClick={onAbrir}
+            >
+              {ehInicial ? (
+                <Plus className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {ehInicial ? "Abrir e iniciar análise" : "Abrir análise"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {temMenu && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              aria-label="Mais ações"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-60">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {podeReabrir && (
+              <DropdownMenuItem onClick={onReabrir}>
+                <RotateCcw className="mr-2 h-4 w-4" /> Reabrir
+              </DropdownMenuItem>
+            )}
+            {podeReinit && (
+              <DropdownMenuItem
+                onClick={onReinit}
+                className="text-[#EA580C] focus:text-[#EA580C]"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" /> Reinicializar
+              </DropdownMenuItem>
+            )}
+            {podePdf && (
+              <DropdownMenuItem onClick={onPdf}>
+                <FileText className="mr-2 h-4 w-4" /> Gerar PDF de conclusão geral
+              </DropdownMenuItem>
+            )}
+            {podeNovaDefesa && (
+              <DropdownMenuItem onClick={onNovaDefesa}>
+                <Layers className="mr-2 h-4 w-4" /> Nova defesa
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
+
+
+
 // Popover de detalhes (ⓘ): datas do processo.
 function DetalhesPopover({ r }: { r: Row }) {
   return (
