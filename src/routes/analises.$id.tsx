@@ -7221,6 +7221,9 @@ function ConclusaoContent({
 <p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
+<p>${OUTROS_ASSUNTOS_STORE.incluir && OUTROS_ASSUNTOS_STORE.texto.trim() ? escapeHTML(OUTROS_ASSUNTOS_STORE.texto) : "Não foram registrados outros assuntos relevantes."}</p>
+
+<h2>6. Outras Inconformidades</h2>
 <p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Inconformidades.</p>
 
 <h2>6. Conclusão</h2>
