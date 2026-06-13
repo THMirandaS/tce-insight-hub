@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
-import { Route as JurisdicionadosRouteImport } from './routes/jurisdicionados'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConsolidacaoRouteImport } from './routes/consolidacao'
 import { Route as AnalisesRouteImport } from './routes/analises'
@@ -21,11 +20,6 @@ import { Route as AnaliseResponsavelRouteImport } from './routes/analise.respons
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JurisdicionadosRoute = JurisdicionadosRouteImport.update({
-  id: '/jurisdicionados',
-  path: '/jurisdicionados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -64,7 +58,6 @@ export interface FileRoutesByFullPath {
   '/analises': typeof AnalisesRouteWithChildren
   '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
@@ -74,7 +67,6 @@ export interface FileRoutesByTo {
   '/analises': typeof AnalisesRouteWithChildren
   '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
@@ -85,7 +77,6 @@ export interface FileRoutesById {
   '/analises': typeof AnalisesRouteWithChildren
   '/consolidacao': typeof ConsolidacaoRoute
   '/dashboard': typeof DashboardRoute
-  '/jurisdicionados': typeof JurisdicionadosRoute
   '/usuarios': typeof UsuariosRoute
   '/analise/responsavel': typeof AnaliseResponsavelRoute
   '/analises/$id': typeof AnalisesIdRoute
@@ -97,7 +88,6 @@ export interface FileRouteTypes {
     | '/analises'
     | '/consolidacao'
     | '/dashboard'
-    | '/jurisdicionados'
     | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
@@ -107,7 +97,6 @@ export interface FileRouteTypes {
     | '/analises'
     | '/consolidacao'
     | '/dashboard'
-    | '/jurisdicionados'
     | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
@@ -117,7 +106,6 @@ export interface FileRouteTypes {
     | '/analises'
     | '/consolidacao'
     | '/dashboard'
-    | '/jurisdicionados'
     | '/usuarios'
     | '/analise/responsavel'
     | '/analises/$id'
@@ -128,7 +116,6 @@ export interface RootRouteChildren {
   AnalisesRoute: typeof AnalisesRouteWithChildren
   ConsolidacaoRoute: typeof ConsolidacaoRoute
   DashboardRoute: typeof DashboardRoute
-  JurisdicionadosRoute: typeof JurisdicionadosRoute
   UsuariosRoute: typeof UsuariosRoute
   AnaliseResponsavelRoute: typeof AnaliseResponsavelRoute
 }
@@ -140,13 +127,6 @@ declare module '@tanstack/react-router' {
       path: '/usuarios'
       fullPath: '/usuarios'
       preLoaderRoute: typeof UsuariosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jurisdicionados': {
-      id: '/jurisdicionados'
-      path: '/jurisdicionados'
-      fullPath: '/jurisdicionados'
-      preLoaderRoute: typeof JurisdicionadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -211,7 +191,6 @@ const rootRouteChildren: RootRouteChildren = {
   AnalisesRoute: AnalisesRouteWithChildren,
   ConsolidacaoRoute: ConsolidacaoRoute,
   DashboardRoute: DashboardRoute,
-  JurisdicionadosRoute: JurisdicionadosRoute,
   UsuariosRoute: UsuariosRoute,
   AnaliseResponsavelRoute: AnaliseResponsavelRoute,
 }
