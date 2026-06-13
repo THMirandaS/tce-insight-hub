@@ -46,7 +46,6 @@ import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
-  getAtributos,
   GRUPO_ABREVIADO,
   type AtributosExercicio,
   type Jurisdicionado,
