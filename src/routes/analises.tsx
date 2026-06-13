@@ -925,37 +925,56 @@ function SimpleSelect({
 
 const NAO_ATRIB = "__none__";
 
-function AtribSelect({
+// Responsável/Revisor: texto simples; para o Coordenador, clicar transforma
+// em select inline que fecha ao selecionar.
+function AtribInlineCell({
   value,
   editavel,
-  placeholder,
   options,
   excluir,
   onChange,
 }: {
   value: string | null;
   editavel: boolean;
-  placeholder: string;
   options: string[];
   excluir: string | null;
   onChange: (v: string | null) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+
   if (!editavel) {
-    return value ? (
-      <span className="text-foreground">{value}</span>
-    ) : (
-      <span className="text-xs italic text-muted-foreground">
-        Não atribuído
-      </span>
+    return (
+      <span className="whitespace-nowrap text-foreground">{value || "—"}</span>
     );
   }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="whitespace-nowrap text-left text-foreground underline-offset-2 hover:text-[#1A56DB] hover:underline"
+        title="Clique para atribuir"
+      >
+        {value || "—"}
+      </button>
+    );
+  }
+
   return (
     <Select
+      open
       value={value ?? NAO_ATRIB}
-      onValueChange={(v) => onChange(v === NAO_ATRIB ? null : v)}
+      onValueChange={(v) => {
+        onChange(v === NAO_ATRIB ? null : v);
+        setEditing(false);
+      }}
+      onOpenChange={(o) => {
+        if (!o) setEditing(false);
+      }}
     >
-      <SelectTrigger className="h-9 w-[180px]">
-        <SelectValue placeholder={placeholder} />
+      <SelectTrigger className="h-8 w-[160px]">
+        <SelectValue placeholder="Atribuir" />
       </SelectTrigger>
       <SelectContent className="max-h-[300px]">
         <SelectItem value={NAO_ATRIB}>— Não atribuído —</SelectItem>
@@ -968,6 +987,68 @@ function AtribSelect({
           ))}
       </SelectContent>
     </Select>
+  );
+}
+
+// Popover de detalhes (ⓘ): datas e status/ação de consolidação.
+function DetalhesPopover({
+  r,
+  status,
+  podeConsolidar,
+  onConsolidar,
+}: {
+  r: Row;
+  status: ConsolidacaoStatus;
+  podeConsolidar: boolean;
+  onConsolidar: () => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Detalhes do processo"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Info className="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72">
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Datas
+            </p>
+            <dl className="mt-1.5 space-y-1">
+              <DetalheLinha label="Criação" valor={r.dtCriacao} />
+              <DetalheLinha label="Consolidação" valor={r.dtConsol} />
+              <DetalheLinha label="Conclusão" valor={r.dtConclusao} />
+            </dl>
+          </div>
+          <div className="border-t border-border pt-2.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Consolidação
+            </p>
+            <div className="mt-1.5">
+              <ConsolidacaoCell
+                status={status}
+                podeConsolidar={podeConsolidar}
+                onConsolidar={onConsolidar}
+              />
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DetalheLinha({ label, valor }: { label: string; valor: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium text-foreground">{valor}</dd>
+    </div>
   );
 }
 
