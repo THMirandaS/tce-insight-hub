@@ -49,6 +49,8 @@ import {
   getAtributos,
   GRUPO_ABREVIADO,
   type AtributosExercicio,
+  type Jurisdicionado,
+  type Poder,
 } from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
@@ -5233,17 +5235,19 @@ function DespesasPessoalContent({
   processo,
   orgao,
   jurisdicionado,
+  poder,
 }: {
   processo: string;
   orgao: string;
   jurisdicionado: Jurisdicionado;
+  poder: Poder;
 }) {
   const mock = useMemo(
     () => getDespesaPessoalMock(jurisdicionado),
     [jurisdicionado]
   );
   const percentualRcl = (mock.despesaPessoal / mock.rcl) * 100;
-  const ocultarConformidade = jurisdicionado.poder === "DEFENSORIA PÚBLICA";
+  const ocultarConformidade = poder === "DEFENSORIA PÚBLICA";
   const conforme = percentualRcl <= mock.limiteLegal;
 
   return (
