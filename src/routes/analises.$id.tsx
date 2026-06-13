@@ -37,6 +37,7 @@ import {
 import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
+import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import { ResumoIA } from "@/components/pce/ResumoIA";
 import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
@@ -305,7 +306,6 @@ function AnaliseDetalhePage() {
 
   // RF05 — valores complementares do cabeçalho (mock).
   const dataAutuacao = "06/05/2025";
-  const anoReferencia = "2025";
   const categoria = "PCE";
   const tipoAnalise =
     isDefesa && row?.nrDefesa
