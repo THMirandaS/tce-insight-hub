@@ -152,10 +152,17 @@ function AnaliseDetalhePage() {
 
   // Jurisdicionado do processo e tópicos visíveis (RF02/RF03).
   const { getRow } = useDefesas();
+  const { getAtributos: getAtributosLive } = useJurisdicionados();
   const row = useMemo(() => getRow(id), [id, getRow]);
   const orgao = row?.orgao ?? "—";
   const jurisdicionado = useMemo(() => getJurisdicionado(orgao), [orgao]);
-  const pceItems = useMemo(() => getPceItems(jurisdicionado), [jurisdicionado]);
+  // Ano de referência do processo: os atributos do jurisdicionado são por ano.
+  const anoReferencia = row?.exercicio ?? "2025";
+  const atributos = useMemo(
+    () => getAtributosLive(orgao, anoReferencia),
+    [getAtributosLive, orgao, anoReferencia]
+  );
+  const pceItems = useMemo(() => getPceItems(atributos), [atributos]);
 
   // RF23 — Análise de Defesa.
   const isDefesa = row?.tipoAnalise === "Análise de Defesa";
