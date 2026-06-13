@@ -754,6 +754,23 @@ function ProcessosPage() {
           </table>
         </div>
 
+        {/* Barra de ações da linha selecionada */}
+        <AcoesBar
+          row={base.find((r) => r.id === selectedId) ?? null}
+          ehInicial={selectedRow ? ehInicial(selectedRow.situacao) : false}
+          podeReabrir={selectedRow ? podeReabrirRow(selectedRow) : false}
+          podeReinit={selectedRow ? podeReinitRow(selectedRow) : false}
+          podePdf={selectedRow ? podePdfRow(selectedRow) : false}
+          podeNovaDefesa={selectedRow ? podeNovaDefesaRow(selectedRow) : false}
+          onAbrir={() => selectedRow && handleAbrir(selectedRow)}
+          onReabrir={() => selectedRow && handleReabrir(selectedRow)}
+          onReinit={() => selectedRow && setReinitTarget(selectedRow)}
+          onPdf={() => selectedRow && handleGerarPdf(selectedRow)}
+          onNovaDefesa={() => selectedRow && handleNovaDefesa(selectedRow)}
+        />
+
+
+
 
         {/* Paginação */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border bg-white px-4 py-3 md:flex-row">
