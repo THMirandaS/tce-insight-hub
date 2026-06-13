@@ -275,9 +275,8 @@ function ProcessosPage() {
   );
   const podeAtribuir = perfil === "Coordenador";
   const [erroAtrib, setErroAtrib] = useState<string | null>(null);
-  const { getStatus, consolidar } = useConsolidacao();
+  const { isConsolidado, wasPendente } = useConsolidacao();
   const { allRows, criarDefesa, defesasDoProcesso } = useDefesas();
-  const podeConsolidar = perfil === "Executor" || perfil === "Coordenador";
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("dtCriacao");
