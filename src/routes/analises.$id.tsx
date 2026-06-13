@@ -6788,7 +6788,7 @@ function OutrasInconformidadesContent({
               <th className="px-3 py-2 text-left">Encaminhamento</th>
               <th className="px-3 py-2 text-left">Descrição</th>
               <th className="px-3 py-2 text-left">Desc. encaminhamento</th>
-              <th className="px-3 py-2 text-left">Entendimento técnico</th>
+              <th className="px-3 py-2 text-left" data-pdf-hide>Entendimento técnico</th>
               {!readOnly && <th className="px-3 py-2 text-left">Ações</th>}
             </tr>
           </thead>
