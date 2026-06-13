@@ -6845,6 +6845,7 @@ function OutrasInconformidadesContent({
                   <td
                     className="max-w-[220px] truncate px-3 py-2 align-top"
                     title={row.entendimento}
+                    data-pdf-hide
                   >
                     {row.entendimento || "-"}
                   </td>
