@@ -6807,6 +6807,12 @@ function OutrasInconformidadesContent({
               lista.map((row, i) => (
                 <tr
                   key={row.id}
+                  data-pdf-hide={
+                    row.encaminhamento === "Recomendação" ||
+                    row.encaminhamento === "Determinação"
+                      ? undefined
+                      : ""
+                  }
                   className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
                   <td className="px-3 py-2 align-top">{row.titulo}</td>
