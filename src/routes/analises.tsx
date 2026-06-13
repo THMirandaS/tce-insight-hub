@@ -53,6 +53,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   ORGAOS,
   GRUPOS_ENTIDADE,
   GRUPO_ABREVIADO,
