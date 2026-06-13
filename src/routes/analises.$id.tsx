@@ -591,9 +591,9 @@ function AnaliseDetalhePage() {
                 }
               />
               <span className="inline-flex items-center rounded-full bg-[#1A56DB]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1A56DB] ring-1 ring-[#1A56DB]/20">
-                {GRUPO_ABREVIADO[jurisdicionado.grupoEntidade]}
+                {GRUPO_ABREVIADO[atributos.grupoEntidade]}
               </span>
-              {jurisdicionado.entidadePrevidenciaria && (
+              {atributos.entidadePrevidenciaria && (
                 <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-semibold text-purple-700 ring-1 ring-purple-200">
                   Previdenciária
                 </span>
