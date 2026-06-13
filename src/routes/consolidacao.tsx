@@ -42,7 +42,7 @@ import {
 import {
   useConsolidacao,
   type ProcessoConsolidacao,
-  type ConsolPendenteStatus,
+  type ConsolStatus,
 } from "@/lib/consolidacao-store";
 
 export const Route = createFileRoute("/consolidacao")({
