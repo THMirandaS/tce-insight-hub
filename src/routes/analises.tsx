@@ -610,7 +610,17 @@ function ProcessosPage() {
                         : "bg-white hover:bg-blue-50"
                     }`}
                   >
-                    <td className="px-3 py-2.5 text-foreground">{r.orgao}</td>
+                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
+                        }
+                        className="text-left font-medium text-[#1A56DB] underline-offset-2 hover:underline"
+                      >
+                        {r.orgao}
+                      </button>
+                    </td>
                     <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
                     <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
