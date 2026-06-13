@@ -57,6 +57,9 @@ export type AtributosExercicio = {
 export type JurisdicionadoExercicio = AtributosExercicio & {
   jurisdicionado: string; // nome do jurisdicionado
   ano: string;
+  // Marca registros copiados de outro exercício que ainda não foram
+  // confirmados pelo coordenador.
+  pendente?: boolean;
 };
 
 // Resultado de getAtributos: inclui o ano efetivo e, quando os atributos
