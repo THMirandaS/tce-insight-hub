@@ -600,6 +600,7 @@ function ProcessosPage() {
                 <Th label="Órgão" k="orgao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Nº Processo" k="numero" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Exercício" k="exercicio" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Tipo" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
@@ -633,17 +634,32 @@ function ProcessosPage() {
                               onClick={() =>
                                 setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
                               }
-                              className="whitespace-nowrap font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
+                              className="block max-w-[220px] truncate text-left font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
                             >
-                              {getJurisdicionado(r.orgao).sigla || r.orgao}
+                              {r.orgao}
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent>{r.orgao}</TooltipContent>
+                          <TooltipContent>
+                            {r.orgao}
+                            {getJurisdicionado(r.orgao).sigla
+                              ? ` (${getJurisdicionado(r.orgao).sigla})`
+                              : ""}
+                          </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </td>
                     <td className="whitespace-nowrap px-2 py-1.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-2 py-1.5 text-foreground">{r.exercicio}</td>
+                    <td className="px-2 py-1.5 text-foreground">
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="block max-w-[180px] truncate">{r.relator}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>{r.relator}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-2 py-1.5">
                       <span
                         className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -690,7 +706,7 @@ function ProcessosPage() {
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -984,6 +1000,17 @@ function DetalhesPopover({ r }: { r: Row }) {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72">
         <div className="space-y-3 text-sm">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Órgão
+            </p>
+            <p className="mt-1 font-medium text-foreground">
+              {r.orgao}
+              {getJurisdicionado(r.orgao).sigla
+                ? ` (${getJurisdicionado(r.orgao).sigla})`
+                : ""}
+            </p>
+          </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Datas
