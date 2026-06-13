@@ -279,6 +279,7 @@ function ProcessosPage() {
     Record<string, { situacao?: Situacao }>
   >({});
   const [reinitTarget, setReinitTarget] = useState<Row | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
 
 
