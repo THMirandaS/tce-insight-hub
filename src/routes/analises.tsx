@@ -1002,6 +1002,17 @@ function DetalhesPopover({ r }: { r: Row }) {
         <div className="space-y-3 text-sm">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Órgão
+            </p>
+            <p className="mt-1 font-medium text-foreground">
+              {r.orgao}
+              {getJurisdicionado(r.orgao).sigla
+                ? ` (${getJurisdicionado(r.orgao).sigla})`
+                : ""}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Datas
             </p>
             <dl className="mt-1.5 space-y-1">
