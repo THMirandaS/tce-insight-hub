@@ -16,7 +16,6 @@ import {
   RotateCcw,
   RefreshCw,
   FileText,
-  Loader2,
   Layers,
   Info,
 } from "lucide-react";
