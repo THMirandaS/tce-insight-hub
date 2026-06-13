@@ -7163,8 +7163,10 @@ function ConclusaoContent({
     const linhas = getConclusaoApontamentos().map(
       (a) =>
         `<tr><td>${escapeHTML(a.topico)}</td><td>${escapeHTML(
-          a.apontamento,
-        )}</td><td>${escapeHTML(a.encaminhamento)}</td></tr>`,
+          a.titulo,
+        )}</td><td>${escapeHTML(a.enquadramento)}</td><td>${escapeHTML(
+          a.encaminhamento,
+        )}</td></tr>`,
     ).join("");
     const jOpt = JULGAMENTO_OPTS.find((o) => o.v === julgamento)!;
     const textoJ = `Por todo o exposto, esta Unidade Técnica entende que as contas do ${org} referente ao exercício de ${ASSINATURA.ano}, sob a responsabilidade do(a) ${ASSINATURA.responsavel}, devem ser julgadas ${jOpt.label.toLowerCase()}, nos termos do artigo 48, ${jOpt.inciso}, da Lei Complementar 102/2008.`;
