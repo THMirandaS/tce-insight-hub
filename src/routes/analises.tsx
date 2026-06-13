@@ -634,17 +634,32 @@ function ProcessosPage() {
                               onClick={() =>
                                 setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
                               }
-                              className="whitespace-nowrap font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
+                              className="block max-w-[220px] truncate text-left font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
                             >
-                              {getJurisdicionado(r.orgao).sigla || r.orgao}
+                              {r.orgao}
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent>{r.orgao}</TooltipContent>
+                          <TooltipContent>
+                            {r.orgao}
+                            {getJurisdicionado(r.orgao).sigla
+                              ? ` (${getJurisdicionado(r.orgao).sigla})`
+                              : ""}
+                          </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </td>
                     <td className="whitespace-nowrap px-2 py-1.5 font-mono text-foreground">{r.numero}</td>
                     <td className="px-2 py-1.5 text-foreground">{r.exercicio}</td>
+                    <td className="px-2 py-1.5 text-foreground">
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="block max-w-[180px] truncate">{r.relator}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>{r.relator}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-2 py-1.5">
                       <span
                         className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
