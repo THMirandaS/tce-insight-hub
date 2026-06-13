@@ -77,7 +77,7 @@ const STATUS_FILTROS = [
 type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
-  const { pendentes, consolidar } = useConsolidacao();
+  const { processos, consolidar } = useConsolidacao();
   const { perfil } = useAtribuicoes();
   const { getRegistro } = useJurisdicionados();
   const isCoordenador = perfil === "Coordenador";
@@ -85,6 +85,7 @@ function ConsolidacaoPage() {
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
+  const [filtro, setFiltro] = useState<StatusFiltro>("Todas");
 
   // Atributos do exercício estão confirmados quando há registro explícito e
   // ele não está pendente de confirmação.
@@ -92,6 +93,19 @@ function ConsolidacaoPage() {
     const reg = getRegistro(orgao, ano);
     return !!reg && !reg.pendente;
   };
+
+  const visiveis = useMemo(
+    () =>
+      filtro === "Todas"
+        ? processos
+        : processos.filter((p) => p.status === filtro),
+    [processos, filtro]
+  );
+
+  const contagem = (s: StatusFiltro) =>
+    s === "Todas"
+      ? processos.length
+      : processos.filter((p) => p.status === s).length;
 
   return (
     <main className="mx-auto max-w-[1600px] px-6 py-8">
@@ -104,6 +118,30 @@ function ConsolidacaoPage() {
           tópicos a análise terá. Após concluída, a análise inicial passa a
           aparecer em Análises com a situação "Não Iniciado".
         </p>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {STATUS_FILTROS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setFiltro(s)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              filtro === s
+                ? "border-[#1A56DB] bg-[#1A56DB] text-white"
+                : "border-border bg-card text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {s}
+            <span
+              className={`rounded-full px-1.5 text-[10px] ${
+                filtro === s ? "bg-white/20" : "bg-muted-foreground/15"
+              }`}
+            >
+              {contagem(s)}
+            </span>
+          </button>
+        ))}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -124,7 +162,7 @@ function ConsolidacaoPage() {
               </tr>
             </thead>
             <tbody>
-              {pendentes.map((p) => (
+              {visiveis.map((p) => (
                 <LinhaConsolidacao
                   key={p.numero}
                   p={p}
@@ -135,13 +173,13 @@ function ConsolidacaoPage() {
                   onConsolidarDireto={() => consolidar(p.numero)}
                 />
               ))}
-              {pendentes.length === 0 && (
+              {visiveis.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}
                     className="px-3 py-12 text-center text-muted-foreground"
                   >
-                    Nenhum processo pendente de consolidação.
+                    Nenhum processo para o filtro selecionado.
                   </td>
                 </tr>
               )}
@@ -158,6 +196,7 @@ function ConsolidacaoPage() {
     </main>
   );
 }
+
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
