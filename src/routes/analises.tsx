@@ -591,22 +591,15 @@ function ProcessosPage() {
                 <Th label="Órgão" k="orgao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Nº Processo" k="numero" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Exercício" k="exercicio" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Modalidade" k="tipo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Tipo de Análise" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Consolidação" k="dtConsol" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Criação" k="dtCriacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Conclusão" k="dtConclusao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Tipo" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                  Consolidação
-                </th>
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
                   Responsável
                 </th>
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
                   Revisor
                 </th>
-                <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="w-10 px-2 py-2.5" aria-label="Detalhes" />
               </tr>
             </thead>
             <tbody>
