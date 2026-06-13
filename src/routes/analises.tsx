@@ -447,9 +447,9 @@ function ProcessosPage() {
     doc.setFontSize(11);
     let y = 38;
     const linha = (label: string, valor: string) => {
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text(`${label}:`, 20, y);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       doc.text(String(valor), 70, y);
       y += 9;
     };
