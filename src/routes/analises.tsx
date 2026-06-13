@@ -1094,7 +1094,7 @@ function Th({
   const active = sortKey === k;
   const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
   return (
-    <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+    <th className="whitespace-nowrap px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide">
       <button
         type="button"
         onClick={() => onSort(k)}
