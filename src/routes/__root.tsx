@@ -15,6 +15,7 @@ import { AppSidebar } from "@/components/pce/AppSidebar";
 import { AtribuicoesProvider } from "@/lib/atribuicoes";
 import { ConsolidacaoProvider } from "@/lib/consolidacao-store";
 import { DefesasProvider } from "@/lib/defesas-store";
+import { JurisdicionadosProvider } from "@/lib/jurisdicionados-store";
 
 
 function NotFoundComponent() {
@@ -123,21 +124,23 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AtribuicoesProvider>
-        <ConsolidacaoProvider>
-          <DefesasProvider>
-            {hideChrome ? (
-              <Outlet />
-            ) : (
-              <div className="flex min-h-screen w-full bg-background">
-                <AppSidebar />
-                <div className="flex-1 min-w-0">
-                  <Outlet />
+        <JurisdicionadosProvider>
+          <ConsolidacaoProvider>
+            <DefesasProvider>
+              {hideChrome ? (
+                <Outlet />
+              ) : (
+                <div className="flex min-h-screen w-full bg-background">
+                  <AppSidebar />
+                  <div className="flex-1 min-w-0">
+                    <Outlet />
+                  </div>
                 </div>
-              </div>
-            )}
-            <Toaster />
-          </DefesasProvider>
-        </ConsolidacaoProvider>
+              )}
+              <Toaster />
+            </DefesasProvider>
+          </ConsolidacaoProvider>
+        </JurisdicionadosProvider>
       </AtribuicoesProvider>
     </QueryClientProvider>
   );
