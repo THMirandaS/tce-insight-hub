@@ -988,18 +988,8 @@ function AtribInlineCell({
   );
 }
 
-// Popover de detalhes (ⓘ): datas e status/ação de consolidação.
-function DetalhesPopover({
-  r,
-  status,
-  podeConsolidar,
-  onConsolidar,
-}: {
-  r: Row;
-  status: ConsolidacaoStatus;
-  podeConsolidar: boolean;
-  onConsolidar: () => void;
-}) {
+// Popover de detalhes (ⓘ): datas do processo.
+function DetalhesPopover({ r }: { r: Row }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -1022,18 +1012,6 @@ function DetalhesPopover({
               <DetalheLinha label="Consolidação" valor={r.dtConsol} />
               <DetalheLinha label="Conclusão" valor={r.dtConclusao} />
             </dl>
-          </div>
-          <div className="border-t border-border pt-2.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Consolidação
-            </p>
-            <div className="mt-1.5">
-              <ConsolidacaoCell
-                status={status}
-                podeConsolidar={podeConsolidar}
-                onConsolidar={onConsolidar}
-              />
-            </div>
           </div>
         </div>
       </PopoverContent>
