@@ -275,11 +275,12 @@ function ProcessosPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<
     Record<string, { situacao?: Situacao }>
   >({});
-  const [confirmReinit, setConfirmReinit] = useState(false);
+  const [reinitTarget, setReinitTarget] = useState<Row | null>(null);
+
+
 
 
   const applyOverride = (r: Row): Row => {
