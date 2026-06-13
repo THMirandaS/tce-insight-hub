@@ -7227,7 +7227,7 @@ function ConclusaoContent({
   <tbody>${linhas}</tbody>
 </table>
 
-${entendimento ? `<h3>Entendimento técnico</h3><p>${escapeHTML(entendimento)}</p>` : ""}
+
 ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)}</p>` : ""}
 
 <div class="sign">
