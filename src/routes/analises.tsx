@@ -854,14 +854,6 @@ function ProcessosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <AtributosDialog
-        target={atribOrgao}
-        onClose={() => setAtribOrgao(null)}
-        canEdit={perfil === "Coordenador"}
-        getAtributos={getAtributos}
-        setAtributos={setAtributos}
-      />
     </main>
   );
 }
