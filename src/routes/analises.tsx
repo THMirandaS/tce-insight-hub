@@ -221,6 +221,7 @@ function makeRows(): Row[] {
 export const ALL_ROWS = makeRows();
 
 const SIT_BADGE: Record<Situacao, string> = {
+  "Não Iniciado": "bg-gray-200 text-gray-800",
   "Disponível": "bg-gray-200 text-gray-800",
   "Em Análise": "bg-blue-100 text-blue-800",
   "Em Correção": "bg-yellow-100 text-yellow-900",
