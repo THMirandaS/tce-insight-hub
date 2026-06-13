@@ -363,12 +363,12 @@ function ProcessosPage() {
     ? !getAtribuicao(selectedRow.id).executor
     : false;
 
-  // A análise só pode ser INICIADA após a consolidação dos dados estar
-  // "Concluída". Antes disso o processo abre apenas em modo visualização.
-  const consolStatus: ConsolidacaoStatus = selectedRow
-    ? getStatus(selectedRow.id)
-    : "Concluída";
-  const podeIniciarAnalise = consolStatus === "Concluída";
+  // Todos os processos exibidos já estão consolidados, logo a análise pode
+  // sempre ser iniciada.
+  const podeIniciarAnalise = true;
+  // Situações iniciais (processo ainda sem análise iniciada).
+  const ehInicial = (s: Situacao) =>
+    s === "Disponível" || s === "Não Iniciado";
 
   // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
   // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
