@@ -18,6 +18,7 @@ import {
   FileText,
   Loader2,
   Layers,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   ORGAOS,
   GRUPOS_ENTIDADE,
@@ -585,22 +591,15 @@ function ProcessosPage() {
                 <Th label="Órgão" k="orgao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Nº Processo" k="numero" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Exercício" k="exercicio" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Modalidade" k="tipo" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Tipo de Análise" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Consolidação" k="dtConsol" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Criação" k="dtCriacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <Th label="Data Conclusão" k="dtConclusao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Tipo" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                  Consolidação
-                </th>
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
                   Responsável
                 </th>
-                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
                   Revisor
                 </th>
-                <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <th className="w-10 px-2 py-2.5" aria-label="Detalhes" />
               </tr>
             </thead>
             <tbody>
@@ -616,77 +615,84 @@ function ProcessosPage() {
                         : "bg-white hover:bg-blue-50"
                     }`}
                   >
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
-                        }
-                        className="text-left font-medium text-[#1A56DB] underline-offset-2 hover:underline"
-                      >
-                        {r.orgao}
-                      </button>
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
+                              }
+                              className="whitespace-nowrap font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
+                            >
+                              {getJurisdicionado(r.orgao).sigla || r.orgao}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>{r.orgao}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </td>
-                    <td className="px-3 py-2.5 font-mono text-foreground">{r.numero}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.exercicio}</td>
-                    <td className="px-3 py-2.5 text-foreground">{r.tipo}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="whitespace-nowrap px-2 py-1.5 font-mono text-foreground">{r.numero}</td>
+                    <td className="px-2 py-1.5 text-foreground">{r.exercicio}</td>
+                    <td className="px-2 py-1.5">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           r.tipoAnalise === "Análise de Defesa"
                             ? "bg-amber-100 text-amber-800"
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {r.tipoAnalise === "Análise de Defesa" && r.nrDefesa
-                          ? `Análise de Defesa nº ${r.nrDefesa}`
-                          : r.tipoAnalise}
+                        {r.tipoAnalise === "Análise de Defesa"
+                          ? `Defesa nº ${r.nrDefesa ?? 1}`
+                          : "Inicial"}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConsol}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtCriacao}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{r.dtConclusao}</td>
-                    <td className="px-3 py-2.5">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
-                      >
-                        {r.situacao}
-                      </span>
+                    <td className="px-2 py-1.5">
+                      {getStatus(r.id) !== "Concluída" ? (
+                        <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                          Aguardando consolidação
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${SIT_BADGE[r.situacao]}`}
+                        >
+                          {r.situacao}
+                        </span>
+                      )}
                     </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <ConsolidacaoCell
-                        status={getStatus(r.id)}
-                        podeConsolidar={podeConsolidar}
-                        onConsolidar={() => consolidar(r.id)}
-                      />
-                    </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <AtribSelect
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
-                        placeholder="Atribuir responsável"
                         options={usuariosAtivos}
                         excluir={getAtribuicao(r.id).revisor}
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <AtribSelect
+                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                      <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
-                        placeholder="Atribuir revisor"
                         options={usuariosAtivos}
                         excluir={getAtribuicao(r.id).executor}
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-foreground">{r.relator}</td>
+                    <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <DetalhesPopover
+                        r={r}
+                        status={getStatus(r.id)}
+                        podeConsolidar={podeConsolidar}
+                        onConsolidar={() => consolidar(r.id)}
+                      />
+                    </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={13} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -919,37 +925,56 @@ function SimpleSelect({
 
 const NAO_ATRIB = "__none__";
 
-function AtribSelect({
+// Responsável/Revisor: texto simples; para o Coordenador, clicar transforma
+// em select inline que fecha ao selecionar.
+function AtribInlineCell({
   value,
   editavel,
-  placeholder,
   options,
   excluir,
   onChange,
 }: {
   value: string | null;
   editavel: boolean;
-  placeholder: string;
   options: string[];
   excluir: string | null;
   onChange: (v: string | null) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+
   if (!editavel) {
-    return value ? (
-      <span className="text-foreground">{value}</span>
-    ) : (
-      <span className="text-xs italic text-muted-foreground">
-        Não atribuído
-      </span>
+    return (
+      <span className="whitespace-nowrap text-foreground">{value || "—"}</span>
     );
   }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="whitespace-nowrap text-left text-foreground underline-offset-2 hover:text-[#1A56DB] hover:underline"
+        title="Clique para atribuir"
+      >
+        {value || "—"}
+      </button>
+    );
+  }
+
   return (
     <Select
+      open
       value={value ?? NAO_ATRIB}
-      onValueChange={(v) => onChange(v === NAO_ATRIB ? null : v)}
+      onValueChange={(v) => {
+        onChange(v === NAO_ATRIB ? null : v);
+        setEditing(false);
+      }}
+      onOpenChange={(o) => {
+        if (!o) setEditing(false);
+      }}
     >
-      <SelectTrigger className="h-9 w-[180px]">
-        <SelectValue placeholder={placeholder} />
+      <SelectTrigger className="h-8 w-[160px]">
+        <SelectValue placeholder="Atribuir" />
       </SelectTrigger>
       <SelectContent className="max-h-[300px]">
         <SelectItem value={NAO_ATRIB}>— Não atribuído —</SelectItem>
@@ -962,6 +987,68 @@ function AtribSelect({
           ))}
       </SelectContent>
     </Select>
+  );
+}
+
+// Popover de detalhes (ⓘ): datas e status/ação de consolidação.
+function DetalhesPopover({
+  r,
+  status,
+  podeConsolidar,
+  onConsolidar,
+}: {
+  r: Row;
+  status: ConsolidacaoStatus;
+  podeConsolidar: boolean;
+  onConsolidar: () => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Detalhes do processo"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Info className="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72">
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Datas
+            </p>
+            <dl className="mt-1.5 space-y-1">
+              <DetalheLinha label="Criação" valor={r.dtCriacao} />
+              <DetalheLinha label="Consolidação" valor={r.dtConsol} />
+              <DetalheLinha label="Conclusão" valor={r.dtConclusao} />
+            </dl>
+          </div>
+          <div className="border-t border-border pt-2.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Consolidação
+            </p>
+            <div className="mt-1.5">
+              <ConsolidacaoCell
+                status={status}
+                podeConsolidar={podeConsolidar}
+                onConsolidar={onConsolidar}
+              />
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DetalheLinha({ label, valor }: { label: string; valor: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium text-foreground">{valor}</dd>
+    </div>
   );
 }
 
