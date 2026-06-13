@@ -439,7 +439,7 @@ function ProcessosPage() {
     setSituacao(selectedRow.id, "Em Análise");
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.id, "Disponível");
+    if (selectedRow) setSituacao(selectedRow.id, "Não Iniciado");
     setConfirmReinit(false);
   };
 
