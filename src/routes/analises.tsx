@@ -648,33 +648,18 @@ function ProcessosPage() {
             </thead>
             <tbody>
               {pageRows.map((r) => {
-                const isSel = selectedId === r.id;
                 return (
                   <tr
                     key={r.id}
-                    onClick={() => setSelectedId(isSel ? null : r.id)}
-                    className={`cursor-pointer transition-colors ${
-                      isSel
-                        ? "bg-blue-100 hover:bg-blue-100"
-                        : "bg-white hover:bg-blue-50"
-                    }`}
+                    className="bg-white transition-colors hover:bg-blue-50"
                   >
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                navigate({
-                                  to: "/analises/$id",
-                                  params: { id: r.id },
-                                })
-                              }
-                              className="block max-w-[220px] truncate text-left font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
-                            >
+                            <span className="block max-w-[220px] truncate font-medium text-foreground">
                               {r.orgao}
-                            </button>
+                            </span>
                           </TooltipTrigger>
                           <TooltipContent>
                             {r.orgao}
@@ -717,7 +702,7 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
@@ -726,7 +711,7 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
@@ -735,19 +720,35 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5 text-right">
                       <DetalhesPopover r={r} />
+                    </td>
+                    <td className="px-2 py-1.5 text-right">
+                      <AcoesCell
+                        r={r}
+                        ehInicial={ehInicial(r.situacao)}
+                        podeReabrir={podeReabrirRow(r)}
+                        podeReinit={podeReinitRow(r)}
+                        podePdf={podePdfRow(r)}
+                        podeNovaDefesa={podeNovaDefesaRow(r)}
+                        onAbrir={() => handleAbrir(r)}
+                        onReabrir={() => handleReabrir(r)}
+                        onReinit={() => setReinitTarget(r)}
+                        onPdf={() => handleGerarPdf(r)}
+                        onNovaDefesa={() => handleNovaDefesa(r)}
+                      />
                     </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>
