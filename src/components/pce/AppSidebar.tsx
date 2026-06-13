@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Users,
   Building2,
+  RefreshCcw,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAtribuicoes, type Perfil } from "@/lib/atribuicoes";
+import { useConsolidacao } from "@/lib/consolidacao-store";
 
 type NavItem = {
   to: string;
@@ -30,6 +32,7 @@ const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/usuarios", label: "Usuários", icon: Users, roles: ["Coordenador"] },
   { to: "/jurisdicionados", label: "Jurisdicionados", icon: Building2 },
+  { to: "/consolidacao", label: "Consolidação", icon: RefreshCcw },
   { to: "/analises", label: "Análises", icon: Search },
 ];
 
