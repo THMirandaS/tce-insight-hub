@@ -263,6 +263,10 @@ function LinhaConsolidacao({
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processando
           </span>
+        ) : p.status === "Concluída" ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Concluída
+          </span>
         ) : (
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[p.status]}`}
@@ -275,7 +279,13 @@ function LinhaConsolidacao({
             Falha ao consolidar os dados do processo.
           </p>
         )}
+        {p.status === "Concluída" && p.dataConsolidacao && (
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Consolidado em {p.dataConsolidacao}
+          </p>
+        )}
       </td>
+
       <td className="px-3 py-2.5 text-right">
         <AcaoConsolidar
           status={p.status}
