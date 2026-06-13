@@ -657,7 +657,7 @@ function ProcessosPage() {
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="block max-w-[190px] truncate font-medium text-foreground">
+                            <span className="block max-w-[160px] truncate font-medium text-foreground">
                               {r.orgao}
                             </span>
                           </TooltipTrigger>
