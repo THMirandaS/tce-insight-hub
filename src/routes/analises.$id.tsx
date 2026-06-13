@@ -104,7 +104,8 @@ const PCE_ITEMS_BASE: SubItem[] = [
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
   { key: "controle-interno", label: "Adequação dos relatórios" },
-  { key: "outras-inconformidades", label: "Outras Incoformidades" },
+  { key: "outros-assuntos", label: "Outros assuntos relevantes" },
+  { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
 ];
 
@@ -294,6 +295,16 @@ function AnaliseDetalhePage() {
   const relator = row?.relator ?? "CONS. JOÃO DA SILVA";
   const auditor = executor;
 
+  // RF05 — valores complementares do cabeçalho (mock).
+  const dataAutuacao = "06/05/2025";
+  const anoReferencia = "2025";
+  const categoria = "PCE";
+  const tipoAnalise =
+    isDefesa && row?.nrDefesa
+      ? `Análise de Defesa nº ${row.nrDefesa}`
+      : row?.tipoAnalise ?? "Análise Inicial";
+  const dataInicioAnalise = "12/05/2025";
+
   const activeLabel =
     groups.find((g) => g.key === active)?.label ??
     pceItems.find((i) => i.key === active)?.label ??
@@ -384,8 +395,13 @@ function AnaliseDetalhePage() {
   <div class="cell"><div class="lbl">Processo</div><div class="val">${escapeHTML(processoLabel)}</div></div>
   <div class="cell"><div class="lbl">Órgão</div><div class="val">${escapeHTML(orgao)}</div></div>
   <div class="cell"><div class="lbl">Relator</div><div class="val">${escapeHTML(relator)}</div></div>
+  <div class="cell"><div class="lbl">Data de Autuação</div><div class="val">${escapeHTML(dataAutuacao)}</div></div>
+  <div class="cell"><div class="lbl">Ano de Referência</div><div class="val">${escapeHTML(anoReferencia)}</div></div>
+  <div class="cell"><div class="lbl">Categoria</div><div class="val">${escapeHTML(categoria)}</div></div>
+  <div class="cell"><div class="lbl">Tipo de Análise</div><div class="val">${escapeHTML(tipoAnalise)}</div></div>
   <div class="cell"><div class="lbl">Responsável</div><div class="val">${escapeHTML(executor)}</div></div>
   <div class="cell"><div class="lbl">Revisor</div><div class="val">${escapeHTML(revisor)}</div></div>
+  <div class="cell"><div class="lbl">Data de Início da Análise</div><div class="val">${escapeHTML(dataInicioAnalise)}</div></div>
 </div>
 <h1 class="pdf-title">${escapeHTML(activeLabel)}</h1>
 <div id="pdf-content"></div>
@@ -547,7 +563,7 @@ function AnaliseDetalhePage() {
 
         {/* Cabeçalho fixo do processo */}
         <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3 text-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3 text-sm">
             <Link
               to="/analises"
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-semibold text-[#0D1B2A] shadow-sm hover:bg-gray-50"
@@ -578,18 +594,19 @@ function AnaliseDetalhePage() {
             <Divider />
             <InfoCell label="Relator" value={relator} />
             <Divider />
+            <InfoCell label="Data de Autuação" value={dataAutuacao} />
+            <Divider />
+            <InfoCell label="Ano de Referência" value={anoReferencia} />
+            <Divider />
+            <InfoCell label="Categoria" value={categoria} />
+            <Divider />
+            <InfoCell label="Tipo de Análise" value={tipoAnalise} />
+            <Divider />
             <InfoCell label="Responsável" value={executor} />
             <Divider />
             <InfoCell label="Revisor" value={revisor} />
             <Divider />
-            <InfoCell
-              label="Tipo de Análise"
-              value={
-                isDefesa && row?.nrDefesa
-                  ? `Análise de Defesa nº ${row.nrDefesa}`
-                  : row?.tipoAnalise ?? "Análise Inicial"
-              }
-            />
+            <InfoCell label="Data de Início da Análise" value={dataInicioAnalise} />
             {!isDefesa && currentStatus && (
               <>
                 <Divider />
@@ -706,6 +723,8 @@ function AnaliseDetalhePage() {
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
+          ) : active === "outros-assuntos" ? (
+            <OutrosAssuntosContent processo={processoLabel} orgao={orgao} />
           ) : active === "outras-inconformidades" ? (
             <OutrasInconformidadesContent
               processo={processoLabel}
@@ -1377,7 +1396,7 @@ const ANTERIORES: ProcessoAnterior[] = [
     conclusaoLabel: "Rejeição",
     incoformidades: [
       "Ausência de controle interno efetivo no exercício.",
-      "Incoformidades graves em créditos autorizados.",
+      "Inconformidades graves em créditos autorizados.",
       "Despesas sem cobertura orçamentária regular.",
       "Restos a pagar inscritos sem disponibilidade financeira.",
     ],
@@ -1455,7 +1474,7 @@ function AnterioresContent({
 
             <div className="space-y-2">
               <div className="text-sm font-semibold text-foreground">
-                Incoformidades:
+                Inconformidades:
               </div>
               {p.conclusao === "aprovacao" ? (
                 <p className="text-sm text-muted-foreground">
@@ -1606,7 +1625,7 @@ function DemaisContent({ orgao }: { orgao: string }) {
 
               <div className="space-y-2 border-t border-border pt-3">
                 <div className="text-sm font-semibold text-foreground">
-                  Incoformidades encontradas:
+                  Inconformidades encontradas:
                 </div>
                 {p.incoformidades.length === 0 ? (
                   <p className="text-sm italic text-muted-foreground">
@@ -1893,9 +1912,9 @@ function ConsidGeraisContent({
 
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-baseline gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}:
+    <div className="flex min-w-0 flex-col leading-tight">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
       </span>
       <span className="truncate text-sm font-medium text-foreground">
         {value}
@@ -1905,7 +1924,7 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 }
 
 function Divider() {
-  return <span className="h-4 w-px bg-border" aria-hidden />;
+  return <span className="h-8 w-px self-center bg-border" aria-hidden />;
 }
 
 // ============================================================
@@ -6168,7 +6187,94 @@ function ControleInternoContent({
   );
 }
 
+// ============ Outros assuntos relevantes ============
+// RF21 — caixa de texto livre preenchida pelo auditor, sem enquadramento ou
+// encaminhamento, que compõe o relatório. PDF próprio (snapshot do conteúdo).
+
+const OUTROS_ASSUNTOS_MAX = 8000;
+const OUTROS_ASSUNTOS_STORE: { texto: string; incluir: boolean } = {
+  texto: "",
+  incluir: true,
+};
+
+function OutrosAssuntosContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const [texto, setTexto] = useState(OUTROS_ASSUNTOS_STORE.texto);
+  const [incluir, setIncluir] = useState(OUTROS_ASSUNTOS_STORE.incluir);
+
+  function commitTexto(v: string) {
+    setTexto(v);
+    OUTROS_ASSUNTOS_STORE.texto = v;
+  }
+  function commitIncluir(v: boolean) {
+    setIncluir(v);
+    OUTROS_ASSUNTOS_STORE.incluir = v;
+  }
+
+  const rest = OUTROS_ASSUNTOS_MAX - texto.length;
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Grupo:</span> ÓRGÃOS DOS PODERES
+          LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA
+          PÚBLICA
+        </p>
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <h2 className="mb-2 text-base font-semibold underline">
+        Outros assuntos relevantes:
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground" data-pdf-hide>
+        Registre, em texto livre, demais assuntos relevantes apurados na
+        análise. Este conteúdo compõe o relatório, sem enquadramento ou proposta
+        de encaminhamento.
+      </p>
+
+      <textarea
+        value={texto}
+        onChange={(e) =>
+          commitTexto(e.target.value.slice(0, OUTROS_ASSUNTOS_MAX))
+        }
+        rows={14}
+        maxLength={OUTROS_ASSUNTOS_MAX}
+        placeholder="Descreva os outros assuntos relevantes..."
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/40"
+      />
+      <div className="mt-1 text-right text-xs text-muted-foreground" data-pdf-hide>
+        {rest} caracteres restantes
+      </div>
+
+      <div className="mt-4 flex items-start gap-2" data-pdf-hide>
+        <Checkbox
+          id="oa-incluir"
+          checked={incluir}
+          onCheckedChange={(c) => commitIncluir(c === true)}
+        />
+        <Label htmlFor="oa-incluir" className="text-sm leading-tight">
+          Este texto deverá constar no relatório de conclusão do processo.
+        </Label>
+      </div>
+    </>
+  );
+}
+
 // ============ Outras Inconformidades ============
+
 
 const OUTRAS_INCO_TRANSITO_JULGADO = false;
 const OUTRAS_INCO_SITUACAO_CONCLUIDA = false;
@@ -6311,7 +6417,7 @@ function OutrasInconformidadesContent({
     OUTRAS_INCO_STORE.incluir = v;
   }
 
-  function novaIncoformidade() {
+  function novaInconformidade() {
     setForm(emptyForm);
     setEditingId(null);
     setTouched(false);
@@ -6349,7 +6455,7 @@ function OutrasInconformidadesContent({
       ...h,
     ]);
     setConfirmDelete(null);
-    toast.success("Incoformidade excluída.");
+    toast.success("Inconformidade excluída.");
   }
 
   function validar(): boolean {
@@ -6394,7 +6500,7 @@ function OutrasInconformidadesContent({
         ...h,
       ]);
     }
-    toast.success("Incoformidade cadastrada com sucesso!");
+    toast.success("Inconformidade cadastrada com sucesso!");
     return true;
   }
 
@@ -6479,7 +6585,7 @@ function OutrasInconformidadesContent({
         {header}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold underline">
-            Outras Incoformidades:
+            Outras Inconformidades:
           </h2>
           <Button
             type="button"
@@ -6494,7 +6600,7 @@ function OutrasInconformidadesContent({
         <div className="space-y-5 rounded-md border border-border bg-white p-4">
           <div>
             <Label className="text-sm font-semibold">
-              Título da Incoformidade:
+              Título da Inconformidade:
             </Label>
             <Input
               value={form.titulo}
@@ -6650,7 +6756,7 @@ function OutrasInconformidadesContent({
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold underline">
-          Outras Incoformidades:
+          Outras Inconformidades:
         </h2>
         <div className="flex items-center gap-2">
           <button
@@ -6664,10 +6770,10 @@ function OutrasInconformidadesContent({
           {!readOnly && (
             <Button
               type="button"
-              onClick={novaIncoformidade}
+              onClick={novaInconformidade}
               className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
             >
-              <Plus className="h-4 w-4" /> Nova Incoformidade
+              <Plus className="h-4 w-4" /> Nova Inconformidade
             </Button>
           )}
         </div>
@@ -6677,12 +6783,12 @@ function OutrasInconformidadesContent({
         <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Incoformidade</th>
+              <th className="px-3 py-2 text-left">Inconformidade</th>
               <th className="px-3 py-2 text-left">Conclusão</th>
               <th className="px-3 py-2 text-left">Encaminhamento</th>
               <th className="px-3 py-2 text-left">Descrição</th>
               <th className="px-3 py-2 text-left">Desc. encaminhamento</th>
-              <th className="px-3 py-2 text-left">Entendimento técnico</th>
+              <th className="px-3 py-2 text-left" data-pdf-hide>Entendimento técnico</th>
               {!readOnly && <th className="px-3 py-2 text-left">Ações</th>}
             </tr>
           </thead>
@@ -6694,13 +6800,19 @@ function OutrasInconformidadesContent({
                   className="px-3 py-8 text-center text-sm text-muted-foreground"
                 >
                   Nenhuma incoformidade cadastrada. Clique em "+ Nova
-                  Incoformidade" para começar.
+                  Inconformidade" para começar.
                 </td>
               </tr>
             ) : (
               lista.map((row, i) => (
                 <tr
                   key={row.id}
+                  data-pdf-hide={
+                    row.encaminhamento === "Recomendação" ||
+                    row.encaminhamento === "Determinação"
+                      ? undefined
+                      : ""
+                  }
                   className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
                   <td className="px-3 py-2 align-top">{row.titulo}</td>
@@ -6733,6 +6845,7 @@ function OutrasInconformidadesContent({
                   <td
                     className="max-w-[220px] truncate px-3 py-2 align-top"
                     title={row.entendimento}
+                    data-pdf-hide
                   >
                     {row.entendimento || "-"}
                   </td>
@@ -6896,31 +7009,75 @@ const JULGAMENTO_OPTS: {
 
 type ConclusaoApontamento = {
   topico: string;
-  apontamento: string;
+  titulo: string;
+  enquadramento: string;
   encaminhamento: string;
 };
 
-// Apontamentos dos demais tópicos (estáticos neste mock).
-const CONCLUSAO_APONTAMENTOS_OUTROS: ConclusaoApontamento[] = [
+// Enquadramento legal padrão conforme o tipo de encaminhamento.
+function enquadramentoPorEncaminhamento(tipo: string): string {
+  if (tipo === "Determinação") return "art. 48, III, da LC 102/2008";
+  return "art. 48, II, da LC 102/2008";
+}
+
+// RF22 — validações automáticas dos tópicos (mock). Cada item já representa
+// uma inconformidade detectada automaticamente com proposta de encaminhamento.
+const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
+  {
+    topico: "Crédito e Despesas por programa",
+    titulo:
+      "Despesa empenhada superior ao crédito autorizado no programa 88 (execução de 110%)",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar à gestão a observância dos limites de crédito autorizado por programa",
+  },
+  {
+    topico: "Despesa por dotação orçamentária",
+    titulo: "Execução de despesa acima da dotação em unidade orçamentária",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar o aprimoramento do controle da execução por dotação orçamentária",
+  },
+  {
+    topico: "Despesa por elemento",
+    titulo:
+      "Valor liquidado superior ao empenhado no elemento Sentenças Judiciais",
+    enquadramento: "art. 48, III, da LC 102/2008",
+    encaminhamento:
+      "Determinar a regularização dos registros de liquidação do elemento de despesa",
+  },
+  {
+    topico: "Despesas com pessoal",
+    titulo: "Despesa com pessoal próxima ao limite prudencial",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar o monitoramento contínuo da despesa com pessoal",
+  },
+  {
+    topico: "Consistência das demonstrações",
+    titulo:
+      "Divergência nos Restos a Pagar Processados (Balanço Financeiro x Balanço Orçamentário)",
+    enquadramento: "art. 48, II, da LC 102/2008",
+    encaminhamento:
+      "Recomendar a conciliação das demonstrações contábeis divergentes",
+  },
   {
     topico: "Restos a Pagar",
-    apontamento:
+    titulo:
       "Registros de Restos a Pagar com ano-origem mais antigo que 5 anos anteriores ao exercício avaliado",
+    enquadramento: "art. 48, II, da LC 102/2008",
     encaminhamento:
       "Recomendar que a gestão reavalie a real persistência desses saldos e o eventual cancelamento dos saldos indevidos",
   },
-  {
-    topico: "Outras Incoformidades",
-    apontamento: "Divergência em registros de contratos",
-    encaminhamento:
-      "Determinar que o órgão apresente justificativa formal para as divergências identificadas",
-  },
 ];
 
-// Monta a tabela de conclusão combinando os apontamentos vigentes da
-// Adequação dos relatórios (excluindo desconsiderados e os sem
-// encaminhamento) com os apontamentos dos demais tópicos.
+// Monta a tabela de conclusão agregando TODAS as fontes (RF22): validações
+// automáticas dos tópicos, apontamentos do RCI (não desconsiderados) e Outras
+// Inconformidades — exibindo somente as com encaminhamento Recomendação ou
+// Determinação.
 function getConclusaoApontamentos(): ConclusaoApontamento[] {
+  const auto = CONCLUSAO_VALIDACOES_AUTO;
+
   const ci: ConclusaoApontamento[] = CI_STORE.apontamentos
     .filter(
       (a) =>
@@ -6930,11 +7087,27 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
     )
     .map((a) => ({
       topico: "Adequação dos relatórios",
-      apontamento: a.apontamento,
+      titulo: a.apontamento,
+      enquadramento: enquadramentoPorEncaminhamento(a.encaminhamento),
       encaminhamento: a.descEncaminhamento,
     }));
-  return [...ci, ...CONCLUSAO_APONTAMENTOS_OUTROS];
+
+  const oi: ConclusaoApontamento[] = OUTRAS_INCO_STORE.lista
+    .filter(
+      (o) =>
+        o.encaminhamento === "Recomendação" ||
+        o.encaminhamento === "Determinação",
+    )
+    .map((o) => ({
+      topico: "Outras Inconformidades",
+      titulo: o.titulo,
+      enquadramento: enquadramentoPorEncaminhamento(o.encaminhamento),
+      encaminhamento: o.descEncaminhamento,
+    }));
+
+  return [...auto, ...ci, ...oi];
 }
+
 
 
 const CONCLUSAO_STORE: {
@@ -6997,8 +7170,10 @@ function ConclusaoContent({
     const linhas = getConclusaoApontamentos().map(
       (a) =>
         `<tr><td>${escapeHTML(a.topico)}</td><td>${escapeHTML(
-          a.apontamento,
-        )}</td><td>${escapeHTML(a.encaminhamento)}</td></tr>`,
+          a.titulo,
+        )}</td><td>${escapeHTML(a.enquadramento)}</td><td>${escapeHTML(
+          a.encaminhamento,
+        )}</td></tr>`,
     ).join("");
     const jOpt = JULGAMENTO_OPTS.find((o) => o.v === julgamento)!;
     const textoJ = `Por todo o exposto, esta Unidade Técnica entende que as contas do ${org} referente ao exercício de ${ASSINATURA.ano}, sob a responsabilidade do(a) ${ASSINATURA.responsavel}, devem ser julgadas ${jOpt.label.toLowerCase()}, nos termos do artigo 48, ${jOpt.inciso}, da Lei Complementar 102/2008.`;
@@ -7046,20 +7221,23 @@ function ConclusaoContent({
 <p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
-<p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Incoformidades.</p>
+<p>${OUTROS_ASSUNTOS_STORE.incluir && OUTROS_ASSUNTOS_STORE.texto.trim() ? escapeHTML(OUTROS_ASSUNTOS_STORE.texto) : "Não foram registrados outros assuntos relevantes."}</p>
 
-<h2>6. Conclusão</h2>
+<h2>6. Outras Inconformidades</h2>
+<p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Inconformidades.</p>
+
+<h2>7. Conclusão</h2>
 <p>${escapeHTML(intro)}</p>
 <p><strong>Julgamento das contas:</strong> ${escapeHTML(jOpt.label)} (${escapeHTML(jOpt.artigo)}).</p>
 <p>${escapeHTML(textoJ)}</p>
 
 <h3>Apontamentos e propostas de encaminhamento</h3>
 <table>
-  <thead><tr><th>Tópico</th><th>Apontamento</th><th>Proposta de encaminhamento</th></tr></thead>
+  <thead><tr><th>Tópico</th><th>Título</th><th>Enquadramento</th><th>Proposta de encaminhamento</th></tr></thead>
   <tbody>${linhas}</tbody>
 </table>
 
-${entendimento ? `<h3>Entendimento técnico</h3><p>${escapeHTML(entendimento)}</p>` : ""}
+
 ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)}</p>` : ""}
 
 <div class="sign">
@@ -7187,7 +7365,10 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
             <thead className="bg-[#0D1B2A] text-white">
               <tr>
                 <th className="px-3 py-2 text-left font-semibold">Tópico</th>
-                <th className="px-3 py-2 text-left font-semibold">Apontamento</th>
+                <th className="px-3 py-2 text-left font-semibold">Título</th>
+                <th className="px-3 py-2 text-left font-semibold">
+                  Enquadramento
+                </th>
                 <th className="px-3 py-2 text-left font-semibold">
                   Proposta de encaminhamento
                 </th>
@@ -7203,7 +7384,10 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
                     {a.topico}
                   </td>
                   <td className="border-t border-border px-3 py-2 align-top">
-                    {a.apontamento}
+                    {a.titulo}
+                  </td>
+                  <td className="border-t border-border px-3 py-2 align-top">
+                    {a.enquadramento}
                   </td>
                   <td className="border-t border-border px-3 py-2 align-top">
                     {a.encaminhamento}
