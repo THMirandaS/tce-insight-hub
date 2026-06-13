@@ -756,7 +756,8 @@ function ProcessosPage() {
 
         {/* Barra de ações da linha selecionada */}
         <AcoesBar
-          row={base.find((r) => r.id === selectedId) ?? null}
+          row={selectedRow}
+
           ehInicial={selectedRow ? ehInicial(selectedRow.situacao) : false}
           podeReabrir={selectedRow ? podeReabrirRow(selectedRow) : false}
           podeReinit={selectedRow ? podeReinitRow(selectedRow) : false}
