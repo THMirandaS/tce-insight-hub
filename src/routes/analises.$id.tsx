@@ -7223,7 +7223,7 @@ function ConclusaoContent({
 
 <h3>Apontamentos e propostas de encaminhamento</h3>
 <table>
-  <thead><tr><th>Tópico</th><th>Apontamento</th><th>Proposta de encaminhamento</th></tr></thead>
+  <thead><tr><th>Tópico</th><th>Título</th><th>Enquadramento</th><th>Proposta de encaminhamento</th></tr></thead>
   <tbody>${linhas}</tbody>
 </table>
 
