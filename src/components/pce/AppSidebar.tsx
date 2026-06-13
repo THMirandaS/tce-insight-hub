@@ -41,6 +41,7 @@ export function AppSidebar({ user }: { user?: string }) {
   const { pathname } = useLocation();
   const { perfil, usuarios, usuarioAtivoId, setUsuarioAtivo } =
     useAtribuicoes();
+  const { pendenteCount } = useConsolidacao();
 
   const items = NAV.filter((i) => !i.roles || i.roles.includes(perfil));
   const usuariosAtivos = usuarios.filter((u) => u.ativo);
