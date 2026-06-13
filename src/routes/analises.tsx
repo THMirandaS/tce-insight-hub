@@ -641,6 +641,9 @@ function ProcessosPage() {
                   Revisor
                 </th>
                 <th className="w-10 px-2 py-2.5" aria-label="Detalhes" />
+                <th className="whitespace-nowrap px-2 py-2.5 text-right text-xs font-semibold uppercase tracking-wide">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
