@@ -725,7 +725,7 @@ function AnaliseDetalhePage() {
             <ConsistenciaContent
               processo={processoLabel}
               orgao={orgao}
-              poder={jurisdicionado.poder}
+              poder={atributos.poder}
             />
           ) : active === "restos-pagar" ? (
             <RestosPagarContent processo={processoLabel} orgao={orgao} />
@@ -751,6 +751,7 @@ function AnaliseDetalhePage() {
               processo={processoLabel}
               orgao={orgao}
               jurisdicionado={jurisdicionado}
+              poder={atributos.poder}
             />
           ) : (
             <PlaceholderContent
