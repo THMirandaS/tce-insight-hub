@@ -101,6 +101,7 @@ const RELATORES = [
 ];
 
 const SITUACOES = [
+  "Não Iniciado",
   "Disponível",
   "Em Análise",
   "Em Correção",
