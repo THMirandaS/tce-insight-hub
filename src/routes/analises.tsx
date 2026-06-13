@@ -1112,67 +1112,6 @@ function Pager({
   );
 }
 
-const CONSOL_BADGE: Record<ConsolidacaoStatus, string> = {
-  Pendente: "bg-gray-200 text-gray-800",
-  Processando: "bg-blue-100 text-blue-800",
-  Concluída: "bg-emerald-100 text-emerald-800",
-  Erro: "bg-red-100 text-red-800",
-};
-
-function ConsolidacaoCell({
-  status,
-  podeConsolidar,
-  onConsolidar,
-}: {
-  status: ConsolidacaoStatus;
-  podeConsolidar: boolean;
-  onConsolidar: () => void;
-}) {
-  if (status === "Processando") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processando
-      </span>
-    );
-  }
-
-  if (status === "Concluída") {
-    return (
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE.Concluída}`}
-      >
-        Concluída
-      </span>
-    );
-  }
-
-  // Pendente ou Erro: exibe badge e, para perfis autorizados, ação.
-  return (
-    <div className="flex flex-col items-start gap-1.5">
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CONSOL_BADGE[status]}`}
-      >
-        {status}
-      </span>
-      {status === "Erro" && (
-        <span className="text-[11px] text-red-700">
-          Falha ao consolidar. Tente novamente.
-        </span>
-      )}
-      {podeConsolidar && (
-        <Button
-          size="sm"
-          onClick={onConsolidar}
-          className="h-7 gap-1.5 bg-[#1A56DB] px-2.5 text-xs text-white hover:bg-[#1A56DB]/90"
-        >
-          <Layers className="h-3.5 w-3.5" />
-          {status === "Erro" ? "Tentar novamente" : "Consolidar"}
-        </Button>
-      )}
-    </div>
-  );
-}
-
 // Diálogo de atributos do jurisdicionado para o ANO DE REFERÊNCIA do processo.
 // Editável apenas para Coordenador; somente leitura para os demais.
 function AtributosDialog({
