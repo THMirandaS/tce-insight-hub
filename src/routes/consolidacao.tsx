@@ -1,7 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, RefreshCcw, Layers, Lock } from "lucide-react";
+import {
+  Loader2,
+  RefreshCcw,
+  Layers,
+  Lock,
+  CheckCircle2,
+  Eye,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -42,7 +49,7 @@ import {
 import {
   useConsolidacao,
   type ProcessoConsolidacao,
-  type ConsolPendenteStatus,
+  type ConsolStatus,
 } from "@/lib/consolidacao-store";
 
 export const Route = createFileRoute("/consolidacao")({
@@ -52,14 +59,25 @@ export const Route = createFileRoute("/consolidacao")({
 const GRUPO_PODERES =
   "ÓRGÃOS DOS PODERES LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA PÚBLICA";
 
-const STATUS_BADGE: Record<ConsolPendenteStatus, string> = {
+const STATUS_BADGE: Record<ConsolStatus, string> = {
   Pendente: "bg-gray-200 text-gray-800",
   Processando: "bg-blue-100 text-blue-800",
   Erro: "bg-red-100 text-red-800",
+  Concluída: "bg-green-100 text-green-800",
 };
 
+// Opções do filtro de status. "Todas" exibe todos os processos.
+const STATUS_FILTROS = [
+  "Todas",
+  "Pendente",
+  "Processando",
+  "Erro",
+  "Concluída",
+] as const;
+type StatusFiltro = (typeof STATUS_FILTROS)[number];
+
 function ConsolidacaoPage() {
-  const { pendentes, consolidar } = useConsolidacao();
+  const { processos, consolidar } = useConsolidacao();
   const { perfil } = useAtribuicoes();
   const { getRegistro } = useJurisdicionados();
   const isCoordenador = perfil === "Coordenador";
@@ -67,6 +85,7 @@ function ConsolidacaoPage() {
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
+  const [filtro, setFiltro] = useState<StatusFiltro>("Todas");
 
   // Atributos do exercício estão confirmados quando há registro explícito e
   // ele não está pendente de confirmação.
@@ -74,6 +93,19 @@ function ConsolidacaoPage() {
     const reg = getRegistro(orgao, ano);
     return !!reg && !reg.pendente;
   };
+
+  const visiveis = useMemo(
+    () =>
+      filtro === "Todas"
+        ? processos
+        : processos.filter((p) => p.status === filtro),
+    [processos, filtro]
+  );
+
+  const contagem = (s: StatusFiltro) =>
+    s === "Todas"
+      ? processos.length
+      : processos.filter((p) => p.status === s).length;
 
   return (
     <main className="mx-auto max-w-[1600px] px-6 py-8">
@@ -86,6 +118,30 @@ function ConsolidacaoPage() {
           tópicos a análise terá. Após concluída, a análise inicial passa a
           aparecer em Análises com a situação "Não Iniciado".
         </p>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {STATUS_FILTROS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setFiltro(s)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              filtro === s
+                ? "border-[#1A56DB] bg-[#1A56DB] text-white"
+                : "border-border bg-card text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {s}
+            <span
+              className={`rounded-full px-1.5 text-[10px] ${
+                filtro === s ? "bg-white/20" : "bg-muted-foreground/15"
+              }`}
+            >
+              {contagem(s)}
+            </span>
+          </button>
+        ))}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -106,7 +162,7 @@ function ConsolidacaoPage() {
               </tr>
             </thead>
             <tbody>
-              {pendentes.map((p) => (
+              {visiveis.map((p) => (
                 <LinhaConsolidacao
                   key={p.numero}
                   p={p}
@@ -117,13 +173,13 @@ function ConsolidacaoPage() {
                   onConsolidarDireto={() => consolidar(p.numero)}
                 />
               ))}
-              {pendentes.length === 0 && (
+              {visiveis.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}
                     className="px-3 py-12 text-center text-muted-foreground"
                   >
-                    Nenhum processo pendente de consolidação.
+                    Nenhum processo para o filtro selecionado.
                   </td>
                 </tr>
               )}
@@ -140,6 +196,7 @@ function ConsolidacaoPage() {
     </main>
   );
 }
+
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
@@ -206,6 +263,10 @@ function LinhaConsolidacao({
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processando
           </span>
+        ) : p.status === "Concluída" ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Concluída
+          </span>
         ) : (
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[p.status]}`}
@@ -218,11 +279,18 @@ function LinhaConsolidacao({
             Falha ao consolidar os dados do processo.
           </p>
         )}
+        {p.status === "Concluída" && p.dataConsolidacao && (
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Consolidado em {p.dataConsolidacao}
+          </p>
+        )}
       </td>
+
       <td className="px-3 py-2.5 text-right">
         <AcaoConsolidar
           status={p.status}
           processando={processando}
+          analiseId={p.analiseId}
           isCoordenador={isCoordenador}
           isExecutorOuRevisor={isExecutorOuRevisor}
           confirmado={confirmado}
@@ -230,6 +298,7 @@ function LinhaConsolidacao({
           onConsolidarDireto={onConsolidarDireto}
         />
       </td>
+
     </tr>
   );
 }
@@ -237,14 +306,16 @@ function LinhaConsolidacao({
 function AcaoConsolidar({
   status,
   processando,
+  analiseId,
   isCoordenador,
   isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
-  status: ConsolPendenteStatus;
+  status: ConsolStatus;
   processando: boolean;
+  analiseId?: string;
   isCoordenador: boolean;
   isExecutorOuRevisor: boolean;
   confirmado: boolean;
@@ -262,6 +333,26 @@ function AcaoConsolidar({
       </>
     );
 
+  // Concluída: consolidação é única — sem botão Consolidar/Reconsolidar.
+  // No lugar, link para a análise gerada.
+  if (status === "Concluída") {
+    if (!analiseId) {
+      return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+      <Button
+        asChild
+        size="sm"
+        variant="outline"
+        className="h-8 gap-1.5 px-3 text-xs"
+      >
+        <Link to="/analises/$id" params={{ id: analiseId }}>
+          <Eye className="h-3.5 w-3.5" /> Ver análise
+        </Link>
+      </Button>
+    );
+  }
+
   if (processando) {
     return (
       <Button
@@ -273,6 +364,7 @@ function AcaoConsolidar({
       </Button>
     );
   }
+
 
   // Coordenador: confirma a classificação antes de gerar a análise.
   if (isCoordenador) {
