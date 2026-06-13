@@ -785,115 +785,25 @@ function ProcessosPage() {
         </div>
       </div>
 
-      {/* Barra de ações fixa */}
-      {selectedRow && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0D1B2A] bg-[#0D1B2A] shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.3)]">
-          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-6 py-3">
-            <div className="text-sm text-white/90">
-              Processo selecionado:{" "}
-              <span className="font-mono font-semibold text-white">
-                {selectedRow.numero}
-              </span>
-              <span className="mx-2 text-white/40">•</span>
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SIT_BADGE[selectedRow.situacao]}`}
-              >
-                {selectedRow.situacao}
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-end gap-2">
-              {semExecutor ? (
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0}>
-                        <Button
-                          disabled
-                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90 disabled:opacity-40"
-                        >
-                          {ehInicial(selectedRow.situacao) ? (
-                            <>
-                              <Plus className="h-4 w-4" /> Criar
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4" /> Visualizar
-                            </>
-                          )}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Processo sem responsável atribuído. Atribua um responsável
-                      na coluna "Responsável" desta listagem para abrir.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : ehInicial(selectedRow.situacao) ? (
-                <Button
-                  onClick={handleCriar}
-                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-                >
-                  <Plus className="h-4 w-4" /> Criar
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleVisualizar}
-                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-                >
-                  <Eye className="h-4 w-4" /> Visualizar
-                </Button>
-              )}
-              <Button
-                onClick={handleReabrir}
-                disabled={selectedRow.situacao !== "Concluído"}
-                className="gap-2 bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90 disabled:opacity-40"
-              >
-                <RotateCcw className="h-4 w-4" /> Reabrir
-              </Button>
-              <Button
-                onClick={() => setConfirmReinit(true)}
-                disabled={
-                  selectedRow.situacao !== "Em Análise" &&
-                  selectedRow.situacao !== "Concluído"
-                }
-                className="gap-2 bg-[#EA580C] text-white hover:bg-[#EA580C]/90 disabled:opacity-40"
-              >
-                <RefreshCw className="h-4 w-4" /> Reinicializar
-              </Button>
-              {podeNovaDefesa && (
-                <Button
-                  onClick={handleNovaDefesa}
-                  className="gap-2 bg-[#9333EA] text-white hover:bg-[#9333EA]/90"
-                >
-                  <Layers className="h-4 w-4" /> Nova defesa
-                </Button>
-              )}
-              <Button
-                disabled={selectedRow.situacao !== "Concluído"}
-                className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 disabled:opacity-40"
-              >
-                <FileText className="h-4 w-4" /> Relatório Conclusão Análise
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Modal Reinicializar */}
-      <Dialog open={confirmReinit} onOpenChange={setConfirmReinit}>
+      <Dialog
+        open={!!reinitTarget}
+        onOpenChange={(o) => !o && setReinitTarget(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reinicializar análise</DialogTitle>
             <DialogDescription>
-              Deseja reinicializar esta análise? Todos os dados preenchidos
-              serão apagados.
+              Descarta todas as inclusões e edições manuais e restaura os dados
+              originais da consolidação (IND_VALIDO/IND_ORIGEM). Esta ação não
+              pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmReinit(false)}>
+            <Button variant="outline" onClick={() => setReinitTarget(null)}>
               Cancelar
             </Button>
+
             <Button
               onClick={confirmReinitAction}
               className="bg-[#EA580C] text-white hover:bg-[#EA580C]/90"
