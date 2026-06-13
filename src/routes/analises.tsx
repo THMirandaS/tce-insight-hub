@@ -305,10 +305,20 @@ function ProcessosPage() {
       (PERFIL === "Coordenador"
         ? allRows
         : allRows.filter((r) => r.analista === USUARIO_AUDITOR)
-      ).map(applyOverride),
+      )
+        // Somente análises de processos já consolidados.
+        .filter((r) => isConsolidado(r.numero))
+        // Processo recém-consolidado começa com situação "Não Iniciado".
+        .map((r) =>
+          wasPendente(r.numero) && r.tipoAnalise === "Análise Inicial"
+            ? { ...r, situacao: "Não Iniciado" as Situacao }
+            : r
+        )
+        .map(applyOverride),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [overrides, allRows]
+    [overrides, allRows, isConsolidado, wasPendente]
   );
+
 
   const filtered = useMemo(() => {
     const f = applied;
