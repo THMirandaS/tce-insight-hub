@@ -5,6 +5,7 @@ import {
   Search,
   ShieldCheck,
   Users,
+  Building2,
   LogOut,
   ChevronLeft,
   ChevronRight,
