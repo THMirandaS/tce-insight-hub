@@ -342,37 +342,52 @@ function ProcessosPage() {
   const start = (currentPage - 1) * perPage;
   const pageRows = sorted.slice(start, start + perPage);
 
-  const selectedRow = useMemo(
-    () => (selectedId ? base.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId, base]
-  );
-
-  // Processo sem executor atribuído: abertura bloqueada (RF — atribuições).
-  const semExecutor = selectedRow
-    ? !getAtribuicao(selectedRow.id).executor
-    : false;
-
-  // Todos os processos exibidos já estão consolidados, logo a análise pode
-  // sempre ser iniciada.
-  const podeIniciarAnalise = true;
   // Situações iniciais (processo ainda sem análise iniciada).
   const ehInicial = (s: Situacao) =>
     s === "Disponível" || s === "Não Iniciado";
+  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
+
+  // Permissões por linha — respeitam o responsável (executor) e o revisor
+  // atribuídos. Visualização (Abrir) é liberada a todos os perfis.
+  const podeReabrirRow = (r: Row) => {
+    if (!concluida(r.situacao)) return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" ||
+      (perfil === "Executor" && usuario === a.executor) ||
+      (perfil === "Revisor" && usuario === a.revisor)
+    );
+  };
+  const podeReinitRow = (r: Row) => {
+    if (r.situacao === "Não Iniciado" || r.situacao === "Disponível")
+      return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" || (perfil === "Executor" && usuario === a.executor)
+    );
+  };
+  const temConclusao = (r: Row) => concluida(r.situacao) || r.dtConclusao !== "—";
+  const podePdfRow = (r: Row) => {
+    if (!temConclusao(r)) return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" ||
+      (perfil === "Executor" && usuario === a.executor) ||
+      (perfil === "Revisor" && usuario === a.revisor)
+    );
+  };
 
   // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
   // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
-  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
-  const podeNovaDefesa = useMemo(() => {
-    if (!selectedRow) return false;
+  const podeNovaDefesaRow = (r: Row) => {
     if (perfil !== "Coordenador") return false;
-    if (selectedRow.tipoAnalise !== "Análise Inicial") return false;
-    if (!concluida(selectedRow.situacao)) return false;
-    // Considera overrides de situação aplicados às defesas existentes.
-    const defesas = defesasDoProcesso(selectedRow.numero).map(
+    if (r.tipoAnalise !== "Análise Inicial") return false;
+    if (!concluida(r.situacao)) return false;
+    const defesas = defesasDoProcesso(r.numero).map(
       (d) => base.find((b) => b.id === d.id) ?? d
     );
     return !defesas.some((d) => !concluida(d.situacao));
-  }, [selectedRow, perfil, defesasDoProcesso, base]);
+  };
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -406,30 +421,57 @@ function ProcessosPage() {
   const setSituacao = (id: string, s: Situacao) =>
     setOverrides((p) => ({ ...p, [id]: { ...p[id], situacao: s } }));
 
-  const handleCriar = () => {
-    if (!selectedRow || !podeIniciarAnalise) return;
-    setSituacao(selectedRow.id, "Em Análise");
-    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
+  // "Abrir": abre a análise; se ainda "Não Iniciado"/"Disponível", inicia.
+  const handleAbrir = (r: Row) => {
+    if (ehInicial(r.situacao)) setSituacao(r.id, "Em Análise");
+    navigate({ to: "/analises/$id", params: { id: r.id } });
   };
-  const handleVisualizar = () => {
-    if (!selectedRow) return;
-    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
+  const handleNovaDefesa = (r: Row) => {
+    if (!podeNovaDefesaRow(r)) return;
+    const novoId = criarDefesa(r.numero);
+    if (novoId) navigate({ to: "/analises/$id", params: { id: novoId } });
   };
-  const handleNovaDefesa = () => {
-    if (!selectedRow || !podeNovaDefesa) return;
-    const novoId = criarDefesa(selectedRow.numero);
-    if (novoId) {
-      setSelectedId(novoId);
-      navigate({ to: "/analises/$id", params: { id: novoId } });
-    }
+  const handleReabrir = (r: Row) => {
+    if (!podeReabrirRow(r)) return;
+    setSituacao(r.id, "Em Análise");
   };
-  const handleReabrir = () => {
-    if (!selectedRow || selectedRow.situacao !== "Concluído") return;
-    setSituacao(selectedRow.id, "Em Análise");
+  // "Gerar PDF de conclusão geral": gera e baixa o PDF da conclusão.
+  const handleGerarPdf = async (r: Row) => {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const sigla = getJurisdicionado(r.orgao).sigla;
+    doc.setFontSize(16);
+    doc.text("Relatório de Conclusão Geral", 20, 22);
+    doc.setDrawColor(180);
+    doc.line(20, 26, 190, 26);
+    doc.setFontSize(11);
+    let y = 38;
+    const linha = (label: string, valor: string) => {
+      doc.setFont(undefined, "bold");
+      doc.text(`${label}:`, 20, y);
+      doc.setFont(undefined, "normal");
+      doc.text(String(valor), 70, y);
+      y += 9;
+    };
+    linha("Órgão", `${r.orgao}${sigla ? ` (${sigla})` : ""}`);
+    linha("Nº Processo", r.numero);
+    linha("Exercício", r.exercicio);
+    linha("Relator", r.relator);
+    linha(
+      "Tipo",
+      r.tipoAnalise === "Análise de Defesa"
+        ? `Defesa nº ${r.nrDefesa ?? 1}`
+        : "Inicial"
+    );
+    linha("Situação", r.situacao);
+    linha("Responsável", getAtribuicao(r.id).executor ?? "—");
+    linha("Revisor", getAtribuicao(r.id).revisor ?? "—");
+    linha("Data de Conclusão", r.dtConclusao);
+    doc.save(`conclusao-${r.numero}.pdf`);
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.id, "Não Iniciado");
-    setConfirmReinit(false);
+    if (reinitTarget) setSituacao(reinitTarget.id, "Não Iniciado");
+    setReinitTarget(null);
   };
 
   // RF — atribuição inline de Responsável (executor) e Revisor pelo
