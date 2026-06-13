@@ -17,6 +17,7 @@ import {
   FileText,
   Layers,
   Info,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -258,7 +260,7 @@ function AnalisesRouteShell() {
 
 function ProcessosPage() {
   const navigate = useNavigate();
-  const { getAtribuicao, setAtribuicao, perfil, usuarios } = useAtribuicoes();
+  const { getAtribuicao, setAtribuicao, perfil, usuario, usuarios } = useAtribuicoes();
   const usuariosAtivos = useMemo(
     () => usuarios.filter((u) => u.ativo).map((u) => u.nome),
     [usuarios]
@@ -273,11 +275,12 @@ function ProcessosPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<
     Record<string, { situacao?: Situacao }>
   >({});
-  const [confirmReinit, setConfirmReinit] = useState(false);
+  const [reinitTarget, setReinitTarget] = useState<Row | null>(null);
+
+
 
 
   const applyOverride = (r: Row): Row => {
@@ -339,37 +342,52 @@ function ProcessosPage() {
   const start = (currentPage - 1) * perPage;
   const pageRows = sorted.slice(start, start + perPage);
 
-  const selectedRow = useMemo(
-    () => (selectedId ? base.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId, base]
-  );
-
-  // Processo sem executor atribuído: abertura bloqueada (RF — atribuições).
-  const semExecutor = selectedRow
-    ? !getAtribuicao(selectedRow.id).executor
-    : false;
-
-  // Todos os processos exibidos já estão consolidados, logo a análise pode
-  // sempre ser iniciada.
-  const podeIniciarAnalise = true;
   // Situações iniciais (processo ainda sem análise iniciada).
   const ehInicial = (s: Situacao) =>
     s === "Disponível" || s === "Não Iniciado";
+  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
+
+  // Permissões por linha — respeitam o responsável (executor) e o revisor
+  // atribuídos. Visualização (Abrir) é liberada a todos os perfis.
+  const podeReabrirRow = (r: Row) => {
+    if (!concluida(r.situacao)) return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" ||
+      (perfil === "Executor" && usuario === a.executor) ||
+      (perfil === "Revisor" && usuario === a.revisor)
+    );
+  };
+  const podeReinitRow = (r: Row) => {
+    if (r.situacao === "Não Iniciado" || r.situacao === "Disponível")
+      return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" || (perfil === "Executor" && usuario === a.executor)
+    );
+  };
+  const temConclusao = (r: Row) => concluida(r.situacao) || r.dtConclusao !== "—";
+  const podePdfRow = (r: Row) => {
+    if (!temConclusao(r)) return false;
+    const a = getAtribuicao(r.id);
+    return (
+      perfil === "Coordenador" ||
+      (perfil === "Executor" && usuario === a.executor) ||
+      (perfil === "Revisor" && usuario === a.revisor)
+    );
+  };
 
   // RF23 — "Nova defesa" (Coordenador): disponível em processos cuja análise
   // INICIAL está concluída e sem nenhuma rodada de defesa em aberto.
-  const concluida = (s: Situacao) => s === "Concluído" || s === "Validado";
-  const podeNovaDefesa = useMemo(() => {
-    if (!selectedRow) return false;
+  const podeNovaDefesaRow = (r: Row) => {
     if (perfil !== "Coordenador") return false;
-    if (selectedRow.tipoAnalise !== "Análise Inicial") return false;
-    if (!concluida(selectedRow.situacao)) return false;
-    // Considera overrides de situação aplicados às defesas existentes.
-    const defesas = defesasDoProcesso(selectedRow.numero).map(
+    if (r.tipoAnalise !== "Análise Inicial") return false;
+    if (!concluida(r.situacao)) return false;
+    const defesas = defesasDoProcesso(r.numero).map(
       (d) => base.find((b) => b.id === d.id) ?? d
     );
     return !defesas.some((d) => !concluida(d.situacao));
-  }, [selectedRow, perfil, defesasDoProcesso, base]);
+  };
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -403,30 +421,57 @@ function ProcessosPage() {
   const setSituacao = (id: string, s: Situacao) =>
     setOverrides((p) => ({ ...p, [id]: { ...p[id], situacao: s } }));
 
-  const handleCriar = () => {
-    if (!selectedRow || !podeIniciarAnalise) return;
-    setSituacao(selectedRow.id, "Em Análise");
-    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
+  // "Abrir": abre a análise; se ainda "Não Iniciado"/"Disponível", inicia.
+  const handleAbrir = (r: Row) => {
+    if (ehInicial(r.situacao)) setSituacao(r.id, "Em Análise");
+    navigate({ to: "/analises/$id", params: { id: r.id } });
   };
-  const handleVisualizar = () => {
-    if (!selectedRow) return;
-    navigate({ to: "/analises/$id", params: { id: selectedRow.id } });
+  const handleNovaDefesa = (r: Row) => {
+    if (!podeNovaDefesaRow(r)) return;
+    const novoId = criarDefesa(r.numero);
+    if (novoId) navigate({ to: "/analises/$id", params: { id: novoId } });
   };
-  const handleNovaDefesa = () => {
-    if (!selectedRow || !podeNovaDefesa) return;
-    const novoId = criarDefesa(selectedRow.numero);
-    if (novoId) {
-      setSelectedId(novoId);
-      navigate({ to: "/analises/$id", params: { id: novoId } });
-    }
+  const handleReabrir = (r: Row) => {
+    if (!podeReabrirRow(r)) return;
+    setSituacao(r.id, "Em Análise");
   };
-  const handleReabrir = () => {
-    if (!selectedRow || selectedRow.situacao !== "Concluído") return;
-    setSituacao(selectedRow.id, "Em Análise");
+  // "Gerar PDF de conclusão geral": gera e baixa o PDF da conclusão.
+  const handleGerarPdf = async (r: Row) => {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const sigla = getJurisdicionado(r.orgao).sigla;
+    doc.setFontSize(16);
+    doc.text("Relatório de Conclusão Geral", 20, 22);
+    doc.setDrawColor(180);
+    doc.line(20, 26, 190, 26);
+    doc.setFontSize(11);
+    let y = 38;
+    const linha = (label: string, valor: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${label}:`, 20, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(String(valor), 70, y);
+      y += 9;
+    };
+    linha("Órgão", `${r.orgao}${sigla ? ` (${sigla})` : ""}`);
+    linha("Nº Processo", r.numero);
+    linha("Exercício", r.exercicio);
+    linha("Relator", r.relator);
+    linha(
+      "Tipo",
+      r.tipoAnalise === "Análise de Defesa"
+        ? `Defesa nº ${r.nrDefesa ?? 1}`
+        : "Inicial"
+    );
+    linha("Situação", r.situacao);
+    linha("Responsável", getAtribuicao(r.id).executor ?? "—");
+    linha("Revisor", getAtribuicao(r.id).revisor ?? "—");
+    linha("Data de Conclusão", r.dtConclusao);
+    doc.save(`conclusao-${r.numero}.pdf`);
   };
   const confirmReinitAction = () => {
-    if (selectedRow) setSituacao(selectedRow.id, "Não Iniciado");
-    setConfirmReinit(false);
+    if (reinitTarget) setSituacao(reinitTarget.id, "Não Iniciado");
+    setReinitTarget(null);
   };
 
   // RF — atribuição inline de Responsável (executor) e Revisor pelo
@@ -449,7 +494,7 @@ function ProcessosPage() {
 
 
   return (
-    <main className="mx-auto max-w-[1600px] px-6 py-8 pb-32">
+    <main className="mx-auto max-w-[1600px] px-6 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Processos</h1>
@@ -596,37 +641,25 @@ function ProcessosPage() {
                   Revisor
                 </th>
                 <th className="w-10 px-2 py-2.5" aria-label="Detalhes" />
+                <th className="whitespace-nowrap px-2 py-2.5 text-right text-xs font-semibold uppercase tracking-wide">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               {pageRows.map((r) => {
-                const isSel = selectedId === r.id;
                 return (
                   <tr
                     key={r.id}
-                    onClick={() => setSelectedId(isSel ? null : r.id)}
-                    className={`cursor-pointer transition-colors ${
-                      isSel
-                        ? "bg-blue-100 hover:bg-blue-100"
-                        : "bg-white hover:bg-blue-50"
-                    }`}
+                    className="bg-white transition-colors hover:bg-blue-50"
                   >
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                navigate({
-                                  to: "/analises/$id",
-                                  params: { id: r.id },
-                                })
-                              }
-                              className="block max-w-[220px] truncate text-left font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
-                            >
+                            <span className="block max-w-[160px] truncate font-medium text-foreground">
                               {r.orgao}
-                            </button>
+                            </span>
                           </TooltipTrigger>
                           <TooltipContent>
                             {r.orgao}
@@ -643,7 +676,7 @@ function ProcessosPage() {
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="block max-w-[180px] truncate">{r.relator}</span>
+                            <span className="block max-w-[120px] truncate">{r.relator}</span>
                           </TooltipTrigger>
                           <TooltipContent>{r.relator}</TooltipContent>
                         </Tooltip>
@@ -669,7 +702,7 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
@@ -678,7 +711,7 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5">
                       <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
@@ -687,19 +720,35 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-1.5 text-right">
                       <DetalhesPopover r={r} />
+                    </td>
+                    <td className="px-2 py-1.5 text-right">
+                      <AcoesCell
+                        r={r}
+                        ehInicial={ehInicial(r.situacao)}
+                        podeReabrir={podeReabrirRow(r)}
+                        podeReinit={podeReinitRow(r)}
+                        podePdf={podePdfRow(r)}
+                        podeNovaDefesa={podeNovaDefesaRow(r)}
+                        onAbrir={() => handleAbrir(r)}
+                        onReabrir={() => handleReabrir(r)}
+                        onReinit={() => setReinitTarget(r)}
+                        onPdf={() => handleGerarPdf(r)}
+                        onNovaDefesa={() => handleNovaDefesa(r)}
+                      />
                     </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>
@@ -736,115 +785,25 @@ function ProcessosPage() {
         </div>
       </div>
 
-      {/* Barra de ações fixa */}
-      {selectedRow && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0D1B2A] bg-[#0D1B2A] shadow-[0_-4px_12px_-6px_rgba(0,0,0,0.3)]">
-          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-6 py-3">
-            <div className="text-sm text-white/90">
-              Processo selecionado:{" "}
-              <span className="font-mono font-semibold text-white">
-                {selectedRow.numero}
-              </span>
-              <span className="mx-2 text-white/40">•</span>
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SIT_BADGE[selectedRow.situacao]}`}
-              >
-                {selectedRow.situacao}
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-end gap-2">
-              {semExecutor ? (
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0}>
-                        <Button
-                          disabled
-                          className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90 disabled:opacity-40"
-                        >
-                          {ehInicial(selectedRow.situacao) ? (
-                            <>
-                              <Plus className="h-4 w-4" /> Criar
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4" /> Visualizar
-                            </>
-                          )}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Processo sem responsável atribuído. Atribua um responsável
-                      na coluna "Responsável" desta listagem para abrir.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : ehInicial(selectedRow.situacao) ? (
-                <Button
-                  onClick={handleCriar}
-                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-                >
-                  <Plus className="h-4 w-4" /> Criar
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleVisualizar}
-                  className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
-                >
-                  <Eye className="h-4 w-4" /> Visualizar
-                </Button>
-              )}
-              <Button
-                onClick={handleReabrir}
-                disabled={selectedRow.situacao !== "Concluído"}
-                className="gap-2 bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90 disabled:opacity-40"
-              >
-                <RotateCcw className="h-4 w-4" /> Reabrir
-              </Button>
-              <Button
-                onClick={() => setConfirmReinit(true)}
-                disabled={
-                  selectedRow.situacao !== "Em Análise" &&
-                  selectedRow.situacao !== "Concluído"
-                }
-                className="gap-2 bg-[#EA580C] text-white hover:bg-[#EA580C]/90 disabled:opacity-40"
-              >
-                <RefreshCw className="h-4 w-4" /> Reinicializar
-              </Button>
-              {podeNovaDefesa && (
-                <Button
-                  onClick={handleNovaDefesa}
-                  className="gap-2 bg-[#9333EA] text-white hover:bg-[#9333EA]/90"
-                >
-                  <Layers className="h-4 w-4" /> Nova defesa
-                </Button>
-              )}
-              <Button
-                disabled={selectedRow.situacao !== "Concluído"}
-                className="gap-2 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 disabled:opacity-40"
-              >
-                <FileText className="h-4 w-4" /> Relatório Conclusão Análise
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Modal Reinicializar */}
-      <Dialog open={confirmReinit} onOpenChange={setConfirmReinit}>
+      <Dialog
+        open={!!reinitTarget}
+        onOpenChange={(o) => !o && setReinitTarget(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reinicializar análise</DialogTitle>
             <DialogDescription>
-              Deseja reinicializar esta análise? Todos os dados preenchidos
-              serão apagados.
+              Descarta todas as inclusões e edições manuais e restaura os dados
+              originais da consolidação (IND_VALIDO/IND_ORIGEM). Esta ação não
+              pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmReinit(false)}>
+            <Button variant="outline" onClick={() => setReinitTarget(null)}>
               Cancelar
             </Button>
+
             <Button
               onClick={confirmReinitAction}
               className="bg-[#EA580C] text-white hover:bg-[#EA580C]/90"
@@ -966,6 +925,108 @@ function AtribInlineCell({
   );
 }
 
+// Coluna "Ações": botões que EXECUTAM a ação diretamente. "Abrir" (todos os
+// perfis) fica sempre visível; as demais ações ficam no menu "⋯" e só
+// aparecem para os perfis autorizados, respeitando o responsável atribuído.
+function AcoesCell({
+  r,
+  ehInicial,
+  podeReabrir,
+  podeReinit,
+  podePdf,
+  podeNovaDefesa,
+  onAbrir,
+  onReabrir,
+  onReinit,
+  onPdf,
+  onNovaDefesa,
+}: {
+  r: Row;
+  ehInicial: boolean;
+  podeReabrir: boolean;
+  podeReinit: boolean;
+  podePdf: boolean;
+  podeNovaDefesa: boolean;
+  onAbrir: () => void;
+  onReabrir: () => void;
+  onReinit: () => void;
+  onPdf: () => void;
+  onNovaDefesa: () => void;
+}) {
+  const temMenu = podeReabrir || podeReinit || podePdf || podeNovaDefesa;
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 text-[#1A56DB] hover:bg-[#1A56DB]/10"
+              onClick={onAbrir}
+            >
+              {ehInicial ? (
+                <Plus className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {ehInicial ? "Abrir e iniciar análise" : "Abrir análise"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {temMenu && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              aria-label="Mais ações"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-60">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {podeReabrir && (
+              <DropdownMenuItem onClick={onReabrir}>
+                <RotateCcw className="mr-2 h-4 w-4" /> Reabrir
+              </DropdownMenuItem>
+            )}
+            {podeReinit && (
+              <DropdownMenuItem
+                onClick={onReinit}
+                className="text-[#EA580C] focus:text-[#EA580C]"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" /> Reinicializar
+              </DropdownMenuItem>
+            )}
+            {podePdf && (
+              <DropdownMenuItem onClick={onPdf}>
+                <FileText className="mr-2 h-4 w-4" /> Gerar PDF de conclusão geral
+              </DropdownMenuItem>
+            )}
+            {podeNovaDefesa && (
+              <DropdownMenuItem onClick={onNovaDefesa}>
+                <Layers className="mr-2 h-4 w-4" /> Nova defesa
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
+
+
+
 // Popover de detalhes (ⓘ): datas do processo.
 function DetalhesPopover({ r }: { r: Row }) {
   return (
@@ -1033,7 +1094,7 @@ function Th({
   const active = sortKey === k;
   const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
   return (
-    <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+    <th className="whitespace-nowrap px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide">
       <button
         type="button"
         onClick={() => onSort(k)}
