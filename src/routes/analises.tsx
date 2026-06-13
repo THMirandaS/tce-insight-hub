@@ -600,6 +600,7 @@ function ProcessosPage() {
                 <Th label="Órgão" k="orgao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Nº Processo" k="numero" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Exercício" k="exercicio" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th label="Relator" k="relator" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Tipo" k="tipoAnalise" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <Th label="Situação" k="situacao" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                 <th className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
