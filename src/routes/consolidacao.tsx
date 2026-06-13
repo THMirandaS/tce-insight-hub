@@ -290,6 +290,7 @@ function LinhaConsolidacao({
         <AcaoConsolidar
           status={p.status}
           processando={processando}
+          analiseId={p.analiseId}
           isCoordenador={isCoordenador}
           isExecutorOuRevisor={isExecutorOuRevisor}
           confirmado={confirmado}
@@ -297,6 +298,7 @@ function LinhaConsolidacao({
           onConsolidarDireto={onConsolidarDireto}
         />
       </td>
+
     </tr>
   );
 }
