@@ -17,7 +17,6 @@ import {
   FileText,
   Layers,
   Info,
-  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +32,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
-  DropdownMenuItem,
+  
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -279,6 +278,7 @@ function ProcessosPage() {
     Record<string, { situacao?: Situacao }>
   >({});
   const [reinitTarget, setReinitTarget] = useState<Row | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
 
 
@@ -341,6 +341,9 @@ function ProcessosPage() {
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * perPage;
   const pageRows = sorted.slice(start, start + perPage);
+  const selectedRow = selectedId
+    ? base.find((r) => r.id === selectedId) ?? null
+    : null;
 
   // Situações iniciais (processo ainda sem análise iniciada).
   const ehInicial = (s: Situacao) =>
@@ -641,18 +644,24 @@ function ProcessosPage() {
                   Revisor
                 </th>
                 <th className="w-10 px-2 py-2.5" aria-label="Detalhes" />
-                <th className="whitespace-nowrap px-2 py-2.5 text-right text-xs font-semibold uppercase tracking-wide">
-                  Ações
-                </th>
               </tr>
             </thead>
             <tbody>
               {pageRows.map((r) => {
+                const selected = selectedId === r.id;
                 return (
                   <tr
                     key={r.id}
-                    className="bg-white transition-colors hover:bg-blue-50"
+                    onClick={() =>
+                      setSelectedId((cur) => (cur === r.id ? null : r.id))
+                    }
+                    className={`cursor-pointer transition-colors ${
+                      selected
+                        ? "bg-blue-100 ring-1 ring-inset ring-[#1A56DB]"
+                        : "bg-white hover:bg-blue-50"
+                    }`}
                   >
+
                     <td className="px-2 py-1.5">
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
@@ -702,7 +711,10 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5">
+                    <td
+                      className="px-2 py-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
@@ -711,7 +723,10 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5">
+                    <td
+                      className="px-2 py-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
@@ -720,30 +735,18 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5 text-right">
+                    <td
+                      className="px-2 py-1.5 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DetalhesPopover r={r} />
-                    </td>
-                    <td className="px-2 py-1.5 text-right">
-                      <AcoesCell
-                        r={r}
-                        ehInicial={ehInicial(r.situacao)}
-                        podeReabrir={podeReabrirRow(r)}
-                        podeReinit={podeReinitRow(r)}
-                        podePdf={podePdfRow(r)}
-                        podeNovaDefesa={podeNovaDefesaRow(r)}
-                        onAbrir={() => handleAbrir(r)}
-                        onReabrir={() => handleReabrir(r)}
-                        onReinit={() => setReinitTarget(r)}
-                        onPdf={() => handleGerarPdf(r)}
-                        onNovaDefesa={() => handleNovaDefesa(r)}
-                      />
                     </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -752,6 +755,25 @@ function ProcessosPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Barra de ações da linha selecionada */}
+        <AcoesBar
+          row={selectedRow}
+
+          ehInicial={selectedRow ? ehInicial(selectedRow.situacao) : false}
+          podeReabrir={selectedRow ? podeReabrirRow(selectedRow) : false}
+          podeReinit={selectedRow ? podeReinitRow(selectedRow) : false}
+          podePdf={selectedRow ? podePdfRow(selectedRow) : false}
+          podeNovaDefesa={selectedRow ? podeNovaDefesaRow(selectedRow) : false}
+          onAbrir={() => selectedRow && handleAbrir(selectedRow)}
+          onReabrir={() => selectedRow && handleReabrir(selectedRow)}
+          onReinit={() => selectedRow && setReinitTarget(selectedRow)}
+          onPdf={() => selectedRow && handleGerarPdf(selectedRow)}
+          onNovaDefesa={() => selectedRow && handleNovaDefesa(selectedRow)}
+        />
+
+
+
 
         {/* Paginação */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border bg-white px-4 py-3 md:flex-row">
@@ -925,11 +947,11 @@ function AtribInlineCell({
   );
 }
 
-// Coluna "Ações": botões que EXECUTAM a ação diretamente. "Abrir" (todos os
-// perfis) fica sempre visível; as demais ações ficam no menu "⋯" e só
-// aparecem para os perfis autorizados, respeitando o responsável atribuído.
-function AcoesCell({
-  r,
+// Barra de ações da linha selecionada: fica abaixo da tabela, acima da
+// paginação. Mostra resumo da linha à esquerda e os botões aplicáveis ao
+// perfil/linha à direita. Sem seleção, aparece esmaecida com instrução.
+function AcoesBar({
+  row,
   ehInicial,
   podeReabrir,
   podeReinit,
@@ -941,7 +963,7 @@ function AcoesCell({
   onPdf,
   onNovaDefesa,
 }: {
-  r: Row;
+  row: Row | null;
   ehInicial: boolean;
   podeReabrir: boolean;
   podeReinit: boolean;
@@ -953,77 +975,87 @@ function AcoesCell({
   onPdf: () => void;
   onNovaDefesa: () => void;
 }) {
-  const temMenu = podeReabrir || podeReinit || podePdf || podeNovaDefesa;
-  return (
-    <div className="flex items-center justify-end gap-1">
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 text-[#1A56DB] hover:bg-[#1A56DB]/10"
-              onClick={onAbrir}
-            >
-              {ehInicial ? (
-                <Plus className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {ehInicial ? "Abrir e iniciar análise" : "Abrir análise"}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+  if (!row) {
+    return (
+      <div className="flex items-center justify-center border-t border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        Selecione um processo para ver as ações
+      </div>
+    );
+  }
 
-      {temMenu && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              aria-label="Mais ações"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-60">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {podeReabrir && (
-              <DropdownMenuItem onClick={onReabrir}>
-                <RotateCcw className="mr-2 h-4 w-4" /> Reabrir
-              </DropdownMenuItem>
-            )}
-            {podeReinit && (
-              <DropdownMenuItem
-                onClick={onReinit}
-                className="text-[#EA580C] focus:text-[#EA580C]"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" /> Reinicializar
-              </DropdownMenuItem>
-            )}
-            {podePdf && (
-              <DropdownMenuItem onClick={onPdf}>
-                <FileText className="mr-2 h-4 w-4" /> Gerar PDF de conclusão geral
-              </DropdownMenuItem>
-            )}
-            {podeNovaDefesa && (
-              <DropdownMenuItem onClick={onNovaDefesa}>
-                <Layers className="mr-2 h-4 w-4" /> Nova defesa
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+  const sigla = getJurisdicionado(row.orgao).sigla;
+  const resumo = `Processo ${row.numero} — ${row.orgao}${
+    sigla ? ` (${sigla})` : ""
+  } (${row.exercicio})`;
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-border bg-blue-50/60 px-4 py-3 md:flex-row md:items-center md:justify-between">
+      <span className="truncate text-sm font-medium text-foreground">
+        {resumo}
+      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          className="gap-1.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90"
+          onClick={onAbrir}
+        >
+          {ehInicial ? (
+            <Plus className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+          {ehInicial ? "Abrir e iniciar" : "Abrir"}
+        </Button>
+        {podeReabrir && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={onReabrir}
+          >
+            <RotateCcw className="h-4 w-4" /> Reabrir
+          </Button>
+        )}
+        {podeReinit && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5 border-[#EA580C] text-[#EA580C] hover:bg-[#EA580C]/10 hover:text-[#EA580C]"
+            onClick={onReinit}
+          >
+            <RefreshCw className="h-4 w-4" /> Reinicializar
+          </Button>
+        )}
+        {podePdf && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={onPdf}
+          >
+            <FileText className="h-4 w-4" /> Gerar PDF de conclusão geral
+          </Button>
+        )}
+        {podeNovaDefesa && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={onNovaDefesa}
+          >
+            <Layers className="h-4 w-4" /> Nova defesa
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
+
 
 
 
