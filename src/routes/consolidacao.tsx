@@ -59,11 +59,22 @@ export const Route = createFileRoute("/consolidacao")({
 const GRUPO_PODERES =
   "ÓRGÃOS DOS PODERES LEGISLATIVO E JUDICIÁRIO, DO MINISTÉRIO PÚBLICO E DA DEFENSORIA PÚBLICA";
 
-const STATUS_BADGE: Record<ConsolPendenteStatus, string> = {
+const STATUS_BADGE: Record<ConsolStatus, string> = {
   Pendente: "bg-gray-200 text-gray-800",
   Processando: "bg-blue-100 text-blue-800",
   Erro: "bg-red-100 text-red-800",
+  Concluída: "bg-green-100 text-green-800",
 };
+
+// Opções do filtro de status. "Todas" exibe todos os processos.
+const STATUS_FILTROS = [
+  "Todas",
+  "Pendente",
+  "Processando",
+  "Erro",
+  "Concluída",
+] as const;
+type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
   const { pendentes, consolidar } = useConsolidacao();
