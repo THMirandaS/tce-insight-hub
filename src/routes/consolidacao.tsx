@@ -306,14 +306,16 @@ function LinhaConsolidacao({
 function AcaoConsolidar({
   status,
   processando,
+  analiseId,
   isCoordenador,
   isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
-  status: ConsolPendenteStatus;
+  status: ConsolStatus;
   processando: boolean;
+  analiseId?: string;
   isCoordenador: boolean;
   isExecutorOuRevisor: boolean;
   confirmado: boolean;
@@ -331,6 +333,26 @@ function AcaoConsolidar({
       </>
     );
 
+  // Concluída: consolidação é única — sem botão Consolidar/Reconsolidar.
+  // No lugar, link para a análise gerada.
+  if (status === "Concluída") {
+    if (!analiseId) {
+      return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+      <Button
+        asChild
+        size="sm"
+        variant="outline"
+        className="h-8 gap-1.5 px-3 text-xs"
+      >
+        <Link to="/analises/$id" params={{ id: analiseId }}>
+          <Eye className="h-3.5 w-3.5" /> Ver análise
+        </Link>
+      </Button>
+    );
+  }
+
   if (processando) {
     return (
       <Button
@@ -342,6 +364,7 @@ function AcaoConsolidar({
       </Button>
     );
   }
+
 
   // Coordenador: confirma a classificação antes de gerar a análise.
   if (isCoordenador) {
