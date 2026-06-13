@@ -709,7 +709,10 @@ function ProcessosPage() {
                         {r.situacao}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5">
+                    <td
+                      className="px-2 py-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <AtribInlineCell
                         value={getAtribuicao(r.id).executor}
                         editavel={podeAtribuir}
@@ -718,7 +721,10 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "executor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5">
+                    <td
+                      className="px-2 py-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <AtribInlineCell
                         value={getAtribuicao(r.id).revisor}
                         editavel={podeAtribuir}
@@ -727,30 +733,18 @@ function ProcessosPage() {
                         onChange={(v) => setCampoAtribuicao(r.id, "revisor", v)}
                       />
                     </td>
-                    <td className="px-2 py-1.5 text-right">
+                    <td
+                      className="px-2 py-1.5 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DetalhesPopover r={r} />
-                    </td>
-                    <td className="px-2 py-1.5 text-right">
-                      <AcoesCell
-                        r={r}
-                        ehInicial={ehInicial(r.situacao)}
-                        podeReabrir={podeReabrirRow(r)}
-                        podeReinit={podeReinitRow(r)}
-                        podePdf={podePdfRow(r)}
-                        podeNovaDefesa={podeNovaDefesaRow(r)}
-                        onAbrir={() => handleAbrir(r)}
-                        onReabrir={() => handleReabrir(r)}
-                        onReinit={() => setReinitTarget(r)}
-                        onPdf={() => handleGerarPdf(r)}
-                        onNovaDefesa={() => handleNovaDefesa(r)}
-                      />
                     </td>
                   </tr>
                 );
               })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-10 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">
                     Nenhum processo encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -759,6 +753,7 @@ function ProcessosPage() {
             </tbody>
           </table>
         </div>
+
 
         {/* Paginação */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border bg-white px-4 py-3 md:flex-row">
