@@ -7226,7 +7226,7 @@ function ConclusaoContent({
 <h2>6. Outras Inconformidades</h2>
 <p>Demais inconformidades identificadas no decorrer da análise, conforme submenu Outras Inconformidades.</p>
 
-<h2>6. Conclusão</h2>
+<h2>7. Conclusão</h2>
 <p>${escapeHTML(intro)}</p>
 <p><strong>Julgamento das contas:</strong> ${escapeHTML(jOpt.label)} (${escapeHTML(jOpt.artigo)}).</p>
 <p>${escapeHTML(textoJ)}</p>
