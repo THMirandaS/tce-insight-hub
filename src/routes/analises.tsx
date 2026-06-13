@@ -683,12 +683,7 @@ function ProcessosPage() {
                       />
                     </td>
                     <td className="px-2 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <DetalhesPopover
-                        r={r}
-                        status={getStatus(r.id)}
-                        podeConsolidar={podeConsolidar}
-                        onConsolidar={() => consolidar(r.id)}
-                      />
+                      <DetalhesPopover r={r} />
                     </td>
                   </tr>
                 );
