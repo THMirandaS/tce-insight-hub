@@ -618,7 +618,10 @@ function ProcessosPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                setAtribOrgao({ orgao: r.orgao, ano: r.exercicio })
+                                navigate({
+                                  to: "/analises/$id",
+                                  params: { id: r.id },
+                                })
                               }
                               className="block max-w-[220px] truncate text-left font-semibold text-[#1A56DB] underline-offset-2 hover:underline"
                             >
