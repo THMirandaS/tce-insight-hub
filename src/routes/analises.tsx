@@ -1136,7 +1136,7 @@ function AtributosDialog({
 
   // Reinicializa o rascunho sempre que o alvo muda.
   const targetKey = target ? `${target.orgao}|${target.ano}` : null;
-  useMemo(() => {
+  useEffect(() => {
     if (!target) {
       setDraft(null);
       setHerdadoDe(undefined);
