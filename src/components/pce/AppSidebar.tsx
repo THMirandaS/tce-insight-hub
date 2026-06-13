@@ -5,7 +5,6 @@ import {
   Search,
   ShieldCheck,
   Users,
-  Building2,
   RefreshCcw,
   LogOut,
   ChevronLeft,
