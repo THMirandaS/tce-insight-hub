@@ -43,6 +43,7 @@ import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
 import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
+import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -358,6 +359,28 @@ function AnaliseDetalhePage() {
       const src = origCk[i];
       if (!src) return;
       el.setAttribute("data-state", src.getAttribute("data-state") ?? "unchecked");
+    });
+
+    // Considerações adicionais — só entram no PDF quando "Compor relatório"
+    // estiver marcado; caso contrário, o bloco inteiro é removido do PDF.
+    clone.querySelectorAll<HTMLElement>("[data-consid]").forEach((el) => {
+      const compor = el.getAttribute("data-consid-compor") === "true";
+      const text = el.getAttribute("data-consid-text") ?? "";
+      const title =
+        el.getAttribute("data-consid-title") ?? "Considerações adicionais";
+      if (!compor || !text.trim()) {
+        el.remove();
+        return;
+      }
+      el.removeAttribute("class");
+      el.style.marginTop = "24px";
+      el.innerHTML =
+        `<h3 style="font-size:13px;font-weight:700;margin:0 0 6px;color:#0D1B2A;">${escapeHTML(
+          title,
+        )}</h3>` +
+        `<p style="font-size:12px;line-height:1.5;margin:0;white-space:pre-wrap;">${escapeHTML(
+          text,
+        )}</p>`;
     });
 
     // RF23 — em análise de defesa, o PDF inclui o conteúdo original (leitura)
@@ -1821,19 +1844,15 @@ function ConsidGeraisContent({
           value={texto}
           onChange={(e) => {
             if (readOnly) return;
-            setTexto(e.target.value.slice(0, MAX));
+            setTexto(e.target.value);
           }}
           readOnly={readOnly}
-          maxLength={MAX}
           rows={12}
           className={`block w-full resize-y overflow-y-auto rounded-md border border-border p-3 text-sm text-foreground shadow-inner outline-none focus:border-[#1A56DB] focus:ring-1 focus:ring-[#1A56DB] ${
             readOnly ? "cursor-not-allowed bg-[#F4F5F7]" : "bg-white"
           }`}
           placeholder="Digite aqui as considerações gerais do exercício atual..."
         />
-        <div className="flex justify-end text-xs text-muted-foreground">
-          {restantes.toLocaleString("pt-BR")} caracteres restantes
-        </div>
       </div>
 
       <div className="mt-4 flex items-start gap-2">
@@ -1850,8 +1869,7 @@ function ConsidGeraisContent({
             readOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer"
           }`}
         >
-          O texto complementar deverá constar no relatório de conclusão do
-          processo.
+          Compor relatório
         </label>
       </div>
 
@@ -2223,33 +2241,9 @@ function ReceitasContent({
         <ResumoIA texto={RECEITAS_RESUMO_IA} processo={processo} orgao={orgao} />
       </div>
 
-      {/* Editor */}
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          maxLength={RECEITAS_MAX_TEXTO}
-          onChange={(e) => setTexto(e.target.value)}
-          className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-        />
-        <p className="text-right text-xs text-muted-foreground">
-          {restantes.toLocaleString("pt-BR")} caracteres restantes
-        </p>
-        <label className="flex items-start gap-2 text-sm text-foreground">
-          <Checkbox
-            checked={incluir}
-            onCheckedChange={(v) => setIncluir(Boolean(v))}
-            disabled={readOnly}
-          />
-          <span>
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </span>
-        </label>
-      </div>
+      {/* Considerações adicionais */}
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Receitas" />
+
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -2545,32 +2539,7 @@ function CreditoInicialContent({
             />
           </div>
 
-          <div className="mt-6 space-y-2">
-            <Label className="text-sm font-semibold">
-              AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-            </Label>
-            <textarea
-              value={texto}
-              readOnly={readOnly}
-              maxLength={CREDITO_INICIAL_MAX_TEXTO}
-              onChange={(e) => setTexto(e.target.value)}
-              className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-            />
-            <p className="text-right text-xs text-muted-foreground">
-              {restantes.toLocaleString("pt-BR")} caracteres restantes
-            </p>
-            <label className="flex items-start gap-2 text-sm text-foreground">
-              <Checkbox
-                checked={incluir}
-                onCheckedChange={(v) => setIncluir(Boolean(v))}
-                disabled={readOnly}
-              />
-              <span>
-                O texto complementar deverá constar no relatório de conclusão
-                do processo.
-              </span>
-            </label>
-          </div>
+          <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Crédito inicial" />
         </>
       ) : (
         <>
@@ -3250,32 +3219,7 @@ function ProgramasContent({
         </div>
       )}
 
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          maxLength={PROGRAMAS_MAX_TEXTO}
-          onChange={(e) => setTexto(e.target.value)}
-          className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-        />
-        <p className="text-right text-xs text-muted-foreground">
-          {restantes.toLocaleString("pt-BR")} caracteres restantes
-        </p>
-        <label className="flex items-start gap-2 text-sm text-foreground">
-          <Checkbox
-            checked={incluir}
-            onCheckedChange={(v) => setIncluir(Boolean(v))}
-            disabled={readOnly}
-          />
-          <span>
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </span>
-        </label>
-      </div>
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Programas" />
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -3802,30 +3746,7 @@ function CreditoDespesasContent({
           </div>
 
           {/* Editor Considerações */}
-          <div className="mt-4 space-y-2">
-            <Label className="text-sm font-semibold">Considerações:</Label>
-            <textarea
-              value={consideracoes}
-              readOnly={readOnly}
-              maxLength={CREDITO_DESPESAS_MAX_TEXTO}
-              onChange={(e) => setConsideracoes(e.target.value)}
-              className="min-h-[140px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-            />
-            <p className="text-right text-xs text-muted-foreground">
-              {consRestantes.toLocaleString("pt-BR")} caracteres restantes
-            </p>
-            <label className="flex items-start gap-2 text-sm text-foreground">
-              <Checkbox
-                checked={incluir}
-                onCheckedChange={(v) => setIncluir(Boolean(v))}
-                disabled={readOnly}
-              />
-              <span>
-                O texto complementar deverá constar no relatório de conclusão
-                do processo.
-              </span>
-            </label>
-          </div>
+          <ConsideracoesAdicionais readOnly={readOnly} title="Considerações:" printTitle="Considerações — Crédito e despesas por programa" />
         </>
       ) : (
         <>
@@ -4469,30 +4390,7 @@ function DspDotacaoContent({
           </div>
 
           {/* Editor Considerações */}
-          <div className="mt-4 space-y-2">
-            <Label className="text-sm font-semibold">Considerações:</Label>
-            <textarea
-              value={consideracoes}
-              readOnly={readOnly}
-              maxLength={DSP_DOTACAO_MAX_TEXTO}
-              onChange={(e) => setConsideracoes(e.target.value)}
-              className="min-h-[140px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-            />
-            <p className="text-right text-xs text-muted-foreground">
-              {consRestantes.toLocaleString("pt-BR")} caracteres restantes
-            </p>
-            <label className="flex items-start gap-2 text-sm text-foreground">
-              <Checkbox
-                checked={incluir}
-                onCheckedChange={(v) => setIncluir(Boolean(v))}
-                disabled={readOnly}
-              />
-              <span>
-                O texto complementar deverá constar no relatório de conclusão
-                do processo.
-              </span>
-            </label>
-          </div>
+          <ConsideracoesAdicionais readOnly={readOnly} title="Considerações:" printTitle="Considerações — Despesa por dotação" />
         </>
       ) : (
         <>
@@ -4973,36 +4871,7 @@ function RestosPagarContent({
         </div>
       )}
 
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          onChange={(e) =>
-            setTexto(e.target.value.slice(0, RESTOS_PAGAR_MAX_TEXTO))
-          }
-          maxLength={RESTOS_PAGAR_MAX_TEXTO}
-          rows={6}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
-        />
-        <div className="text-right text-xs text-muted-foreground">
-          {textoRestantes} caracteres restantes
-        </div>
-        <div className="flex items-start gap-2 pt-2">
-          <Checkbox
-            id="restos-incluir"
-            checked={incluir}
-            disabled={readOnly}
-            onCheckedChange={(c) => setIncluir(c === true)}
-          />
-          <Label htmlFor="restos-incluir" className="text-sm leading-tight">
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </Label>
-        </div>
-      </div>
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Restos a pagar" />
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -5197,38 +5066,6 @@ function AvaliacaoInconformidade({
   );
 }
 
-function ConsideracoesAdicionais() {
-  const [texto, setTexto] = useState("");
-  const [incluir, setIncluir] = useState(true);
-  return (
-    <div className="mt-6 space-y-2">
-      <Label className="text-sm font-semibold">Considerações adicionais:</Label>
-      <textarea
-        value={texto}
-        onChange={(e) =>
-          setTexto(e.target.value.slice(0, DESPESAS_PESSOAL_MAX_TEXTO))
-        }
-        maxLength={DESPESAS_PESSOAL_MAX_TEXTO}
-        rows={6}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
-      />
-      <div className="text-right text-xs text-muted-foreground">
-        {DESPESAS_PESSOAL_MAX_TEXTO - texto.length} caracteres restantes
-      </div>
-      <div className="flex items-start gap-2 pt-2">
-        <Checkbox
-          id="desp-pessoal-incluir"
-          checked={incluir}
-          onCheckedChange={(c) => setIncluir(c === true)}
-        />
-        <Label htmlFor="desp-pessoal-incluir" className="text-sm leading-tight">
-          O texto complementar deverá constar no relatório de conclusão do
-          processo.
-        </Label>
-      </div>
-    </div>
-  );
-}
 
 function DespesasPessoalContent({
   processo,
@@ -5858,32 +5695,7 @@ function ControleInternoContent({
         </div>
       )}
 
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">Considerações adicionais:</Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          onChange={(e) => setTexto(e.target.value.slice(0, CI_MAX_TEXTO))}
-          maxLength={CI_MAX_TEXTO}
-          rows={6}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
-        />
-        <div className="text-right text-xs text-muted-foreground">
-          {textoRestantes} caracteres restantes
-        </div>
-        <div className="flex items-start gap-2 pt-2">
-          <Checkbox
-            id="ci-incluir"
-            checked={incluir}
-            disabled={readOnly}
-            onCheckedChange={(c) => setIncluir(c === true)}
-          />
-          <Label htmlFor="ci-incluir" className="text-sm leading-tight">
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </Label>
-        </div>
-      </div>
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação dos relatórios" />
 
       {/* Diálogo de edição do apontamento */}
       <Dialog
@@ -6890,34 +6702,7 @@ function OutrasInconformidadesContent({
         </table>
       </div>
 
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          onChange={(e) => commitTexto(e.target.value.slice(0, OUTRAS_INCO_MAX))}
-          maxLength={OUTRAS_INCO_MAX}
-          rows={6}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB] disabled:bg-gray-50"
-        />
-        <div className="text-right text-xs text-muted-foreground">
-          {textoRest} caracteres restantes
-        </div>
-        <div className="flex items-start gap-2 pt-2">
-          <Checkbox
-            id="oi-incluir"
-            checked={incluir}
-            disabled={readOnly}
-            onCheckedChange={(c) => commitIncluir(c === true)}
-          />
-          <Label htmlFor="oi-incluir" className="text-sm leading-tight">
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </Label>
-        </div>
-      </div>
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Outras inconformidades" />
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
