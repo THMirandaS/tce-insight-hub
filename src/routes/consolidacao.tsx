@@ -193,6 +193,23 @@ function Th({ children }: { children: React.ReactNode }) {
   );
 }
 
+function FilterField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
 function LinhaConsolidacao({
   p,
   isCoordenador,
