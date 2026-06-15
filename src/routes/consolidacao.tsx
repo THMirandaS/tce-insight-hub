@@ -275,8 +275,6 @@ function LinhaConsolidacao({
           status={p.status}
           processando={processando}
           analiseId={p.analiseId}
-          isCoordenador={isCoordenador}
-          isExecutorOuRevisor={isExecutorOuRevisor}
           confirmado={confirmado}
           onAbrirConfirmacao={onAbrirConfirmacao}
           onConsolidarDireto={onConsolidarDireto}
