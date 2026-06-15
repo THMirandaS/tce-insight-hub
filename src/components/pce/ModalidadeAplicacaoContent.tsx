@@ -64,36 +64,6 @@ function groupByModalidade(linhas: ModalidadeLinha[]) {
   return grupos;
 }
 
-function ConsideracoesAdicionais() {
-  const [texto, setTexto] = useState("");
-  const [incluir, setIncluir] = useState(true);
-  const MAX = 4000;
-  return (
-    <div className="mt-6 space-y-2">
-      <Label className="text-sm font-semibold">Considerações adicionais:</Label>
-      <textarea
-        value={texto}
-        onChange={(e) => setTexto(e.target.value.slice(0, MAX))}
-        maxLength={MAX}
-        rows={6}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
-      />
-      <div className="text-right text-xs text-muted-foreground">
-        {MAX - texto.length} caracteres restantes
-      </div>
-      <div className="flex items-start gap-2 pt-2">
-        <Checkbox
-          id="modalidade-incluir"
-          checked={incluir}
-          onCheckedChange={(c) => setIncluir(c === true)}
-        />
-        <Label htmlFor="modalidade-incluir" className="text-sm leading-tight">
-          O texto complementar deverá constar no relatório de conclusão do processo.
-        </Label>
-      </div>
-    </div>
-  );
-}
 
 export function ModalidadeAplicacaoContent({
   processo,
