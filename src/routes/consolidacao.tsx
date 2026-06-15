@@ -142,7 +142,6 @@ function ConsolidacaoPage() {
                 <LinhaConsolidacao
                   key={p.numero}
                   p={p}
-                  confirmado={atributosConfirmados(p.orgao, p.exercicio)}
                   onAbrirConfirmacao={() => setAlvo(p)}
                   onConsolidarDireto={() => consolidar(p.numero)}
                 />
