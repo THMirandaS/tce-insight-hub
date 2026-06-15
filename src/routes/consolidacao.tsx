@@ -281,14 +281,12 @@ function AcaoConsolidar({
   status,
   processando,
   analiseId,
-  confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   status: ConsolStatus;
   processando: boolean;
   analiseId?: string;
-  confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
 }) {
