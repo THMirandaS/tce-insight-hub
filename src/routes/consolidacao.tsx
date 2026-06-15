@@ -70,18 +70,12 @@ type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
   const { processos, consolidar } = useConsolidacao();
-  const { getRegistro } = useJurisdicionados();
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
   const [filtro, setFiltro] = useState<StatusFiltro>("Todas");
 
-  // Atributos do exercício estão confirmados quando há registro explícito e
-  // ele não está pendente de confirmação.
-  const atributosConfirmados = (orgao: string, ano: string) => {
-    const reg = getRegistro(orgao, ano);
-    return !!reg && !reg.pendente;
-  };
+
 
   const visiveis = useMemo(
     () =>
@@ -142,7 +136,6 @@ function ConsolidacaoPage() {
                 <LinhaConsolidacao
                   key={p.numero}
                   p={p}
-                  confirmado={atributosConfirmados(p.orgao, p.exercicio)}
                   onAbrirConfirmacao={() => setAlvo(p)}
                   onConsolidarDireto={() => consolidar(p.numero)}
                 />
@@ -199,12 +192,10 @@ function FilterField({
 
 function LinhaConsolidacao({
   p,
-  confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   p: ProcessoConsolidacao;
-  confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
 }) {
@@ -267,7 +258,6 @@ function LinhaConsolidacao({
           status={p.status}
           processando={processando}
           analiseId={p.analiseId}
-          confirmado={confirmado}
           onAbrirConfirmacao={onAbrirConfirmacao}
           onConsolidarDireto={onConsolidarDireto}
         />
@@ -281,14 +271,12 @@ function AcaoConsolidar({
   status,
   processando,
   analiseId,
-  confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   status: ConsolStatus;
   processando: boolean;
   analiseId?: string;
-  confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
 }) {
@@ -336,12 +324,12 @@ function AcaoConsolidar({
   }
 
 
-  // O botão Consolidar NUNCA fica bloqueado. Ao clicar:
-  // - Status Erro: dispara o reprocessamento direto (atributos já confirmados).
-  // - Atributos já confirmados: dispara a consolidação direto.
-  // - Atributos ainda não confirmados: abre o diálogo de confirmação.
+  // O botão NUNCA fica bloqueado. A confirmação da classificação acontece
+  // dentro do ato de consolidar, e só no primeiro clique de cada processo:
+  // - Pendente (primeiro "Consolidar"): abre o diálogo de confirmação.
+  // - Erro ("Tentar novamente"): reprocessa direto, sem reabrir o diálogo.
   const handleClick =
-    status === "Erro" || confirmado ? onConsolidarDireto : onAbrirConfirmacao;
+    status === "Erro" ? onConsolidarDireto : onAbrirConfirmacao;
 
   return (
     <Button
