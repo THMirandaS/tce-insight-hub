@@ -25,6 +25,14 @@ export type Usuario = {
   email: string;
   perfil: Perfil;
   ativo: boolean;
+  // Titular de coordenação em férias (perde acesso de Coordenador).
+  emFerias?: boolean;
+  // Nome do substituto que cobre o titular em férias.
+  cobertoPor?: string;
+  // Substituto promovido a Coordenador temporário.
+  coordenadorTemporario?: boolean;
+  // Perfil original do substituto, restaurado na devolução.
+  perfilOriginal?: Perfil;
 };
 
 type AtribuicoesContextValue = {
@@ -37,6 +45,10 @@ type AtribuicoesContextValue = {
   usuarios: Usuario[];
   addUsuario: (u: Omit<Usuario, "id">) => void;
   updateUsuario: (id: string, patch: Partial<Omit<Usuario, "id">>) => void;
+  // Coordenação: titular entra de férias e indica substituto; o substituto
+  // (coordenador temporário) devolve a coordenação revertendo ambos perfis.
+  entrarDeFerias: (titularId: string, substitutoId: string) => void;
+  devolverCoordenacao: (substitutoId: string) => void;
   // Atribuição de executor/revisor por processo.
   atribuicoes: Record<string, Atribuicao>;
   getAtribuicao: (id: string) => Atribuicao;
