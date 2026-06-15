@@ -43,6 +43,7 @@ import { AbaDefesa, type DefesaTexts } from "@/components/pce/AbaDefesa";
 import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacaoContent";
 import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
+import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
 import { toast } from "sonner";
 import {
   getJurisdicionado,
