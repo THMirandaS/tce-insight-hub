@@ -4877,7 +4877,6 @@ function RestosPagarContent({
       )}
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Restos a pagar" />
-      </div>
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
