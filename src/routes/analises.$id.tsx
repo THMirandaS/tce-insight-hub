@@ -5220,38 +5220,6 @@ function AvaliacaoInconformidade({
   );
 }
 
-function ConsideracoesAdicionais() {
-  const [texto, setTexto] = useState("");
-  const [incluir, setIncluir] = useState(true);
-  return (
-    <div className="mt-6 space-y-2">
-      <Label className="text-sm font-semibold">Considerações adicionais:</Label>
-      <textarea
-        value={texto}
-        onChange={(e) =>
-          setTexto(e.target.value.slice(0, DESPESAS_PESSOAL_MAX_TEXTO))
-        }
-        maxLength={DESPESAS_PESSOAL_MAX_TEXTO}
-        rows={6}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
-      />
-      <div className="text-right text-xs text-muted-foreground">
-        {DESPESAS_PESSOAL_MAX_TEXTO - texto.length} caracteres restantes
-      </div>
-      <div className="flex items-start gap-2 pt-2">
-        <Checkbox
-          id="desp-pessoal-incluir"
-          checked={incluir}
-          onCheckedChange={(c) => setIncluir(c === true)}
-        />
-        <Label htmlFor="desp-pessoal-incluir" className="text-sm leading-tight">
-          O texto complementar deverá constar no relatório de conclusão do
-          processo.
-        </Label>
-      </div>
-    </div>
-  );
-}
 
 function DespesasPessoalContent({
   processo,
