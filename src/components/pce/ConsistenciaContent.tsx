@@ -38,7 +38,7 @@ type SubAba = {
 };
 
 // Mocks na casa de milhões, formato brasileiro.
-// Sub-abas 1, 3, 4, 5, 7 e 8 conformes (diferença zero); sub-aba 2 e 6 não conformes.
+// Maioria conforme; apenas "Caixa – Valores a receber" é não conforme (para teste).
 const SUB_ABAS: SubAba[] = [
   {
     key: "rpnp",
@@ -66,11 +66,11 @@ const SUB_ABAS: SubAba[] = [
       {
         letra: "d",
         descricao: "Inscrição restos a pagar processados (balanço financeiro)",
-        valor: 48_000_000,
+        valor: 50_000_000,
       },
     ],
-    naoConforme: true,
-    rodape: { descricao: "Diferença (c - d)", valor: 2_000_000 },
+    naoConforme: false,
+    rodape: { descricao: "Diferença (c - d)", valor: 0 },
   },
   {
     key: "receita",
