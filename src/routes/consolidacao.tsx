@@ -336,12 +336,12 @@ function AcaoConsolidar({
   }
 
 
-  // O botão Consolidar NUNCA fica bloqueado. Ao clicar:
-  // - Status Erro: dispara o reprocessamento direto (atributos já confirmados).
-  // - Atributos já confirmados: dispara a consolidação direto.
-  // - Atributos ainda não confirmados: abre o diálogo de confirmação.
+  // O botão NUNCA fica bloqueado. A confirmação da classificação acontece
+  // dentro do ato de consolidar, e só no primeiro clique de cada processo:
+  // - Pendente (primeiro "Consolidar"): abre o diálogo de confirmação.
+  // - Erro ("Tentar novamente"): reprocessa direto, sem reabrir o diálogo.
   const handleClick =
-    status === "Erro" || confirmado ? onConsolidarDireto : onAbrirConfirmacao;
+    status === "Erro" ? onConsolidarDireto : onAbrirConfirmacao;
 
   return (
     <Button
