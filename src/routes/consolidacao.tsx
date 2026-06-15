@@ -111,37 +111,26 @@ function ConsolidacaoPage() {
     <main className="mx-auto max-w-[1600px] px-6 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Consolidação</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Processos recebidos do SGAP aguardando consolidação dos dados. Antes
-          de gerar a análise, o Coordenador confirma a classificação do
-          jurisdicionado para o exercício de referência — ela define quais
-          tópicos a análise terá. Após concluída, a análise inicial passa a
-          aparecer em Análises com a situação "Não Iniciado".
-        </p>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {STATUS_FILTROS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setFiltro(s)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              filtro === s
-                ? "border-[#1A56DB] bg-[#1A56DB] text-white"
-                : "border-border bg-card text-muted-foreground hover:bg-muted"
-            }`}
+      <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:max-w-xs">
+        <FilterField label="Status da Consolidação">
+          <Select
+            value={filtro}
+            onValueChange={(v) => setFiltro(v as StatusFiltro)}
           >
-            {s}
-            <span
-              className={`rounded-full px-1.5 text-[10px] ${
-                filtro === s ? "bg-white/20" : "bg-muted-foreground/15"
-              }`}
-            >
-              {contagem(s)}
-            </span>
-          </button>
-        ))}
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTROS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterField>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
