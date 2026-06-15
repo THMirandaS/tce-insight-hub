@@ -102,10 +102,8 @@ function ConsolidacaoPage() {
     [processos, filtro]
   );
 
-  const contagem = (s: StatusFiltro) =>
-    s === "Todas"
-      ? processos.length
-      : processos.filter((p) => p.status === s).length;
+
+
 
   return (
     <main className="mx-auto max-w-[1600px] px-6 py-8">
