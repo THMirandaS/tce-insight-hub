@@ -25,14 +25,6 @@ export type Usuario = {
   email: string;
   perfil: Perfil;
   ativo: boolean;
-  // Titular de coordenação em férias (perde acesso de Coordenador).
-  emFerias?: boolean;
-  // Nome do substituto que cobre o titular em férias.
-  cobertoPor?: string;
-  // Substituto promovido a Coordenador temporário.
-  coordenadorTemporario?: boolean;
-  // Perfil original do substituto, restaurado na devolução.
-  perfilOriginal?: Perfil;
 };
 
 type AtribuicoesContextValue = {
