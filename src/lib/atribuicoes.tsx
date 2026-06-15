@@ -37,10 +37,14 @@ type AtribuicoesContextValue = {
   usuarios: Usuario[];
   addUsuario: (u: Omit<Usuario, "id">) => void;
   updateUsuario: (id: string, patch: Partial<Omit<Usuario, "id">>) => void;
-  // Coordenação: titular entra de férias e indica substituto; o substituto
-  // (coordenador temporário) devolve a coordenação revertendo ambos perfis.
-  entrarDeFerias: (titularId: string, substitutoId: string) => void;
-  devolverCoordenacao: (substitutoId: string) => void;
+  // Transferência de coordenação: o Coordenador atual passa a ter outro perfil
+  // (Executor/Revisor) e indica quem assumirá a coordenação. Mantém apenas
+  // 1 Coordenador ativo por vez.
+  transferirCoordenacao: (
+    coordenadorAtualId: string,
+    novoPerfilAtual: Perfil,
+    novoCoordenadorId: string
+  ) => void;
   // Atribuição de executor/revisor por processo.
   atribuicoes: Record<string, Atribuicao>;
   getAtribuicao: (id: string) => Atribuicao;
