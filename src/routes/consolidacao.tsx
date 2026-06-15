@@ -78,10 +78,7 @@ type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
   const { processos, consolidar } = useConsolidacao();
-  const { perfil } = useAtribuicoes();
   const { getRegistro } = useJurisdicionados();
-  const isCoordenador = perfil === "Coordenador";
-  const isExecutorOuRevisor = perfil === "Executor" || perfil === "Revisor";
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
