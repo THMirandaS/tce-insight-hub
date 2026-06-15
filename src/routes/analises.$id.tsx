@@ -1844,19 +1844,15 @@ function ConsidGeraisContent({
           value={texto}
           onChange={(e) => {
             if (readOnly) return;
-            setTexto(e.target.value.slice(0, MAX));
+            setTexto(e.target.value);
           }}
           readOnly={readOnly}
-          maxLength={MAX}
           rows={12}
           className={`block w-full resize-y overflow-y-auto rounded-md border border-border p-3 text-sm text-foreground shadow-inner outline-none focus:border-[#1A56DB] focus:ring-1 focus:ring-[#1A56DB] ${
             readOnly ? "cursor-not-allowed bg-[#F4F5F7]" : "bg-white"
           }`}
           placeholder="Digite aqui as considerações gerais do exercício atual..."
         />
-        <div className="flex justify-end text-xs text-muted-foreground">
-          {restantes.toLocaleString("pt-BR")} caracteres restantes
-        </div>
       </div>
 
       <div className="mt-4 flex items-start gap-2">
@@ -1873,8 +1869,7 @@ function ConsidGeraisContent({
             readOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer"
           }`}
         >
-          O texto complementar deverá constar no relatório de conclusão do
-          processo.
+          Compor relatório
         </label>
       </div>
 
