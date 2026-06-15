@@ -207,15 +207,11 @@ function FilterField({
 
 function LinhaConsolidacao({
   p,
-  isCoordenador,
-  isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   p: ProcessoConsolidacao;
-  isCoordenador: boolean;
-  isExecutorOuRevisor: boolean;
   confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
