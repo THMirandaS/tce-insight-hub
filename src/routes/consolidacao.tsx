@@ -370,7 +370,46 @@ function AcaoConsolidar({
   }
 
 
-  // Coordenador: confirma a classificação antes de gerar a análise.
+  // Regra de habilitação: só é possível consolidar/gerar quando os atributos
+  // do exercício estão CONFIRMADOS para aquele órgão/exercício.
+  if (!confirmado) {
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0}>
+              <Button
+                size="sm"
+                disabled
+                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
+              >
+                <Lock className="h-3.5 w-3.5" /> {label}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            Confirme a classificação do órgão para o exercício
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Status Erro: reprocessar não reabre o diálogo (atributos já confirmados) —
+  // dispara o reprocessamento diretamente, qualquer que seja o perfil.
+  if (status === "Erro") {
+    return (
+      <Button
+        size="sm"
+        onClick={onConsolidarDireto}
+        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+      >
+        {label}
+      </Button>
+    );
+  }
+
+  // Coordenador: confirma a classificação no diálogo antes de gerar a análise.
   if (isCoordenador) {
     return (
       <Button
@@ -383,39 +422,16 @@ function AcaoConsolidar({
     );
   }
 
-  // Executor/Revisor: só disparam se a classificação já foi confirmada.
+  // Executor/Revisor: disparam diretamente a consolidação.
   if (isExecutorOuRevisor) {
-    if (confirmado) {
-      return (
-        <Button
-          size="sm"
-          onClick={onConsolidarDireto}
-          className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-        >
-          {label}
-        </Button>
-      );
-    }
     return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Button
-                size="sm"
-                disabled
-                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
-              >
-                <Lock className="h-3.5 w-3.5" /> Consolidar
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            Depende da confirmação dos atributos do jurisdicionado pelo
-            Coordenador.
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        size="sm"
+        onClick={onConsolidarDireto}
+        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+      >
+        {label}
+      </Button>
     );
   }
 
