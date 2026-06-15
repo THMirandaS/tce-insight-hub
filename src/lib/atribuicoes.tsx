@@ -137,6 +137,45 @@ export function AtribuicoesProvider({ children }: { children: ReactNode }) {
         setUsuarios((prev) =>
           prev.map((x) => (x.id === id ? { ...x, ...patch } : x))
         ),
+      entrarDeFerias: (titularId, substitutoId) =>
+        setUsuarios((prev) =>
+          prev.map((u) => {
+            if (u.id === titularId) {
+              const sub = prev.find((x) => x.id === substitutoId);
+              return {
+                ...u,
+                emFerias: true,
+                cobertoPor: sub?.nome ?? "—",
+              };
+            }
+            if (u.id === substitutoId) {
+              return {
+                ...u,
+                perfilOriginal: u.perfil,
+                perfil: "Coordenador" as Perfil,
+                coordenadorTemporario: true,
+              };
+            }
+            return u;
+          })
+        ),
+      devolverCoordenacao: (substitutoId) =>
+        setUsuarios((prev) =>
+          prev.map((u) => {
+            if (u.id === substitutoId) {
+              return {
+                ...u,
+                perfil: (u.perfilOriginal ?? "Executor") as Perfil,
+                perfilOriginal: undefined,
+                coordenadorTemporario: false,
+              };
+            }
+            if (u.emFerias) {
+              return { ...u, emFerias: false, cobertoPor: undefined };
+            }
+            return u;
+          })
+        ),
       atribuicoes,
       getAtribuicao: (id) => atribuicoes[id] ?? VAZIO,
       setAtribuicao: (id, next) =>
