@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
 import { ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Poder } from "@/lib/pce-data";
 
