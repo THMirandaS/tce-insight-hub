@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Users, Ban, Plane, Undo2, Crown } from "lucide-react";
+import { Users, Ban, Crown, ArrowLeftRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -18,33 +18,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAtribuicoes, type Usuario } from "@/lib/atribuicoes";
+import {
+  useAtribuicoes,
+  type Perfil,
+  type Usuario,
+} from "@/lib/atribuicoes";
 
 export const Route = createFileRoute("/usuarios")({
   component: UsuariosPage,
 });
 
 function UsuariosPage() {
-  const {
-    usuarios,
-    usuarioAtivoId,
-    entrarDeFerias,
-    devolverCoordenacao,
-  } = useAtribuicoes();
-  const [feriasDe, setFeriasDe] = useState<Usuario | null>(null);
-  const [substitutoId, setSubstitutoId] = useState<string>("");
+  const { usuarios, usuarioAtivoId, updateUsuario, transferirCoordenacao } =
+    useAtribuicoes();
+
+  // Etapa do fluxo de transferência: null | "form" | "confirm".
+  const [etapa, setEtapa] = useState<null | "form" | "confirm">(null);
+  const [novoPerfilAtual, setNovoPerfilAtual] = useState<Perfil | "">("");
+  const [novoCoordenadorId, setNovoCoordenadorId] = useState<string>("");
 
   // Usuário logado.
   const ativo = usuarios.find((u) => u.id === usuarioAtivoId) ?? null;
-  // Coordenador efetivo = perfil Coordenador e não está de férias.
+  // Coordenador efetivo (único).
   const coordenadorAtual =
-    usuarios.find((u) => u.perfil === "Coordenador" && !u.emFerias) ?? null;
+    usuarios.find((u) => u.perfil === "Coordenador") ?? null;
 
-  // Acesso restrito ao Coordenador efetivo (inclui o temporário).
-  const temAcesso =
-    !!ativo && ativo.perfil === "Coordenador" && !ativo.emFerias;
+  // Acesso restrito ao Coordenador.
+  const temAcesso = !!ativo && ativo.perfil === "Coordenador";
 
-  // Candidatos a substituto: Executor ou Revisor (perfil de trabalho atual).
+  // Candidatos a novo Coordenador: Executor ou Revisor.
   const candidatos = useMemo(
     () =>
       usuarios.filter(
@@ -61,18 +63,47 @@ function UsuariosPage() {
           Acesso restrito
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          A gestão de usuários está disponível apenas para o Coordenador
-          (incluindo o coordenador temporário).
+          A gestão de usuários está disponível apenas para o Coordenador.
         </p>
       </main>
     );
   }
 
-  const confirmarFerias = () => {
-    if (!feriasDe || !substitutoId) return;
-    entrarDeFerias(feriasDe.id, substitutoId);
-    setFeriasDe(null);
-    setSubstitutoId("");
+  const abrirTransferencia = (preCoordenadorId?: string) => {
+    setNovoPerfilAtual("");
+    setNovoCoordenadorId(preCoordenadorId ?? "");
+    setEtapa("form");
+  };
+
+  const fecharTransferencia = () => {
+    setEtapa(null);
+    setNovoPerfilAtual("");
+    setNovoCoordenadorId("");
+  };
+
+  const efetivarTransferencia = () => {
+    if (!coordenadorAtual || !novoPerfilAtual || !novoCoordenadorId) return;
+    transferirCoordenacao(
+      coordenadorAtual.id,
+      novoPerfilAtual,
+      novoCoordenadorId
+    );
+    fecharTransferencia();
+  };
+
+  const novoCoordenador =
+    usuarios.find((u) => u.id === novoCoordenadorId) ?? null;
+
+  // Edição inline do perfil por linha. Tentar setar Coordenador em outro
+  // usuário NÃO cria um segundo Coordenador: direciona para o fluxo de
+  // transferência de coordenação.
+  const onPerfilChange = (u: Usuario, next: Perfil) => {
+    if (next === u.perfil) return;
+    if (next === "Coordenador") {
+      abrirTransferencia(u.id);
+      return;
+    }
+    updateUsuario(u.id, { perfil: next });
   };
 
   return (
@@ -89,17 +120,22 @@ function UsuariosPage() {
         </div>
       </div>
 
-      <div className="mb-4 flex items-center gap-2 rounded-md border border-[#1A56DB]/20 bg-[#1A56DB]/5 px-4 py-2.5 text-sm">
-        <Crown className="h-4 w-4 text-[#1A56DB]" />
-        <span className="text-foreground">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#1A56DB]/20 bg-[#1A56DB]/5 px-4 py-2.5 text-sm">
+        <span className="flex items-center gap-2 text-foreground">
+          <Crown className="h-4 w-4 text-[#1A56DB]" />
           Coordenador atual:{" "}
           <strong className="font-semibold">
             {coordenadorAtual?.nome ?? "—"}
           </strong>
-          {coordenadorAtual?.coordenadorTemporario && (
-            <span className="ml-1 text-muted-foreground">(temporário)</span>
-          )}
         </span>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={() => abrirTransferencia()}
+        >
+          <ArrowLeftRight className="h-4 w-4" /> Transferir coordenação
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -122,32 +158,18 @@ function UsuariosPage() {
                     {u.nome}
                   </td>
                   <td className="px-3 py-2.5">
-                    <PerfilCell u={u} />
+                    <PerfilCell u={u} onChange={onPerfilChange} />
                   </td>
                   <td className="px-3 py-2.5">
-                    {u.perfil === "Coordenador" &&
-                      !u.emFerias &&
-                      !u.coordenadorTemporario && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1.5"
-                          onClick={() => {
-                            setFeriasDe(u);
-                            setSubstitutoId("");
-                          }}
-                        >
-                          <Plane className="h-4 w-4" /> Entrar de férias
-                        </Button>
-                      )}
-                    {u.coordenadorTemporario && (
+                    {u.perfil === "Coordenador" && (
                       <Button
                         size="sm"
                         variant="outline"
                         className="gap-1.5"
-                        onClick={() => devolverCoordenacao(u.id)}
+                        onClick={() => abrirTransferencia()}
                       >
-                        <Undo2 className="h-4 w-4" /> Devolver coordenação
+                        <ArrowLeftRight className="h-4 w-4" /> Transferir
+                        coordenação
                       </Button>
                     )}
                   </td>
@@ -158,54 +180,95 @@ function UsuariosPage() {
         </div>
       </div>
 
+      {/* Modal 1 — formulário de transferência */}
       <Dialog
-        open={feriasDe !== null}
+        open={etapa === "form"}
         onOpenChange={(open) => {
-          if (!open) {
-            setFeriasDe(null);
-            setSubstitutoId("");
-          }
+          if (!open) fecharTransferencia();
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Entrar de férias</DialogTitle>
+            <DialogTitle>Transferir coordenação</DialogTitle>
             <DialogDescription>
-              Escolha um substituto (Executor ou Revisor) que assumirá como
-              Coordenador temporário. A promoção é interna ao sistema e não
-              altera o AD.
+              Você deixará de ser Coordenador. Escolha o perfil que passará a
+              ter e quem assumirá a coordenação. Apenas 1 Coordenador ativo por
+              vez.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-2 py-2">
-            <Label>Substituto</Label>
-            <Select value={substitutoId} onValueChange={setSubstitutoId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um substituto" />
-              </SelectTrigger>
-              <SelectContent>
-                {candidatos.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nome} — {c.perfil}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Meu novo perfil</Label>
+              <Select
+                value={novoPerfilAtual}
+                onValueChange={(v) => setNovoPerfilAtual(v as Perfil)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione seu novo perfil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Executor">Executor</SelectItem>
+                  <SelectItem value="Revisor">Revisor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Novo Coordenador</Label>
+              <Select
+                value={novoCoordenadorId}
+                onValueChange={setNovoCoordenadorId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o novo Coordenador" />
+                </SelectTrigger>
+                <SelectContent>
+                  {candidatos.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.nome} — {c.perfil}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setFeriasDe(null);
-                setSubstitutoId("");
-              }}
-            >
+            <Button variant="outline" onClick={fecharTransferencia}>
               Cancelar
             </Button>
-            <Button onClick={confirmarFerias} disabled={!substitutoId}>
+            <Button
+              onClick={() => setEtapa("confirm")}
+              disabled={!novoPerfilAtual || !novoCoordenadorId}
+            >
               Confirmar
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 2 — confirmação final */}
+      <Dialog
+        open={etapa === "confirm"}
+        onOpenChange={(open) => {
+          if (!open) setEtapa("form");
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar transferência</DialogTitle>
+            <DialogDescription>
+              Você deixará de ser Coordenador e passará a {novoPerfilAtual}.{" "}
+              {novoCoordenador?.nome ?? "—"} assumirá como Coordenador. Deseja
+              confirmar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEtapa("form")}>
+              Cancelar
+            </Button>
+            <Button onClick={efetivarTransferencia}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -213,22 +276,27 @@ function UsuariosPage() {
   );
 }
 
-function PerfilCell({ u }: { u: Usuario }) {
-  if (u.emFerias) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-        Em férias — coberto por {u.cobertoPor ?? "—"}
-      </span>
-    );
-  }
-  if (u.coordenadorTemporario) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-[#1A56DB]/10 px-2.5 py-0.5 text-xs font-medium text-[#1A56DB]">
-        Coordenador (temporário)
-      </span>
-    );
-  }
-  return <span className="text-foreground">{u.perfil}</span>;
+function PerfilCell({
+  u,
+  onChange,
+}: {
+  u: Usuario;
+  onChange: (u: Usuario, next: Perfil) => void;
+}) {
+  return (
+    <Select value={u.perfil} onValueChange={(v) => onChange(u, v as Perfil)}>
+      <SelectTrigger className="h-8 w-[150px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="Coordenador" disabled={u.perfil !== "Coordenador"}>
+          Coordenador
+        </SelectItem>
+        <SelectItem value="Executor">Executor</SelectItem>
+        <SelectItem value="Revisor">Revisor</SelectItem>
+      </SelectContent>
+    </Select>
+  );
 }
 
 function Th({ children }: { children: React.ReactNode }) {

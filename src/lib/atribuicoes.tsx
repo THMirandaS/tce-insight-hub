@@ -25,14 +25,6 @@ export type Usuario = {
   email: string;
   perfil: Perfil;
   ativo: boolean;
-  // Titular de coordenação em férias (perde acesso de Coordenador).
-  emFerias?: boolean;
-  // Nome do substituto que cobre o titular em férias.
-  cobertoPor?: string;
-  // Substituto promovido a Coordenador temporário.
-  coordenadorTemporario?: boolean;
-  // Perfil original do substituto, restaurado na devolução.
-  perfilOriginal?: Perfil;
 };
 
 type AtribuicoesContextValue = {
@@ -45,10 +37,14 @@ type AtribuicoesContextValue = {
   usuarios: Usuario[];
   addUsuario: (u: Omit<Usuario, "id">) => void;
   updateUsuario: (id: string, patch: Partial<Omit<Usuario, "id">>) => void;
-  // Coordenação: titular entra de férias e indica substituto; o substituto
-  // (coordenador temporário) devolve a coordenação revertendo ambos perfis.
-  entrarDeFerias: (titularId: string, substitutoId: string) => void;
-  devolverCoordenacao: (substitutoId: string) => void;
+  // Transferência de coordenação: o Coordenador atual passa a ter outro perfil
+  // (Executor/Revisor) e indica quem assumirá a coordenação. Mantém apenas
+  // 1 Coordenador ativo por vez.
+  transferirCoordenacao: (
+    coordenadorAtualId: string,
+    novoPerfilAtual: Perfil,
+    novoCoordenadorId: string
+  ) => void;
   // Atribuição de executor/revisor por processo.
   atribuicoes: Record<string, Atribuicao>;
   getAtribuicao: (id: string) => Atribuicao;
@@ -137,41 +133,18 @@ export function AtribuicoesProvider({ children }: { children: ReactNode }) {
         setUsuarios((prev) =>
           prev.map((x) => (x.id === id ? { ...x, ...patch } : x))
         ),
-      entrarDeFerias: (titularId, substitutoId) =>
+      transferirCoordenacao: (
+        coordenadorAtualId,
+        novoPerfilAtual,
+        novoCoordenadorId
+      ) =>
         setUsuarios((prev) =>
           prev.map((u) => {
-            if (u.id === titularId) {
-              const sub = prev.find((x) => x.id === substitutoId);
-              return {
-                ...u,
-                emFerias: true,
-                cobertoPor: sub?.nome ?? "—",
-              };
+            if (u.id === coordenadorAtualId) {
+              return { ...u, perfil: novoPerfilAtual };
             }
-            if (u.id === substitutoId) {
-              return {
-                ...u,
-                perfilOriginal: u.perfil,
-                perfil: "Coordenador" as Perfil,
-                coordenadorTemporario: true,
-              };
-            }
-            return u;
-          })
-        ),
-      devolverCoordenacao: (substitutoId) =>
-        setUsuarios((prev) =>
-          prev.map((u) => {
-            if (u.id === substitutoId) {
-              return {
-                ...u,
-                perfil: (u.perfilOriginal ?? "Executor") as Perfil,
-                perfilOriginal: undefined,
-                coordenadorTemporario: false,
-              };
-            }
-            if (u.emFerias) {
-              return { ...u, emFerias: false, cobertoPor: undefined };
+            if (u.id === novoCoordenadorId) {
+              return { ...u, perfil: "Coordenador" as Perfil };
             }
             return u;
           })
