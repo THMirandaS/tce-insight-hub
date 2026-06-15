@@ -229,7 +229,6 @@ type Filters = {
   revisor: string;
   relator: string;
   situacao: string;
-  tipo: string;
   tipoAnalise: string;
 };
 
@@ -241,7 +240,6 @@ const EMPTY_FILTERS: Filters = {
   revisor: "all",
   relator: "all",
   situacao: "all",
-  tipo: "all",
   tipoAnalise: "all",
 };
 
@@ -319,7 +317,6 @@ function ProcessosPage() {
       if (f.revisor !== "all" && getAtribuicao(r.id).revisor !== f.revisor) return false;
       if (f.relator !== "all" && r.relator !== f.relator) return false;
       if (f.situacao !== "all" && r.situacao !== f.situacao) return false;
-      if (f.tipo !== "all" && r.tipo !== f.tipo) return false;
       if (f.tipoAnalise !== "all" && r.tipoAnalise !== f.tipoAnalise) return false;
       return true;
     });
@@ -385,7 +382,7 @@ function ProcessosPage() {
   const podeNovaDefesaRow = (r: Row) => {
     if (perfil !== "Coordenador") return false;
     if (r.tipoAnalise !== "Análise Inicial") return false;
-    if (!concluida(r.situacao)) return false;
+    if (r.situacao !== "Validado") return false;
     const defesas = defesasDoProcesso(r.numero).map(
       (d) => base.find((b) => b.id === d.id) ?? d
     );
@@ -583,14 +580,6 @@ function ProcessosPage() {
               value={draft.situacao}
               onValueChange={(v) => set("situacao", v)}
               options={[...SITUACOES]}
-            />
-          </FilterField>
-
-          <FilterField label="Modalidade">
-            <SimpleSelect
-              value={draft.tipo}
-              onValueChange={(v) => set("tipo", v)}
-              options={TIPOS}
             />
           </FilterField>
 
