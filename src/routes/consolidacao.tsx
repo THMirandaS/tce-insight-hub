@@ -5,7 +5,6 @@ import {
   Loader2,
   RefreshCcw,
   Layers,
-  Lock,
   CheckCircle2,
   Eye,
 } from "lucide-react";
@@ -29,13 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import {
   GRUPOS_ENTIDADE,
