@@ -199,12 +199,10 @@ function FilterField({
 
 function LinhaConsolidacao({
   p,
-  confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   p: ProcessoConsolidacao;
-  confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
 }) {
