@@ -5,7 +5,6 @@ import {
   Loader2,
   RefreshCcw,
   Layers,
-  Lock,
   CheckCircle2,
   Eye,
 } from "lucide-react";
@@ -29,13 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useAtribuicoes } from "@/lib/atribuicoes";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
 import {
   GRUPOS_ENTIDADE,
@@ -78,10 +70,7 @@ type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
   const { processos, consolidar } = useConsolidacao();
-  const { perfil } = useAtribuicoes();
   const { getRegistro } = useJurisdicionados();
-  const isCoordenador = perfil === "Coordenador";
-  const isExecutorOuRevisor = perfil === "Executor" || perfil === "Revisor";
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
@@ -153,8 +142,6 @@ function ConsolidacaoPage() {
                 <LinhaConsolidacao
                   key={p.numero}
                   p={p}
-                  isCoordenador={isCoordenador}
-                  isExecutorOuRevisor={isExecutorOuRevisor}
                   confirmado={atributosConfirmados(p.orgao, p.exercicio)}
                   onAbrirConfirmacao={() => setAlvo(p)}
                   onConsolidarDireto={() => consolidar(p.numero)}
@@ -212,15 +199,11 @@ function FilterField({
 
 function LinhaConsolidacao({
   p,
-  isCoordenador,
-  isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
 }: {
   p: ProcessoConsolidacao;
-  isCoordenador: boolean;
-  isExecutorOuRevisor: boolean;
   confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
@@ -247,20 +230,9 @@ function LinhaConsolidacao({
         {p.dataAutuacao}
       </td>
       <td className="px-3 py-2.5">
-        <div className="flex flex-col gap-1">
-          <Badge variant="secondary" className="w-fit">
-            {GRUPO_ABREVIADO[attrs.grupoEntidade]}
-          </Badge>
-          {confirmado ? (
-            <span className="text-[11px] text-green-700">
-              Atributos confirmados
-            </span>
-          ) : (
-            <span className="text-[11px] text-amber-700">
-              Aguardando confirmação
-            </span>
-          )}
-        </div>
+        <Badge variant="secondary" className="w-fit">
+          {GRUPO_ABREVIADO[attrs.grupoEntidade]}
+        </Badge>
       </td>
       <td className="px-3 py-2.5">
         {processando ? (
@@ -295,8 +267,6 @@ function LinhaConsolidacao({
           status={p.status}
           processando={processando}
           analiseId={p.analiseId}
-          isCoordenador={isCoordenador}
-          isExecutorOuRevisor={isExecutorOuRevisor}
           confirmado={confirmado}
           onAbrirConfirmacao={onAbrirConfirmacao}
           onConsolidarDireto={onConsolidarDireto}
@@ -311,8 +281,6 @@ function AcaoConsolidar({
   status,
   processando,
   analiseId,
-  isCoordenador,
-  isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
@@ -320,8 +288,6 @@ function AcaoConsolidar({
   status: ConsolStatus;
   processando: boolean;
   analiseId?: string;
-  isCoordenador: boolean;
-  isExecutorOuRevisor: boolean;
   confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
@@ -370,72 +336,22 @@ function AcaoConsolidar({
   }
 
 
-  // Regra de habilitação: só é possível consolidar/gerar quando os atributos
-  // do exercício estão CONFIRMADOS para aquele órgão/exercício.
-  if (!confirmado) {
-    return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Button
-                size="sm"
-                disabled
-                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
-              >
-                <Lock className="h-3.5 w-3.5" /> {label}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            Confirme a classificação do órgão para o exercício
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+  // O botão Consolidar NUNCA fica bloqueado. Ao clicar:
+  // - Status Erro: dispara o reprocessamento direto (atributos já confirmados).
+  // - Atributos já confirmados: dispara a consolidação direto.
+  // - Atributos ainda não confirmados: abre o diálogo de confirmação.
+  const handleClick =
+    status === "Erro" || confirmado ? onConsolidarDireto : onAbrirConfirmacao;
 
-  // Status Erro: reprocessar não reabre o diálogo (atributos já confirmados) —
-  // dispara o reprocessamento diretamente, qualquer que seja o perfil.
-  if (status === "Erro") {
-    return (
-      <Button
-        size="sm"
-        onClick={onConsolidarDireto}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  // Coordenador: confirma a classificação no diálogo antes de gerar a análise.
-  if (isCoordenador) {
-    return (
-      <Button
-        size="sm"
-        onClick={onAbrirConfirmacao}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  // Executor/Revisor: disparam diretamente a consolidação.
-  if (isExecutorOuRevisor) {
-    return (
-      <Button
-        size="sm"
-        onClick={onConsolidarDireto}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  return <span className="text-muted-foreground">—</span>;
+  return (
+    <Button
+      size="sm"
+      onClick={handleClick}
+      className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+    >
+      {label}
+    </Button>
+  );
 }
 
 // Passo de confirmação dos atributos do jurisdicionado para o ANO DE
