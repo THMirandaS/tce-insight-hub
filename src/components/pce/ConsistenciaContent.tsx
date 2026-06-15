@@ -38,7 +38,7 @@ type SubAba = {
 };
 
 // Mocks na casa de milhões, formato brasileiro.
-// Sub-abas 1, 3, 4, 5, 7 e 8 conformes (diferença zero); sub-aba 2 e 6 não conformes.
+// Maioria conforme; apenas "Caixa – Valores a receber" é não conforme (para teste).
 const SUB_ABAS: SubAba[] = [
   {
     key: "rpnp",
