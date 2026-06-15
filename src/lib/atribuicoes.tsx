@@ -25,6 +25,14 @@ export type Usuario = {
   email: string;
   perfil: Perfil;
   ativo: boolean;
+  // Titular de coordenação em férias (perde acesso de Coordenador).
+  emFerias?: boolean;
+  // Nome do substituto que cobre o titular em férias.
+  cobertoPor?: string;
+  // Substituto promovido a Coordenador temporário.
+  coordenadorTemporario?: boolean;
+  // Perfil original do substituto, restaurado na devolução.
+  perfilOriginal?: Perfil;
 };
 
 type AtribuicoesContextValue = {
@@ -37,6 +45,10 @@ type AtribuicoesContextValue = {
   usuarios: Usuario[];
   addUsuario: (u: Omit<Usuario, "id">) => void;
   updateUsuario: (id: string, patch: Partial<Omit<Usuario, "id">>) => void;
+  // Coordenação: titular entra de férias e indica substituto; o substituto
+  // (coordenador temporário) devolve a coordenação revertendo ambos perfis.
+  entrarDeFerias: (titularId: string, substitutoId: string) => void;
+  devolverCoordenacao: (substitutoId: string) => void;
   // Atribuição de executor/revisor por processo.
   atribuicoes: Record<string, Atribuicao>;
   getAtribuicao: (id: string) => Atribuicao;
@@ -74,7 +86,7 @@ function emailDe(nome: string): string {
 }
 
 // Cadastro inicial (mock): um Coordenador + a lista de analistas distribuída
-// entre Executor e Revisor. Inclui 1 usuário inativo.
+// entre Executor e Revisor. Todos vêm ativos (como se viessem do AD).
 function buildUsuarios(): Usuario[] {
   const lista: Usuario[] = [
     {
@@ -91,7 +103,7 @@ function buildUsuarios(): Usuario[] {
       nome,
       email: emailDe(nome),
       perfil: i % 2 === 0 ? "Executor" : "Revisor",
-      ativo: i !== AUDITORES.length - 1, // último entra inativo
+      ativo: true,
     });
   });
   return lista;
@@ -124,6 +136,45 @@ export function AtribuicoesProvider({ children }: { children: ReactNode }) {
       updateUsuario: (id, patch) =>
         setUsuarios((prev) =>
           prev.map((x) => (x.id === id ? { ...x, ...patch } : x))
+        ),
+      entrarDeFerias: (titularId, substitutoId) =>
+        setUsuarios((prev) =>
+          prev.map((u) => {
+            if (u.id === titularId) {
+              const sub = prev.find((x) => x.id === substitutoId);
+              return {
+                ...u,
+                emFerias: true,
+                cobertoPor: sub?.nome ?? "—",
+              };
+            }
+            if (u.id === substitutoId) {
+              return {
+                ...u,
+                perfilOriginal: u.perfil,
+                perfil: "Coordenador" as Perfil,
+                coordenadorTemporario: true,
+              };
+            }
+            return u;
+          })
+        ),
+      devolverCoordenacao: (substitutoId) =>
+        setUsuarios((prev) =>
+          prev.map((u) => {
+            if (u.id === substitutoId) {
+              return {
+                ...u,
+                perfil: (u.perfilOriginal ?? "Executor") as Perfil,
+                perfilOriginal: undefined,
+                coordenadorTemporario: false,
+              };
+            }
+            if (u.emFerias) {
+              return { ...u, emFerias: false, cobertoPor: undefined };
+            }
+            return u;
+          })
         ),
       atribuicoes,
       getAtribuicao: (id) => atribuicoes[id] ?? VAZIO,
