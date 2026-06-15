@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
 import { Button } from "@/components/ui/button";
 import { History, Plus, Trash2, ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
 
