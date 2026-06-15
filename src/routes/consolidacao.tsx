@@ -267,7 +267,6 @@ function LinhaConsolidacao({
           status={p.status}
           processando={processando}
           analiseId={p.analiseId}
-          confirmado={confirmado}
           onAbrirConfirmacao={onAbrirConfirmacao}
           onConsolidarDireto={onConsolidarDireto}
         />
