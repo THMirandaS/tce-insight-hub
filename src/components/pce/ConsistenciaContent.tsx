@@ -66,11 +66,11 @@ const SUB_ABAS: SubAba[] = [
       {
         letra: "d",
         descricao: "Inscrição restos a pagar processados (balanço financeiro)",
-        valor: 48_000_000,
+        valor: 50_000_000,
       },
     ],
-    naoConforme: true,
-    rodape: { descricao: "Diferença (c - d)", valor: 2_000_000 },
+    naoConforme: false,
+    rodape: { descricao: "Diferença (c - d)", valor: 0 },
   },
   {
     key: "receita",
