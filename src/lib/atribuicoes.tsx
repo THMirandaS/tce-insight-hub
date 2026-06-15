@@ -86,7 +86,7 @@ function emailDe(nome: string): string {
 }
 
 // Cadastro inicial (mock): um Coordenador + a lista de analistas distribuída
-// entre Executor e Revisor. Inclui 1 usuário inativo.
+// entre Executor e Revisor. Todos vêm ativos (como se viessem do AD).
 function buildUsuarios(): Usuario[] {
   const lista: Usuario[] = [
     {
@@ -103,7 +103,7 @@ function buildUsuarios(): Usuario[] {
       nome,
       email: emailDe(nome),
       perfil: i % 2 === 0 ? "Executor" : "Revisor",
-      ativo: i !== AUDITORES.length - 1, // último entra inativo
+      ativo: true,
     });
   });
   return lista;
