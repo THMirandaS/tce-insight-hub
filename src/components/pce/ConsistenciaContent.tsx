@@ -270,7 +270,7 @@ function SubAbaPainel({ subAba }: { subAba: SubAba }) {
         />
       )}
 
-      <ConsideracoesAdicionais idSuffix={subAba.key} />
+      <ConsideracoesAdicionais printTitle={`Considerações adicionais — ${subAba.label}`} />
     </>
   );
 }
