@@ -359,72 +359,22 @@ function AcaoConsolidar({
   }
 
 
-  // Regra de habilitação: só é possível consolidar/gerar quando os atributos
-  // do exercício estão CONFIRMADOS para aquele órgão/exercício.
-  if (!confirmado) {
-    return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Button
-                size="sm"
-                disabled
-                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
-              >
-                <Lock className="h-3.5 w-3.5" /> {label}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            Confirme a classificação do órgão para o exercício
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+  // O botão Consolidar NUNCA fica bloqueado. Ao clicar:
+  // - Status Erro: dispara o reprocessamento direto (atributos já confirmados).
+  // - Atributos já confirmados: dispara a consolidação direto.
+  // - Atributos ainda não confirmados: abre o diálogo de confirmação.
+  const handleClick =
+    status === "Erro" || confirmado ? onConsolidarDireto : onAbrirConfirmacao;
 
-  // Status Erro: reprocessar não reabre o diálogo (atributos já confirmados) —
-  // dispara o reprocessamento diretamente, qualquer que seja o perfil.
-  if (status === "Erro") {
-    return (
-      <Button
-        size="sm"
-        onClick={onConsolidarDireto}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  // Coordenador: confirma a classificação no diálogo antes de gerar a análise.
-  if (isCoordenador) {
-    return (
-      <Button
-        size="sm"
-        onClick={onAbrirConfirmacao}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  // Executor/Revisor: disparam diretamente a consolidação.
-  if (isExecutorOuRevisor) {
-    return (
-      <Button
-        size="sm"
-        onClick={onConsolidarDireto}
-        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-      >
-        {label}
-      </Button>
-    );
-  }
-
-  return <span className="text-muted-foreground">—</span>;
+  return (
+    <Button
+      size="sm"
+      onClick={handleClick}
+      className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+    >
+      {label}
+    </Button>
+  );
 }
 
 // Passo de confirmação dos atributos do jurisdicionado para o ANO DE
