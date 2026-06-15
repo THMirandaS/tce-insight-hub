@@ -76,12 +76,7 @@ function ConsolidacaoPage() {
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
   const [filtro, setFiltro] = useState<StatusFiltro>("Todas");
 
-  // Atributos do exercício estão confirmados quando há registro explícito e
-  // ele não está pendente de confirmação.
-  const atributosConfirmados = (orgao: string, ano: string) => {
-    const reg = getRegistro(orgao, ano);
-    return !!reg && !reg.pendente;
-  };
+
 
   const visiveis = useMemo(
     () =>
