@@ -360,6 +360,28 @@ function AnaliseDetalhePage() {
       el.setAttribute("data-state", src.getAttribute("data-state") ?? "unchecked");
     });
 
+    // Considerações adicionais — só entram no PDF quando "Compor relatório"
+    // estiver marcado; caso contrário, o bloco inteiro é removido do PDF.
+    clone.querySelectorAll<HTMLElement>("[data-consid]").forEach((el) => {
+      const compor = el.getAttribute("data-consid-compor") === "true";
+      const text = el.getAttribute("data-consid-text") ?? "";
+      const title =
+        el.getAttribute("data-consid-title") ?? "Considerações adicionais";
+      if (!compor || !text.trim()) {
+        el.remove();
+        return;
+      }
+      el.removeAttribute("class");
+      el.style.marginTop = "24px";
+      el.innerHTML =
+        `<h3 style="font-size:13px;font-weight:700;margin:0 0 6px;color:#0D1B2A;">${escapeHTML(
+          title,
+        )}</h3>` +
+        `<p style="font-size:12px;line-height:1.5;margin:0;white-space:pre-wrap;">${escapeHTML(
+          text,
+        )}</p>`;
+    });
+
     // RF23 — em análise de defesa, o PDF inclui o conteúdo original (leitura)
     // seguido dos dois textos da aba Defesa, identificados com seus títulos.
     let defesaBlockHTML = "";
