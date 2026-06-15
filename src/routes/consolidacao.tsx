@@ -70,7 +70,6 @@ type StatusFiltro = (typeof STATUS_FILTROS)[number];
 
 function ConsolidacaoPage() {
   const { processos, consolidar } = useConsolidacao();
-  const { getRegistro } = useJurisdicionados();
 
   // Alvo do diálogo de confirmação dos atributos (apenas Coordenador).
   const [alvo, setAlvo] = useState<ProcessoConsolidacao | null>(null);
