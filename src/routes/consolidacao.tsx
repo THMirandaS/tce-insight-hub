@@ -102,46 +102,33 @@ function ConsolidacaoPage() {
     [processos, filtro]
   );
 
-  const contagem = (s: StatusFiltro) =>
-    s === "Todas"
-      ? processos.length
-      : processos.filter((p) => p.status === s).length;
+
+
 
   return (
     <main className="mx-auto max-w-[1600px] px-6 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Consolidação</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Processos recebidos do SGAP aguardando consolidação dos dados. Antes
-          de gerar a análise, o Coordenador confirma a classificação do
-          jurisdicionado para o exercício de referência — ela define quais
-          tópicos a análise terá. Após concluída, a análise inicial passa a
-          aparecer em Análises com a situação "Não Iniciado".
-        </p>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {STATUS_FILTROS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setFiltro(s)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              filtro === s
-                ? "border-[#1A56DB] bg-[#1A56DB] text-white"
-                : "border-border bg-card text-muted-foreground hover:bg-muted"
-            }`}
+      <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:max-w-xs">
+        <FilterField label="Status da Consolidação">
+          <Select
+            value={filtro}
+            onValueChange={(v) => setFiltro(v as StatusFiltro)}
           >
-            {s}
-            <span
-              className={`rounded-full px-1.5 text-[10px] ${
-                filtro === s ? "bg-white/20" : "bg-muted-foreground/15"
-              }`}
-            >
-              {contagem(s)}
-            </span>
-          </button>
-        ))}
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTROS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterField>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -203,6 +190,23 @@ function Th({ children }: { children: React.ReactNode }) {
     <th className="whitespace-nowrap px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">
       {children}
     </th>
+  );
+}
+
+function FilterField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
+      {children}
+    </div>
   );
 }
 
@@ -366,7 +370,46 @@ function AcaoConsolidar({
   }
 
 
-  // Coordenador: confirma a classificação antes de gerar a análise.
+  // Regra de habilitação: só é possível consolidar/gerar quando os atributos
+  // do exercício estão CONFIRMADOS para aquele órgão/exercício.
+  if (!confirmado) {
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0}>
+              <Button
+                size="sm"
+                disabled
+                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
+              >
+                <Lock className="h-3.5 w-3.5" /> {label}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            Confirme a classificação do órgão para o exercício
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Status Erro: reprocessar não reabre o diálogo (atributos já confirmados) —
+  // dispara o reprocessamento diretamente, qualquer que seja o perfil.
+  if (status === "Erro") {
+    return (
+      <Button
+        size="sm"
+        onClick={onConsolidarDireto}
+        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+      >
+        {label}
+      </Button>
+    );
+  }
+
+  // Coordenador: confirma a classificação no diálogo antes de gerar a análise.
   if (isCoordenador) {
     return (
       <Button
@@ -379,39 +422,16 @@ function AcaoConsolidar({
     );
   }
 
-  // Executor/Revisor: só disparam se a classificação já foi confirmada.
+  // Executor/Revisor: disparam diretamente a consolidação.
   if (isExecutorOuRevisor) {
-    if (confirmado) {
-      return (
-        <Button
-          size="sm"
-          onClick={onConsolidarDireto}
-          className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
-        >
-          {label}
-        </Button>
-      );
-    }
     return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Button
-                size="sm"
-                disabled
-                className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white disabled:opacity-40"
-              >
-                <Lock className="h-3.5 w-3.5" /> Consolidar
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            Depende da confirmação dos atributos do jurisdicionado pelo
-            Coordenador.
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        size="sm"
+        onClick={onConsolidarDireto}
+        className="h-8 gap-1.5 bg-[#1A56DB] px-3 text-xs text-white hover:bg-[#1A56DB]/90"
+      >
+        {label}
+      </Button>
     );
   }
 
