@@ -2246,33 +2246,9 @@ function ReceitasContent({
         <ResumoIA texto={RECEITAS_RESUMO_IA} processo={processo} orgao={orgao} />
       </div>
 
-      {/* Editor */}
-      <div className="mt-6 space-y-2">
-        <Label className="text-sm font-semibold">
-          AQUI EDITOR DE TEXTO COM ATÉ 4 MIL CARACTERES
-        </Label>
-        <textarea
-          value={texto}
-          readOnly={readOnly}
-          maxLength={RECEITAS_MAX_TEXTO}
-          onChange={(e) => setTexto(e.target.value)}
-          className="min-h-[180px] w-full rounded-md border border-border bg-white p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30"
-        />
-        <p className="text-right text-xs text-muted-foreground">
-          {restantes.toLocaleString("pt-BR")} caracteres restantes
-        </p>
-        <label className="flex items-start gap-2 text-sm text-foreground">
-          <Checkbox
-            checked={incluir}
-            onCheckedChange={(v) => setIncluir(Boolean(v))}
-            disabled={readOnly}
-          />
-          <span>
-            O texto complementar deverá constar no relatório de conclusão do
-            processo.
-          </span>
-        </label>
-      </div>
+      {/* Considerações adicionais */}
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Receitas" />
+
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
