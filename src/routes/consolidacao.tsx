@@ -289,8 +289,6 @@ function AcaoConsolidar({
   status,
   processando,
   analiseId,
-  isCoordenador,
-  isExecutorOuRevisor,
   confirmado,
   onAbrirConfirmacao,
   onConsolidarDireto,
@@ -298,8 +296,6 @@ function AcaoConsolidar({
   status: ConsolStatus;
   processando: boolean;
   analiseId?: string;
-  isCoordenador: boolean;
-  isExecutorOuRevisor: boolean;
   confirmado: boolean;
   onAbrirConfirmacao: () => void;
   onConsolidarDireto: () => void;
