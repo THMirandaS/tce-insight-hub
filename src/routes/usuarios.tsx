@@ -57,6 +57,14 @@ function UsuariosPage() {
     [usuarios]
   );
 
+  const usuariosFiltrados = useMemo(
+    () =>
+      usuarios.filter((u) =>
+        u.nome.toLowerCase().includes(busca.trim().toLowerCase())
+      ),
+    [usuarios, busca]
+  );
+
   if (!temAcesso) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-16 text-center">
