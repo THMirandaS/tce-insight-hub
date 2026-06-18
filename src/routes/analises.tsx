@@ -159,7 +159,7 @@ function makeRows(): Row[] {
       dtCriacao: fmt(criacao),
       dtConclusao: concluida ? fmt(conclusao) : "—",
       situacao: sit,
-      analista: pick(ANALISTAS, i),
+      analista: pick(AUDITORES, i),
       revisor: pick(REVISORES, i + 4),
       relator: pick(RELATORES, i + 1),
     });
