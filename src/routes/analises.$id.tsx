@@ -2882,21 +2882,21 @@ const PROGRAMAS_INICIAIS: ProgramaLinha[] = [
 const PROGRAMAS_HISTORICO = [
   {
     ts: "20/05/2026 14:32",
-    usuario: "Analista 03",
+    usuario: "Auditor 03",
     campo: "Programa 47 - Justificativa",
     anterior: "(vazio)",
     novo: "Otimizar a capacidade de atuação...",
   },
   {
     ts: "19/05/2026 09:18",
-    usuario: "Analista 03",
+    usuario: "Auditor 03",
     campo: "Programa 88",
     anterior: "(novo)",
     novo: "Inclusão",
   },
   {
     ts: "18/05/2026 16:05",
-    usuario: "Analista 02",
+    usuario: "Auditor 02",
     campo: "Programa 55 - Tipo",
     anterior: "Finalístico",
     novo: "Apoio a políticas públicas e áreas específicas",
@@ -6922,7 +6922,7 @@ const CONCLUSAO_STORE: {
 
 const ASSINATURA = {
   data: "17 de junho de 2025",
-  auditor: "Analista 01",
+  auditor: "Auditor 01",
   tcAuditor: "3284-8",
   coordenador: "Coordenador 01",
   tcCoordenador: "3187-6",
@@ -7040,7 +7040,7 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
 <div class="sign">
   <div>CACGEAF/DACAF, em ${ASSINATURA.data}</div>
   <div class="name">${ASSINATURA.auditor}</div>
-  <div>Analista de Controle Externo – TC ${ASSINATURA.tcAuditor}</div>
+  <div>Auditor de Controle Externo – TC ${ASSINATURA.tcAuditor}</div>
   <div class="name">${ASSINATURA.coordenador}</div>
   <div>Coordenador da CACGEAF – TC ${ASSINATURA.tcCoordenador}</div>
 </div>
@@ -7239,7 +7239,7 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
         <p className="mb-6">CACGEAF/DACAF, em {ASSINATURA.data}</p>
         <p className="font-semibold">{ASSINATURA.auditor}</p>
         <p className="mb-6 text-muted-foreground">
-          Analista de Controle Externo – TC {ASSINATURA.tcAuditor}
+          Auditor de Controle Externo – TC {ASSINATURA.tcAuditor}
         </p>
         <p className="font-semibold">{ASSINATURA.coordenador}</p>
         <p className="text-muted-foreground">

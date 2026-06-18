@@ -197,12 +197,26 @@ export const RELATORES = [
 ];
 
 export const AUDITORES = [
-  "Analista 01",
-  "Analista 02",
-  "Analista 03",
-  "Analista 04",
-  "Analista 05",
-  "Analista 06",
+  "Auditor 01",
+  "Auditor 02",
+  "Auditor 03",
+  "Auditor 04",
+  "Auditor 05",
+  "Auditor 06",
+  "Auditor 07",
+  "Auditor 08",
+  "Auditor 09",
+  "Auditor 10",
+  "Auditor 11",
+  "Auditor 12",
+  "Auditor 13",
+  "Auditor 14",
+  "Auditor 15",
+  "Auditor 16",
+  "Auditor 17",
+  "Auditor 18",
+  "Auditor 19",
+  "Auditor 20",
 ];
 
 export const situacaoData = [
