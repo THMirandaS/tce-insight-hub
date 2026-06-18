@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Users, Ban, Crown, ArrowLeftRight } from "lucide-react";
+import { Users, Ban, Crown, ArrowLeftRight, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -36,6 +37,7 @@ function UsuariosPage() {
   const [etapa, setEtapa] = useState<null | "form" | "confirm">(null);
   const [novoPerfilAtual, setNovoPerfilAtual] = useState<Perfil | "">("");
   const [novoCoordenadorId, setNovoCoordenadorId] = useState<string>("");
+  const [busca, setBusca] = useState("");
 
   // Usuário logado.
   const ativo = usuarios.find((u) => u.id === usuarioAtivoId) ?? null;
@@ -53,6 +55,14 @@ function UsuariosPage() {
         (u) => u.perfil === "Executor" || u.perfil === "Revisor"
       ),
     [usuarios]
+  );
+
+  const usuariosFiltrados = useMemo(
+    () =>
+      usuarios.filter((u) =>
+        u.nome.toLowerCase().includes(busca.trim().toLowerCase())
+      ),
+    [usuarios, busca]
   );
 
   if (!temAcesso) {
@@ -138,10 +148,20 @@ function UsuariosPage() {
         </Button>
       </div>
 
+      <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 shadow-sm">
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por nome..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-[calc(100vh-260px)]">
           <table className="min-w-full text-sm">
-            <thead className="bg-[#0D1B2A] text-white">
+            <thead className="sticky top-0 z-10 bg-[#0D1B2A] text-white">
               <tr>
                 <Th>Nome</Th>
                 <Th>Perfil</Th>
@@ -149,7 +169,7 @@ function UsuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((u) => (
+              {usuariosFiltrados.map((u) => (
                 <tr
                   key={u.id}
                   className="border-t border-border bg-white align-middle hover:bg-blue-50/40"
