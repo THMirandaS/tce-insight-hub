@@ -37,6 +37,7 @@ function UsuariosPage() {
   const [etapa, setEtapa] = useState<null | "form" | "confirm">(null);
   const [novoPerfilAtual, setNovoPerfilAtual] = useState<Perfil | "">("");
   const [novoCoordenadorId, setNovoCoordenadorId] = useState<string>("");
+  const [busca, setBusca] = useState("");
 
   // Usuário logado.
   const ativo = usuarios.find((u) => u.id === usuarioAtivoId) ?? null;
