@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Users, Ban, Crown, ArrowLeftRight } from "lucide-react";
+import { Users, Ban, Crown, ArrowLeftRight, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
