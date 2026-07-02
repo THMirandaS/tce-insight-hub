@@ -4,7 +4,7 @@ import pceLogo from "@/assets/pce-logo.png";
 import {
   LayoutDashboard,
   Search,
-  ShieldCheck,
+  
   Users,
   RefreshCcw,
   LogOut,
