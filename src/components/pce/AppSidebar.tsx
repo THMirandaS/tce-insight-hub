@@ -54,9 +54,13 @@ export function AppSidebar({ user }: { user?: string }) {
     >
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#1A56DB]">
-          <ShieldCheck className="h-5 w-5" />
-        </div>
+        <img
+          src={pceLogo}
+          alt="PCE — Prestação de Contas Estaduais"
+          className="h-9 w-9 shrink-0 object-contain"
+          width={36}
+          height={36}
+        />
         {!isCollapsed && (
           <div className="leading-tight min-w-0">
             <p className="truncate text-sm font-semibold">PCE</p>
