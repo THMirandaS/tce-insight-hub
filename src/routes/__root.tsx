@@ -80,22 +80,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "PCE — Prestação de Contas Estaduais" },
+      {
+        name: "description",
+        content:
+          "Auditoria inteligente do TCE com suporte de IA: análise, consolidação e detecção de inconsistências na prestação de contas estaduais.",
+      },
+      { name: "author", content: "TCE" },
+      { property: "og:title", content: "PCE — Prestação de Contas Estaduais" },
+      {
+        property: "og:description",
+        content: "Auditoria inteligente do TCE com suporte de IA.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
