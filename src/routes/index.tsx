@@ -39,10 +39,10 @@ function Login() {
 
         <div className="relative z-10 flex items-center gap-3">
           <div
-            className="flex h-11 w-11 items-center justify-center rounded-lg"
-            style={{ background: "rgba(0,194,203,0.12)", border: "1px solid rgba(0,194,203,0.35)" }}
+            className="flex h-11 w-11 items-center justify-center rounded-lg overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(0,194,203,0.35)" }}
           >
-            <Sparkles className="h-5 w-5" style={{ color: "#00C2CB" }} />
+            <img src={pceLogo} alt="PCE" className="h-8 w-8 object-contain" width={32} height={32} />
           </div>
           <span className="text-sm font-medium tracking-wider text-white/80">
             TCE · INTELIGÊNCIA DE AUDITORIA
