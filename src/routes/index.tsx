@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import pceLogo from "@/assets/pce-logo.png";
 import { Button } from "@/components/ui/button";
 import { NeuralCanvas } from "@/components/pce/NeuralCanvas";
 
