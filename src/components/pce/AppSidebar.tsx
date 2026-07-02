@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
+import pceLogo from "@/assets/pce-logo.png";
 import {
   LayoutDashboard,
   Search,
