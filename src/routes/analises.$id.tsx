@@ -814,7 +814,7 @@ function AnaliseDetalhePage() {
               !(active === "credito-despesas-prg" && CREDITO_DESPESAS_READ_ONLY) &&
               !(active === "credito-despesas-prg" && despesaTab !== "principal") &&
               !(active === "dsp-dotacao" && DSP_DOTACAO_READ_ONLY) &&
-              !(active === "dsp-dotacao" && dotacaoTab !== "principal") &&
+              
               !(active === "despesa-elemento" && DESPESA_ELEMENTO_READ_ONLY) &&
               !(active === "despesa-elemento" && elementoTab !== "principal") &&
               !(active === "modalidade-aplicacao" && modalidadeTab !== "principal") &&
