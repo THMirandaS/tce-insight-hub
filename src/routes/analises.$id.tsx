@@ -268,10 +268,19 @@ function AnaliseDetalhePage() {
 
   function handleSalvar() {
     if (currentStatus === null) return;
+    const s = statuses[active];
+    // Concluir o item exige conclusão e tipo de encaminhamento selecionados.
+    if (s === "em-andamento" || s === "em-correcao") {
+      const erro = validarConclusaoItemAtiva();
+      if (erro) {
+        toast.error(erro);
+        return;
+      }
+    }
     setStatuses((p) => {
-      const s = p[active];
-      if (s === "em-andamento") return { ...p, [active]: "concluido" };
-      if (s === "em-correcao") return { ...p, [active]: "corrigido" };
+      const st = p[active];
+      if (st === "em-andamento") return { ...p, [active]: "concluido" };
+      if (st === "em-correcao") return { ...p, [active]: "corrigido" };
       return p;
     });
   }
@@ -287,8 +296,14 @@ function AnaliseDetalhePage() {
 
   function handleConcluir() {
     if (currentStatus === null) return;
+    const erro = validarConclusaoItemAtiva();
+    if (erro) {
+      toast.error(erro);
+      return;
+    }
     setStatuses((p) => ({ ...p, [active]: "concluido" }));
   }
+
 
   function handleMarcarRevisado() {
     if (currentStatus === null) return;
