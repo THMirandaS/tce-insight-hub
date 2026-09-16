@@ -5765,7 +5765,6 @@ function ApontamentoRciContent({
         <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Número</th>
               <th className="px-3 py-2 text-left">Título</th>
               <th className="px-3 py-2 text-left">Descrição</th>
               <th className="px-3 py-2 text-left">Relatório de origem</th>
@@ -5785,7 +5784,6 @@ function ApontamentoRciContent({
                     dim ? "text-muted-foreground line-through opacity-60" : ""
                   }`}
                 >
-                  <td className="px-3 py-2 align-top">{i + 1}</td>
                   <td className="min-w-[240px] px-3 py-2 align-top">
                     {a.apontamento}
                   </td>
@@ -5918,15 +5916,26 @@ function ApontamentoRciContent({
                   Valor, quando aplicável (R$)
                 </Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  value={form.valor ?? ""}
-                  readOnly={readOnly}
-                  onChange={(e) =>
-                    updateForm({
-                      valor: e.target.value === "" ? null : Number(e.target.value),
-                    })
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="R$ 0,00"
+                  value={
+                    form.valor === null
+                      ? ""
+                      : `R$ ${form.valor.toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
                   }
+                  readOnly={readOnly}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    if (digits === "") {
+                      updateForm({ valor: null });
+                      return;
+                    }
+                    updateForm({ valor: Number(digits) / 100 });
+                  }}
                 />
               </div>
               <div className="space-y-2">
