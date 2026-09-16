@@ -3438,9 +3438,10 @@ function CreditoDespesasContent({
   const [memoria, setMemoria] = useState<DespesaMemoriaLinha[]>(
     CREDITO_DESPESAS_MEMORIA
   );
-  const [conclusao, setConclusao] = useState<DespesaConclusao>("ressalvas");
+  // Iniciam sem nenhuma opção selecionada (obrigatórios para concluir o item).
+  const [conclusao, setConclusao] = useState<DespesaConclusao | null>(null);
   const [encaminhamentoTipo, setDespesaEncaminhamento] =
-    useState<DespesaEncaminhamento>("recomendacao");
+    useState<DespesaEncaminhamento | null>(null);
   const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
@@ -3454,22 +3455,8 @@ function CreditoDespesasContent({
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
   const encDisabled =
-    readOnly || encaminhamentoTipo === "nenhum" || encaminhamentoTipo === "";
+    readOnly || !encaminhamentoTipo || encaminhamentoTipo === "nenhum";
 
-  function isEncOptionEnabled(opt: DespesaEncaminhamento) {
-    if (opt === "nenhum") return conclusao === "regular";
-    if (opt === "recomendacao") return conclusao === "ressalvas";
-    if (opt === "determinacao") return conclusao === "irregular";
-    return false;
-  }
-
-  function onConclusaoChange(v: DespesaConclusao) {
-    setConclusao(v);
-    // ajustar encaminhamento automaticamente para o habilitado
-    if (v === "regular") setDespesaEncaminhamento("nenhum");
-    else if (v === "ressalvas") setDespesaEncaminhamento("recomendacao");
-    else if (v === "irregular") setDespesaEncaminhamento("determinacao");
-  }
 
   function updateMemoria(id: string, patch: Partial<DespesaMemoriaLinha>) {
     setMemoria((arr) => arr.map((l) => (l.id === id ? { ...l, ...patch } : l)));
