@@ -3657,72 +3657,16 @@ function CreditoDespesasContent({
             />
           </div>
 
-          {/* Conclusão do item */}
-          <div className="mt-6 space-y-2">
-            <Label className="text-sm font-semibold">Conclusão do item:</Label>
-            <div className="flex flex-wrap gap-6">
-              {(
-                [
-                  { v: "regular", label: "Regular" },
-                  { v: "ressalvas", label: "Regular com ressalvas" },
-                  { v: "irregular", label: "Irregular" },
-                ] as const
-              ).map((o) => (
-                <label
-                  key={o.v}
-                  className="inline-flex items-center gap-2 text-sm"
-                >
-                  <input
-                    type="radio"
-                    name="conclusao"
-                    value={o.v}
-                    checked={conclusao === o.v}
-                    disabled={readOnly}
-                    onChange={() => onConclusaoChange(o.v)}
-                    className="h-4 w-4 accent-[#1A56DB]"
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-          </div>
+          {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
+          <ConclusaoItemRadios
+            scope="credito-despesas-prg"
+            readOnly={readOnly}
+            onChange={(e) => {
+              setConclusao(e.conclusao as DespesaConclusao | null);
+              setDespesaEncaminhamento(e.encaminhamento as DespesaEncaminhamento | null);
+            }}
+          />
 
-          {/* Tipo de encaminhamento */}
-          <div className="mt-4 space-y-2">
-            <Label className="text-sm font-semibold">
-              Tipo de encaminhamento:
-            </Label>
-            <div className="flex flex-wrap gap-6">
-              {(
-                [
-                  { v: "nenhum", label: "Nenhum" },
-                  { v: "recomendacao", label: "Recomendação" },
-                  { v: "determinacao", label: "Determinação" },
-                ] as const
-              ).map((o) => {
-                const enabled = !readOnly && isEncOptionEnabled(o.v);
-                return (
-                  <label
-                    key={o.v}
-                    className={`inline-flex items-center gap-2 text-sm ${
-                      enabled ? "" : "opacity-50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="encaminhamento"
-                      value={o.v}
-                      checked={encaminhamentoTipo === o.v}
-                      disabled={!enabled}
-                      onChange={() => setDespesaEncaminhamento(o.v)}
-                      className="h-4 w-4 accent-[#1A56DB]"
-                    />
-                    {o.label}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Editor Encaminhamento */}
           <div className="mt-6 space-y-2">
