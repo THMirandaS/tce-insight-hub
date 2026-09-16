@@ -118,6 +118,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
   { key: "controle-interno", label: "Adequação do RCI" },
+  { key: "apontamento-rci", label: "Apontamento do RCI" },
   { key: "outros-assuntos", label: "Outros assuntos relevantes" },
   { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
@@ -780,6 +781,8 @@ function AnaliseDetalhePage() {
             />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
+          ) : active === "apontamento-rci" ? (
+            <ApontamentoRciContent processo={processoLabel} orgao={orgao} />
           ) : active === "outros-assuntos" ? (
             <OutrosAssuntosContent processo={processoLabel} orgao={orgao} />
           ) : active === "outras-inconformidades" ? (
@@ -5532,6 +5535,619 @@ function ControleInternoContent({
             <DialogDescription>
               Deseja excluir esta inadequação?
             </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+            >
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => confirmDelete && removeAp(confirmDelete)}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <Check className="mr-1 h-4 w-4" /> Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// ============ Apontamento do RCI (RF20) ============
+// Reaproveita o tipo CIApontamento e o padrão tabela + diálogo de edição.
+
+const APRCI_INICIAL: CIApontamento[] = [
+  {
+    id: "aprci1",
+    apontamento: "Ausência de conciliação bancária mensal em contas de convênio",
+    relatorio: "Relatório de Controle Interno (RCI 2024)",
+    pagina: "Peça 21, pág. 12",
+    valor: 482300.55,
+    danoErario: "Não",
+    quantificado: "Sim",
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    conclusao: "Regular com ressalvas",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar que a gestão promova a conciliação bancária mensal de todas as contas de convênio, com evidenciação nos autos.",
+    avaliacao:
+      "O controle interno apontou ausência de conciliação bancária mensal em contas específicas de convênio, sem regularização até o encerramento do exercício.",
+    entendimento:
+      "Falha de controle relevante, sem indício de dano ao erário até o momento.",
+    desconsiderado: false,
+  },
+  {
+    id: "aprci2",
+    apontamento: "Pagamentos realizados sem liquidação regular da despesa",
+    relatorio: "Demonstrações Contábeis",
+    pagina: "Peça 23, pág. 58",
+    valor: 128940.0,
+    danoErario: "Sim",
+    quantificado: "Sim",
+    relevanteMaterial: "Sim",
+    enquadraIncisos: "Sim",
+    conclusao: "Irregular",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar a apuração da regularidade dos pagamentos e a adoção de medidas de recomposição, se cabível.",
+    avaliacao:
+      "Foram identificados pagamentos sem a devida liquidação, em desacordo com os arts. 62 e 63 da Lei nº 4.320/1964.",
+    entendimento: "Possível dano ao erário a ser quantificado em apuração própria.",
+    desconsiderado: false,
+  },
+  {
+    id: "aprci3",
+    apontamento:
+      "Controle de diárias sem comprovação de prestação de contas de viagens",
+    relatorio: "Relatório de Controle Interno (RCI 2024)",
+    pagina: "Peça 21, pág. 33",
+    valor: null,
+    danoErario: "Não",
+    quantificado: "Não",
+    relevanteMaterial: "Não",
+    enquadraIncisos: "Não",
+    conclusao: "Regular com ressalvas",
+    encaminhamento: "Determinação",
+    descEncaminhamento:
+      "Determinar o aprimoramento dos controles de concessão e prestação de contas de diárias.",
+    avaliacao:
+      "Ausência de comprovantes de prestação de contas em parte dos processos de diárias amostrados.",
+    entendimento: "Impropriedade formal, sem materialidade apurada.",
+    desconsiderado: false,
+  },
+];
+
+const APRCI_HISTORICO: ReceitasHistorico[] = [
+  {
+    ts: "20/05/2026 10:16",
+    usuario: "IA - Sistema",
+    campo: "Apontamentos",
+    anterior: "-",
+    novo: "3 apontamentos extraídos do RCI 2024",
+  },
+];
+
+const APRCI_EMPTY_FORM: Omit<CIApontamento, "id" | "desconsiderado"> = {
+  ...CI_EMPTY_FORM,
+};
+
+function ApontamentoRciContent({
+  processo,
+  orgao,
+}: {
+  processo: string;
+  orgao: string;
+}) {
+  const readOnly = CI_READ_ONLY;
+
+  const [apontamentos, setApontamentos] = useState<CIApontamento[]>(APRCI_INICIAL);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState<Omit<CIApontamento, "id" | "desconsiderado">>(
+    APRCI_EMPTY_FORM,
+  );
+
+  function updateForm(patch: Partial<typeof form>) {
+    setForm((f) => ({ ...f, ...patch }));
+  }
+  function openEdit(a: CIApontamento) {
+    setEditId(a.id);
+    const { id: _id, desconsiderado: _d, ...rest } = a;
+    setForm(rest);
+  }
+  function openNew() {
+    setEditId("__new__");
+    setForm(APRCI_EMPTY_FORM);
+  }
+  function saveEdit() {
+    if (editId === "__new__") {
+      setApontamentos((arr) => [
+        ...arr,
+        { id: `aprci${Date.now()}`, desconsiderado: false, ...form },
+      ]);
+    } else if (editId) {
+      setApontamentos((arr) =>
+        arr.map((a) => (a.id === editId ? { ...a, ...form } : a)),
+      );
+    }
+    setEditId(null);
+  }
+  function toggleDesconsiderar(id: string) {
+    setApontamentos((arr) =>
+      arr.map((a) =>
+        a.id === id ? { ...a, desconsiderado: !a.desconsiderado } : a,
+      ),
+    );
+  }
+  function removeAp(id: string) {
+    setApontamentos((arr) => arr.filter((a) => a.id !== id));
+    setConfirmDelete(null);
+  }
+  function entraNoPdf(a: CIApontamento): boolean {
+    return (
+      !a.desconsiderado &&
+      (a.encaminhamento === "Recomendação" || a.encaminhamento === "Determinação")
+    );
+  }
+
+  // Ressalva/irregular: apenas Determinação é permitida.
+  const somenteDeterminacao =
+    form.conclusao === "Regular com ressalvas" || form.conclusao === "Irregular";
+
+  function setConclusao(c: CIConclusao) {
+    const restringe = c === "Regular com ressalvas" || c === "Irregular";
+    updateForm({
+      conclusao: c,
+      ...(restringe ? { encaminhamento: "Determinação" as CIEncaminhamento } : {}),
+    });
+  }
+
+  return (
+    <>
+      <h1 className="text-center text-2xl font-semibold text-foreground">
+        Processo: {processo}
+      </h1>
+
+      <div className="mx-auto mt-4 max-w-3xl space-y-2 text-center text-sm">
+        <p>
+          <span className="font-semibold">Órgão:</span> {orgao}
+        </p>
+      </div>
+
+      <div className="my-6 border-t border-border" />
+
+      <h2 className="mb-4 text-base font-semibold underline">
+        Apontamento do RCI:
+      </h2>
+
+      <div className="flex items-start gap-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-3 text-sm text-[#0D1B2A]">
+        <span aria-hidden className="text-lg leading-none">
+          ✨
+        </span>
+        <p>
+          Apontamentos identificados automaticamente pela IA a partir da leitura do
+          Relatório de Controle Interno. Revise, edite, desconsidere ou adicione
+          apontamentos conforme necessário.
+        </p>
+      </div>
+
+      <div className="mb-3 mt-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Apontamentos</h3>
+        <div className="flex items-center gap-2" data-pdf-hide>
+          {!readOnly && (
+            <Button
+              type="button"
+              onClick={openNew}
+              className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+            >
+              + Adicionar Apontamento
+            </Button>
+          )}
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Histórico de alterações"
+          >
+            <History className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-md border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0D1B2A] text-white">
+            <tr>
+              <th className="px-3 py-2 text-left">Número</th>
+              <th className="px-3 py-2 text-left">Título</th>
+              <th className="px-3 py-2 text-left">Descrição</th>
+              <th className="px-3 py-2 text-left">Relatório de origem</th>
+              <th className="px-3 py-2 text-center" data-pdf-hide>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {apontamentos.map((a, i) => {
+              const dim = a.desconsiderado;
+              return (
+                <tr
+                  key={a.id}
+                  data-pdf-hide={!entraNoPdf(a) ? "" : undefined}
+                  className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                    dim ? "text-muted-foreground line-through opacity-60" : ""
+                  }`}
+                >
+                  <td className="px-3 py-2 align-top">{i + 1}</td>
+                  <td className="min-w-[240px] px-3 py-2 align-top">
+                    {a.apontamento}
+                  </td>
+                  <td className="min-w-[300px] px-3 py-2 align-top">
+                    {a.avaliacao || "—"}
+                  </td>
+                  <td className="px-3 py-2 align-top">{a.relatorio}</td>
+                  <td className="px-2 py-2 align-top" data-pdf-hide>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(a)}
+                        className="text-[#1A56DB] hover:opacity-80"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => toggleDesconsiderar(a.id)}
+                          className={
+                            dim
+                              ? "text-green-600 hover:opacity-80"
+                              : "text-amber-600 hover:opacity-80"
+                          }
+                          title={
+                            dim
+                              ? "Considerar apontamento"
+                              : "Desconsiderar apontamento"
+                          }
+                        >
+                          {dim ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(a.id)}
+                          className="text-red-600 hover:opacity-80"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <ConsideracoesAdicionais
+        readOnly={readOnly}
+        printTitle="Considerações adicionais — Apontamento do RCI"
+      />
+
+      {/* Diálogo de edição/inclusão */}
+      <Dialog open={editId !== null} onOpenChange={(o) => !o && setEditId(null)}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editId === "__new__" ? "Novo apontamento" : "Editar apontamento"}
+            </DialogTitle>
+            <DialogDescription>
+              Campos pré-preenchidos pela IA e editáveis pelo auditor.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Título do apontamento</Label>
+              <textarea
+                value={form.apontamento}
+                readOnly={readOnly}
+                onChange={(e) => updateForm({ apontamento: e.target.value })}
+                rows={2}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Descrição do apontamento
+              </Label>
+              <textarea
+                value={form.avaliacao}
+                readOnly={readOnly}
+                onChange={(e) => updateForm({ avaliacao: e.target.value })}
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Relatório de origem</Label>
+                <select
+                  value={form.relatorio}
+                  disabled={readOnly}
+                  onChange={(e) => updateForm({ relatorio: e.target.value })}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  {CI_RELATORIOS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Página do relatório</Label>
+                <Input
+                  value={form.pagina}
+                  readOnly={readOnly}
+                  onChange={(e) => updateForm({ pagina: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Valor, quando aplicável (R$)
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.valor ?? ""}
+                  readOnly={readOnly}
+                  onChange={(e) =>
+                    updateForm({
+                      valor: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Materialidade</Label>
+                <div className="flex h-10 items-center">
+                  <MaterialBadge valor={form.valor} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Calculado automaticamente a partir do valor informado.
+                </p>
+              </div>
+            </div>
+
+            {/* Questionário do auditor */}
+            <div className="space-y-4 rounded-md border border-border bg-muted/30 p-4">
+              <h4 className="text-sm font-semibold">Questionário do auditor</h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Dano ao erário?</Label>
+                  <SimNaoRadios
+                    name="aprci-dano"
+                    value={form.danoErario}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ danoErario: v })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Quantificado?</Label>
+                  <SimNaoRadios
+                    name="aprci-quant"
+                    value={form.quantificado}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ quantificado: v })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Relevante ou Material?</Label>
+                  <SimNaoRadios
+                    name="aprci-relev"
+                    value={form.relevanteMaterial}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ relevanteMaterial: v })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">
+                    Se enquadra nos incisos II ou III (Art. 48 LC 102/2008)?
+                  </Label>
+                  <SimNaoRadios
+                    name="aprci-incisos"
+                    value={form.enquadraIncisos}
+                    disabled={readOnly}
+                    onChange={(v) => updateForm({ enquadraIncisos: v })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Avaliação */}
+            <div className="space-y-4 rounded-md border border-border p-4">
+              <h4 className="text-sm font-semibold">Avaliação</h4>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Conclusão</Label>
+                <div className="flex flex-wrap gap-6">
+                  {(
+                    ["Regular", "Regular com ressalvas", "Irregular"] as CIConclusao[]
+                  ).map((o) => (
+                    <label key={o} className="inline-flex items-center gap-2 text-sm">
+                      <input
+                        type="radio"
+                        name="aprci-conclusao"
+                        checked={form.conclusao === o}
+                        disabled={readOnly}
+                        onChange={() => setConclusao(o)}
+                        className="h-4 w-4 accent-[#1A56DB]"
+                      />
+                      {o}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Tipo de encaminhamento
+                </Label>
+                <div className="flex flex-wrap gap-6">
+                  {(
+                    ["Nenhum", "Recomendação", "Determinação"] as CIEncaminhamento[]
+                  ).map((o) => {
+                    const bloqueado = somenteDeterminacao && o !== "Determinação";
+                    return (
+                      <label
+                        key={o}
+                        className={`inline-flex items-center gap-2 text-sm ${
+                          bloqueado ? "text-muted-foreground" : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="aprci-enc"
+                          checked={form.encaminhamento === o}
+                          disabled={readOnly || bloqueado}
+                          onChange={() => updateForm({ encaminhamento: o })}
+                          className="h-4 w-4 accent-[#1A56DB]"
+                        />
+                        {o}
+                      </label>
+                    );
+                  })}
+                </div>
+                {somenteDeterminacao && (
+                  <p className="text-xs text-muted-foreground">
+                    Conclusão com ressalva ou irregular admite apenas Determinação.
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Encaminhamento</Label>
+                <textarea
+                  value={form.descEncaminhamento}
+                  readOnly={readOnly}
+                  onChange={(e) =>
+                    updateForm({ descEncaminhamento: e.target.value })
+                  }
+                  rows={4}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Entendimento técnico</Label>
+                <p className="text-xs text-muted-foreground">
+                  Campo de uso interno. Não é exibido no relatório nem no PDF.
+                </p>
+                <textarea
+                  value={form.entendimento}
+                  readOnly={readOnly}
+                  onChange={(e) =>
+                    updateForm({
+                      entendimento: e.target.value.slice(0, CI_MAX_TEXTO),
+                    })
+                  }
+                  maxLength={CI_MAX_TEXTO}
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setEditId(null)}>
+              <X className="mr-1 h-4 w-4" /> Cancelar
+            </Button>
+            {!readOnly && (
+              <Button
+                type="button"
+                onClick={saveEdit}
+                className="bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
+              >
+                <Check className="mr-1 h-4 w-4" /> Salvar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Histórico */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+            <DialogDescription>
+              Todas as ações realizadas neste submenu são registradas para
+              auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0D1B2A] text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left">Data/Hora</th>
+                  <th className="px-3 py-2 text-left">Usuário</th>
+                  <th className="px-3 py-2 text-left">Campo alterado</th>
+                  <th className="px-3 py-2 text-left">Valor anterior</th>
+                  <th className="px-3 py-2 text-left">Valor novo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {APRCI_HISTORICO.map((h, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{h.ts}</td>
+                    <td className="px-3 py-2">{h.usuario}</td>
+                    <td className="px-3 py-2">{h.campo}</td>
+                    <td className="px-3 py-2">{h.anterior}</td>
+                    <td className="px-3 py-2">{h.novo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmação de exclusão */}
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir apontamento</DialogTitle>
+            <DialogDescription>Deseja excluir este apontamento?</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
