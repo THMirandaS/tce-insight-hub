@@ -117,7 +117,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
-  { key: "controle-interno", label: "Adequação dos relatórios" },
+  { key: "controle-interno", label: "Adequação do RCI" },
   { key: "outros-assuntos", label: "Outros assuntos relevantes" },
   { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
@@ -4804,6 +4804,7 @@ const CI_RELATORIOS = [
 
 type CISimNao = "Sim" | "Não";
 type CIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
+type CIConclusao = "Regular" | "Regular com ressalvas" | "Irregular";
 
 type CIApontamento = {
   id: string;
@@ -4818,6 +4819,7 @@ type CIApontamento = {
   relevanteMaterial: CISimNao;
   enquadraIncisos: CISimNao;
   // Avaliação / encaminhamento
+  conclusao: CIConclusao;
   encaminhamento: CIEncaminhamento;
   descEncaminhamento: string;
   avaliacao: string; // providências da Avaliação da Inconformidade
@@ -4848,6 +4850,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Irregular",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que a gestão realize o levantamento completo dos inventários físicos e financeiros dos itens determinados pela legislação.",
@@ -4866,6 +4869,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Irregular",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que sejam apresentados o andamento ou o resultado da tratativa com a SEPLAG.",
@@ -4883,6 +4887,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Não",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que a gestão aprimore seus controles para assinatura digital de todos os documentos até o término do exercício financeiro.",
@@ -4900,6 +4905,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Recomendação",
     descEncaminhamento:
       "Recomendar a continuidade da apuração e a apresentação dos resultados em futura PCE.",
@@ -4919,6 +4925,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Não",
     relevanteMaterial: "Não",
     enquadraIncisos: "Não",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Recomendação",
     descEncaminhamento:
       "Recomendar o aprimoramento dos trabalhos das comissões inventariantes.",
@@ -4963,6 +4970,7 @@ const CI_EMPTY_FORM: Omit<CIApontamento, "id" | "desconsiderado"> = {
   quantificado: "Não",
   relevanteMaterial: "Não",
   enquadraIncisos: "Não",
+  conclusao: "Regular",
   encaminhamento: "Nenhum",
   descEncaminhamento: "",
   avaliacao: "",
@@ -5135,7 +5143,7 @@ function ControleInternoContent({
       )}
 
       <h2 className="mb-4 text-base font-semibold underline">
-        Adequação dos relatórios:
+        Adequação do RCI:
       </h2>
 
       {/* Pergunta pré-preenchida pela IA */}
@@ -5175,20 +5183,20 @@ function ControleInternoContent({
         </p>
       </div>
 
-      {/* Tabela de apontamentos */}
+      {/* Tabela de inadequações */}
       <div className="mt-6 flex items-start gap-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-3 text-sm text-[#0D1B2A]">
         <span aria-hidden className="text-lg leading-none">
           ✨
         </span>
         <p>
-          Apontamentos identificados automaticamente pela IA a partir da leitura
-          dos relatórios enviados pelo órgão via e-TCE. Revise, edite,
-          desconsidere ou adicione apontamentos conforme necessário.
+          Inadequações identificadas automaticamente pela IA a partir da leitura
+          do Relatório de Controle Interno. Revise, edite, desconsidere ou
+          adicione inadequações conforme necessário.
         </p>
       </div>
 
       <div className="mb-3 mt-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Apontamentos</h3>
+        <h3 className="text-sm font-semibold">Inadequações</h3>
         <div className="flex items-center gap-2" data-pdf-hide>
           {!readOnly && (
             <Button
@@ -5196,7 +5204,7 @@ function ControleInternoContent({
               onClick={openNew}
               className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
             >
-              + Adicionar Apontamento
+              + Adicionar Inadequação
             </Button>
           )}
           <button
@@ -5211,15 +5219,12 @@ function ControleInternoContent({
       </div>
 
       <div className="overflow-x-auto rounded-md border border-border">
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Apontamento</th>
-              <th className="px-3 py-2 text-left">Relatório de origem</th>
-              <th className="px-3 py-2 text-left">Página</th>
-              <th className="px-3 py-2 text-right">Valor</th>
-              <th className="px-3 py-2 text-left">Materialidade</th>
-              <th className="px-3 py-2 text-left">Encaminhamento</th>
+              <th className="px-3 py-2 text-left">Título</th>
+              <th className="px-3 py-2 text-left">Conclusão</th>
+              <th className="px-3 py-2 text-left">Tipo de encaminhamento</th>
               <th className="px-3 py-2 text-center" data-pdf-hide>
                 Ações
               </th>
@@ -5236,16 +5241,17 @@ function ControleInternoContent({
                     dim ? "text-muted-foreground line-through opacity-60" : ""
                   }`}
                 >
-                  <td className="min-w-[260px] px-3 py-2 align-top">
+                  <td className="min-w-[320px] px-3 py-2 align-top">
                     {a.apontamento}
                   </td>
-                  <td className="px-3 py-2 align-top">{a.relatorio}</td>
-                  <td className="px-3 py-2 align-top">{a.pagina}</td>
-                  <td className="px-3 py-2 text-right align-top">
-                    {a.valor === null ? "—" : fmtBRL(a.valor)}
-                  </td>
                   <td className="px-3 py-2 align-top">
-                    <MaterialBadge valor={a.valor} />
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${conclusaoBadge(
+                        a.conclusao,
+                      )}`}
+                    >
+                      {a.conclusao}
+                    </span>
                   </td>
                   <td className="px-3 py-2 align-top">
                     <span
@@ -5277,8 +5283,8 @@ function ControleInternoContent({
                           }
                           title={
                             dim
-                              ? "Reconsiderar apontamento"
-                              : "Desconsiderar apontamento"
+                              ? "Considerar inadequação"
+                              : "Desconsiderar inadequação"
                           }
                         >
                           {dim ? (
@@ -5315,7 +5321,7 @@ function ControleInternoContent({
 
       <ConclusaoItemRadios scope="controle-interno" readOnly={readOnly} />
 
-      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação dos relatórios" />
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação do RCI" />
 
 
       {/* Diálogo de edição do apontamento */}
@@ -5326,7 +5332,7 @@ function ControleInternoContent({
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editId === "__new__" ? "Novo apontamento" : "Editar apontamento"}
+              {editId === "__new__" ? "Nova inadequação" : "Editar inadequação"}
             </DialogTitle>
             <DialogDescription>
               Campos pré-preenchidos pela IA e editáveis pelo auditor.
@@ -5336,7 +5342,7 @@ function ControleInternoContent({
           <div className="space-y-5">
             {/* Descrição */}
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">Apontamento</Label>
+              <Label className="text-sm font-semibold">Título</Label>
               <textarea
                 value={form.apontamento}
                 readOnly={readOnly}
@@ -5445,10 +5451,27 @@ function ControleInternoContent({
               </div>
             </div>
 
-            {/* Encaminhamento */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Conclusão e encaminhamento */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">Encaminhamento</Label>
+                <Label className="text-sm font-semibold">Conclusão</Label>
+                <select
+                  value={form.conclusao}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    updateForm({ conclusao: e.target.value as CIConclusao })
+                  }
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option>Regular</option>
+                  <option>Regular com ressalvas</option>
+                  <option>Irregular</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Tipo de encaminhamento
+                </Label>
                 <select
                   value={form.encaminhamento}
                   disabled={readOnly}
@@ -5464,20 +5487,26 @@ function ControleInternoContent({
                   <option>Determinação</option>
                 </select>
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label className="text-sm font-semibold">
-                  Descrição do encaminhamento
-                </Label>
-                <textarea
-                  value={form.descEncaminhamento}
-                  readOnly={readOnly}
-                  onChange={(e) =>
-                    updateForm({ descEncaminhamento: e.target.value })
-                  }
-                  rows={2}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
+            </div>
+
+            {/* Descrição do encaminhamento (IA ou manual, editável) */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Descrição do encaminhamento
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Texto sugerido pela IA ou inserido manualmente. Ajuste conforme
+                necessário.
+              </p>
+              <textarea
+                value={form.descEncaminhamento}
+                readOnly={readOnly}
+                onChange={(e) =>
+                  updateForm({ descEncaminhamento: e.target.value })
+                }
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </div>
 
             {/* Entendimento técnico — nunca exibido no relatório/PDF */}
@@ -5576,9 +5605,9 @@ function ControleInternoContent({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir apontamento</DialogTitle>
+            <DialogTitle>Excluir inadequação</DialogTitle>
             <DialogDescription>
-              Deseja excluir este apontamento?
+              Deseja excluir esta inadequação?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -6481,7 +6510,7 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
           a.encaminhamento === "Determinação"),
     )
     .map((a) => ({
-      topico: "Adequação dos relatórios",
+      topico: "Adequação do RCI",
       titulo: a.apontamento,
       enquadramento: enquadramentoPorEncaminhamento(a.encaminhamento),
       encaminhamento: a.descEncaminhamento,
@@ -6613,7 +6642,7 @@ function ConclusaoContent({
 <p>Dados consolidados a partir do submenu Restos a Pagar, com avaliação dos saldos por ano de origem.</p>
 
 <h2>4. Análise dos relatórios dos jurisdicionados</h2>
-<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
+<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação do RCI.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
 <p>${OUTROS_ASSUNTOS_STORE.incluir && OUTROS_ASSUNTOS_STORE.texto.trim() ? escapeHTML(OUTROS_ASSUNTOS_STORE.texto) : "Não foram registrados outros assuntos relevantes."}</p>
