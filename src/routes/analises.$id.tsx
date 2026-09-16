@@ -117,7 +117,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
     condicional: (j) => j.grupoEntidade === GRUPO_PODERES,
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
-  { key: "controle-interno", label: "Adequação dos relatórios" },
+  { key: "controle-interno", label: "Adequação do RCI" },
   { key: "outros-assuntos", label: "Outros assuntos relevantes" },
   { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
@@ -4804,6 +4804,7 @@ const CI_RELATORIOS = [
 
 type CISimNao = "Sim" | "Não";
 type CIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
+type CIConclusao = "Regular" | "Regular com ressalvas" | "Irregular";
 
 type CIApontamento = {
   id: string;
@@ -4818,6 +4819,7 @@ type CIApontamento = {
   relevanteMaterial: CISimNao;
   enquadraIncisos: CISimNao;
   // Avaliação / encaminhamento
+  conclusao: CIConclusao;
   encaminhamento: CIEncaminhamento;
   descEncaminhamento: string;
   avaliacao: string; // providências da Avaliação da Inconformidade
