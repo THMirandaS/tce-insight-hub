@@ -4850,6 +4850,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Irregular",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que a gestão realize o levantamento completo dos inventários físicos e financeiros dos itens determinados pela legislação.",
@@ -4868,6 +4869,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Irregular",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que sejam apresentados o andamento ou o resultado da tratativa com a SEPLAG.",
@@ -4885,6 +4887,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Não",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Determinação",
     descEncaminhamento:
       "Determinar que a gestão aprimore seus controles para assinatura digital de todos os documentos até o término do exercício financeiro.",
@@ -4902,6 +4905,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Sim",
     relevanteMaterial: "Sim",
     enquadraIncisos: "Sim",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Recomendação",
     descEncaminhamento:
       "Recomendar a continuidade da apuração e a apresentação dos resultados em futura PCE.",
@@ -4921,6 +4925,7 @@ const CI_APONTAMENTOS_INICIAL: CIApontamento[] = [
     quantificado: "Não",
     relevanteMaterial: "Não",
     enquadraIncisos: "Não",
+    conclusao: "Regular com ressalvas",
     encaminhamento: "Recomendação",
     descEncaminhamento:
       "Recomendar o aprimoramento dos trabalhos das comissões inventariantes.",
@@ -4965,6 +4970,7 @@ const CI_EMPTY_FORM: Omit<CIApontamento, "id" | "desconsiderado"> = {
   quantificado: "Não",
   relevanteMaterial: "Não",
   enquadraIncisos: "Não",
+  conclusao: "Regular",
   encaminhamento: "Nenhum",
   descEncaminhamento: "",
   avaliacao: "",
