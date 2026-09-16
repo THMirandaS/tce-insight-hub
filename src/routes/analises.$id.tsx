@@ -4223,10 +4223,13 @@ function DspDotacaoContent({
 
       {naoConforme && <DspDotacaoInconformidade acoes={naoConformes} />}
 
+      <ConclusaoItemRadios scope="dsp-dotacao" readOnly={readOnly} />
+
       <ConsideracoesAdicionais
         readOnly={readOnly}
         printTitle="Considerações adicionais — Despesa por dotação orçamentária"
       />
+
     </>
   );
 }
