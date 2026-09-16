@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
 import { ConclusaoItemRadios } from "@/components/pce/ConclusaoItemRadios";
 
-import { ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Poder } from "@/lib/pce-data";
 
 function fmtBRL(n: number): string {
@@ -264,13 +264,6 @@ function SubAbaPainel({ subAba }: { subAba: SubAba }) {
           )}
         </table>
       </div>
-
-      {naoConforme && (
-        <AvaliacaoInconformidade
-          subAbaLabel={subAba.label}
-          mensagem={subAba.inconformidadeMsg}
-        />
-      )}
 
       <ConclusaoItemRadios scope={`consistencia:${subAba.key}`} />
 
