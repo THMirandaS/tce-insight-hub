@@ -5143,7 +5143,7 @@ function ControleInternoContent({
       )}
 
       <h2 className="mb-4 text-base font-semibold underline">
-        Adequação dos relatórios:
+        Adequação do RCI:
       </h2>
 
       {/* Pergunta pré-preenchida pela IA */}
@@ -5183,20 +5183,20 @@ function ControleInternoContent({
         </p>
       </div>
 
-      {/* Tabela de apontamentos */}
+      {/* Tabela de inadequações */}
       <div className="mt-6 flex items-start gap-3 rounded-md border border-[#1A56DB]/30 bg-[#EFF6FF] p-3 text-sm text-[#0D1B2A]">
         <span aria-hidden className="text-lg leading-none">
           ✨
         </span>
         <p>
-          Apontamentos identificados automaticamente pela IA a partir da leitura
-          dos relatórios enviados pelo órgão via e-TCE. Revise, edite,
-          desconsidere ou adicione apontamentos conforme necessário.
+          Inadequações identificadas automaticamente pela IA a partir da leitura
+          do Relatório de Controle Interno. Revise, edite, desconsidere ou
+          adicione inadequações conforme necessário.
         </p>
       </div>
 
       <div className="mb-3 mt-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Apontamentos</h3>
+        <h3 className="text-sm font-semibold">Inadequações</h3>
         <div className="flex items-center gap-2" data-pdf-hide>
           {!readOnly && (
             <Button
@@ -5204,7 +5204,7 @@ function ControleInternoContent({
               onClick={openNew}
               className="gap-2 bg-[#1A56DB] text-white hover:bg-[#1A56DB]/90"
             >
-              + Adicionar Apontamento
+              + Adicionar Inadequação
             </Button>
           )}
           <button
@@ -5219,15 +5219,12 @@ function ControleInternoContent({
       </div>
 
       <div className="overflow-x-auto rounded-md border border-border">
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Apontamento</th>
-              <th className="px-3 py-2 text-left">Relatório de origem</th>
-              <th className="px-3 py-2 text-left">Página</th>
-              <th className="px-3 py-2 text-right">Valor</th>
-              <th className="px-3 py-2 text-left">Materialidade</th>
-              <th className="px-3 py-2 text-left">Encaminhamento</th>
+              <th className="px-3 py-2 text-left">Título</th>
+              <th className="px-3 py-2 text-left">Conclusão</th>
+              <th className="px-3 py-2 text-left">Tipo de encaminhamento</th>
               <th className="px-3 py-2 text-center" data-pdf-hide>
                 Ações
               </th>
@@ -5244,16 +5241,17 @@ function ControleInternoContent({
                     dim ? "text-muted-foreground line-through opacity-60" : ""
                   }`}
                 >
-                  <td className="min-w-[260px] px-3 py-2 align-top">
+                  <td className="min-w-[320px] px-3 py-2 align-top">
                     {a.apontamento}
                   </td>
-                  <td className="px-3 py-2 align-top">{a.relatorio}</td>
-                  <td className="px-3 py-2 align-top">{a.pagina}</td>
-                  <td className="px-3 py-2 text-right align-top">
-                    {a.valor === null ? "—" : fmtBRL(a.valor)}
-                  </td>
                   <td className="px-3 py-2 align-top">
-                    <MaterialBadge valor={a.valor} />
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${conclusaoBadge(
+                        a.conclusao,
+                      )}`}
+                    >
+                      {a.conclusao}
+                    </span>
                   </td>
                   <td className="px-3 py-2 align-top">
                     <span
