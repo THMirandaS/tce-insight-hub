@@ -3439,9 +3439,9 @@ function CreditoDespesasContent({
     CREDITO_DESPESAS_MEMORIA
   );
   // Iniciam sem nenhuma opção selecionada (obrigatórios para concluir o item).
-  const [conclusao, setConclusao] = useState<DespesaConclusao | null>(null);
   const [encaminhamentoTipo, setDespesaEncaminhamento] =
     useState<DespesaEncaminhamento | null>(null);
+
   const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
