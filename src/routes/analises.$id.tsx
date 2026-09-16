@@ -6840,7 +6840,6 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
 
       <ConclusaoItemRadios scope="conclusao" readOnly={readOnly} />
 
-      </div>
     </>
   );
 }
