@@ -35,6 +35,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import {
+  getLimitesSalvos,
+  salvarLimites,
+  type LimitesPessoal,
+} from "@/lib/limites-pessoal";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
