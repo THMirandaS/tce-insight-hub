@@ -4818,8 +4818,8 @@ type CIApontamento = {
   quantificado: CISimNao;
   relevanteMaterial: CISimNao;
   enquadraIncisos: CISimNao;
-  // Avaliação / encaminhamento
-  conclusao: CIConclusao;
+  // Avaliação / encaminhamento — IA preenche; manual inicia sem seleção (null)
+  conclusao: CIConclusao | null;
   encaminhamento: CIEncaminhamento;
   descEncaminhamento: string;
   avaliacao: string; // providências da Avaliação da Inconformidade
@@ -4970,7 +4970,7 @@ const CI_EMPTY_FORM: Omit<CIApontamento, "id" | "desconsiderado"> = {
   quantificado: "Não",
   relevanteMaterial: "Não",
   enquadraIncisos: "Não",
-  conclusao: "Regular",
+  conclusao: null,
   encaminhamento: "Nenhum",
   descEncaminhamento: "",
   avaliacao: "",
@@ -5245,13 +5245,17 @@ function ControleInternoContent({
                     {a.apontamento}
                   </td>
                   <td className="px-3 py-2 align-top">
-                    <span
-                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${conclusaoBadge(
-                        a.conclusao,
-                      )}`}
-                    >
-                      {a.conclusao}
-                    </span>
+                    {a.conclusao ? (
+                      <span
+                        className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${conclusaoBadge(
+                          a.conclusao,
+                        )}`}
+                      >
+                        {a.conclusao}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 align-top">
                     <span
