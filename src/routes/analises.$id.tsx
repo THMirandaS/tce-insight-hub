@@ -118,6 +118,7 @@ const PCE_ITEMS_BASE: SubItem[] = [
   },
   { key: "consistencia", label: "Consistência das demonstrações" },
   { key: "controle-interno", label: "Adequação do RCI" },
+  { key: "apontamento-rci", label: "Apontamento do RCI" },
   { key: "outros-assuntos", label: "Outros assuntos relevantes" },
   { key: "outras-inconformidades", label: "Outras Inconformidades" },
   { key: "conclusao", label: "Conclusão" },
