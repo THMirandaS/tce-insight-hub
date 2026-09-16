@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
+import { ConclusaoItemRadios } from "@/components/pce/ConclusaoItemRadios";
+
 import { ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Poder } from "@/lib/pce-data";
 
