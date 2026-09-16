@@ -38,7 +38,8 @@ type SubAba = {
 };
 
 // Mocks na casa de milhões, formato brasileiro.
-// Maioria conforme; apenas "Caixa – Valores a receber" é não conforme (para teste).
+// Maioria conforme; não conformes para demonstração: "RPNP – BF x BO",
+// "Receita orçamentária" (diferença ≠ 0) e "Caixa – Valores a receber" (saldo ≠ 0).
 const SUB_ABAS: SubAba[] = [
   {
     key: "rpnp",
@@ -50,11 +51,13 @@ const SUB_ABAS: SubAba[] = [
       {
         letra: "d",
         descricao: "Inscrição restos a pagar não processados (balanço financeiro)",
-        valor: 150_000_000,
+        valor: 147_350_000,
       },
     ],
-    naoConforme: false,
-    rodape: { descricao: "Diferença (c - d)", valor: 0 },
+    naoConforme: true,
+    rodape: { descricao: "Diferença (c - d)", valor: 2_650_000 },
+    inconformidadeMsg:
+      "A inscrição de restos a pagar não processados no balanço financeiro diverge do resultado da execução orçamentária (empenhada − liquidada) no balanço orçamentário.",
   },
   {
     key: "rpp",
@@ -77,10 +80,12 @@ const SUB_ABAS: SubAba[] = [
     label: "Receita orçamentária",
     itens: [
       { letra: "a", descricao: "Receita orçamentária (balanço financeiro)", valor: 1_200_000_000 },
-      { letra: "b", descricao: "Receita orçamentária (balanço orçamentário)", valor: 1_200_000_000 },
+      { letra: "b", descricao: "Receita orçamentária (balanço orçamentário)", valor: 1_198_700_000 },
     ],
-    naoConforme: false,
-    rodape: { descricao: "Diferença (a - b)", valor: 0 },
+    naoConforme: true,
+    rodape: { descricao: "Diferença (a - b)", valor: 1_300_000 },
+    inconformidadeMsg:
+      "A receita orçamentária registrada no balanço financeiro difere da apurada no balanço orçamentário.",
   },
   {
     key: "despesa",
