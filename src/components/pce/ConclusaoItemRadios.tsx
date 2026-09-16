@@ -7,6 +7,7 @@ export type EncaminhamentoValor = "nenhum" | "recomendacao" | "determinacao";
 export type ConclusaoItemEstado = {
   conclusao: ConclusaoItemValor | null;
   encaminhamento: EncaminhamentoValor | null;
+  encaminhamentoTexto: string;
 };
 
 // Estado por tópico (escopo), mantido no módulo para persistir entre navegações.
@@ -17,7 +18,7 @@ const STORE: Record<string, ConclusaoItemEstado> = {};
 const ATIVO: { scope: string | null } = { scope: null };
 
 export function getConclusaoItem(scope: string): ConclusaoItemEstado {
-  return STORE[scope] ?? { conclusao: null, encaminhamento: null };
+  return STORE[scope] ?? { conclusao: null, encaminhamento: null, encaminhamentoTexto: "" };
 }
 
 export const MSG_CONCLUSAO_OBRIGATORIA =
