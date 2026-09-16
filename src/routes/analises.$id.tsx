@@ -44,6 +44,11 @@ import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacao
 import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
 import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
+import {
+  ConclusaoItemRadios,
+  validarConclusaoItemAtiva,
+} from "@/components/pce/ConclusaoItemRadios";
+
 import { toast } from "sonner";
 import {
   getJurisdicionado,
