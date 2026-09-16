@@ -3471,6 +3471,11 @@ function CreditoDespesasContent({
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
 
+  // Indicador automático: NÃO CONFORME se qualquer programa empenhou mais que o crédito autorizado.
+  const naoConformeCredito = CREDITO_DESPESAS_CONSOLIDADO.some(
+    (l) => l.empenhada > l.autorizado
+  );
+
   const encRestantes = CREDITO_DESPESAS_MAX_TEXTO - encTexto.length;
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
