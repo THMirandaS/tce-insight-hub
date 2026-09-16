@@ -5605,9 +5605,9 @@ function ControleInternoContent({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir apontamento</DialogTitle>
+            <DialogTitle>Excluir inadequação</DialogTitle>
             <DialogDescription>
-              Deseja excluir este apontamento?
+              Deseja excluir esta inadequação?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -6510,7 +6510,7 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
           a.encaminhamento === "Determinação"),
     )
     .map((a) => ({
-      topico: "Adequação dos relatórios",
+      topico: "Adequação do RCI",
       titulo: a.apontamento,
       enquadramento: enquadramentoPorEncaminhamento(a.encaminhamento),
       encaminhamento: a.descEncaminhamento,
@@ -6642,7 +6642,7 @@ function ConclusaoContent({
 <p>Dados consolidados a partir do submenu Restos a Pagar, com avaliação dos saldos por ano de origem.</p>
 
 <h2>4. Análise dos relatórios dos jurisdicionados</h2>
-<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação dos relatórios.</p>
+<p>Avaliação do Relatório de Controle Interno (RCI) e dos apontamentos extraídos automaticamente pela IA, conforme registrado no submenu Adequação do RCI.</p>
 
 <h2>5. Outros assuntos relevantes</h2>
 <p>${OUTROS_ASSUNTOS_STORE.incluir && OUTROS_ASSUNTOS_STORE.texto.trim() ? escapeHTML(OUTROS_ASSUNTOS_STORE.texto) : "Não foram registrados outros assuntos relevantes."}</p>
