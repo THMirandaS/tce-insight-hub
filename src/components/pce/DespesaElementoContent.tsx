@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
+import { ConclusaoItemRadios } from "@/components/pce/ConclusaoItemRadios";
+
 import { Button } from "@/components/ui/button";
 import { History, Plus, Trash2, ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
 
