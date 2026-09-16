@@ -5352,148 +5352,69 @@ function ControleInternoContent({
               />
             </div>
 
-            {/* Campos descritivos */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  Relatório de origem
-                </Label>
-                <select
-                  value={form.relatorio}
-                  disabled={readOnly}
-                  onChange={(e) => updateForm({ relatorio: e.target.value })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {CI_RELATORIOS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  Página do relatório
-                </Label>
-                <Input
-                  value={form.pagina}
-                  readOnly={readOnly}
-                  onChange={(e) => updateForm({ pagina: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  Valor (R$){" "}
-                  <span className="font-normal text-muted-foreground">
-                    (opcional)
-                  </span>
-                </Label>
-                <MoneyInput
-                  value={form.valor ?? 0}
-                  readOnly={readOnly}
-                  onChange={(n) => updateForm({ valor: n })}
-                />
-              </div>
-              <div className="flex items-end pb-1">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">
-                    Classificação automática
-                  </Label>
-                  <div>
-                    <MaterialBadge valor={form.valor} />
-                  </div>
-                </div>
+            {/* Conclusão */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Conclusão</Label>
+              <div className="flex flex-wrap gap-6">
+                {(
+                  ["Regular", "Regular com ressalvas", "Irregular"] as CIConclusao[]
+                ).map((o) => (
+                  <label key={o} className="inline-flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="ci-conclusao"
+                      checked={form.conclusao === o}
+                      disabled={readOnly}
+                      onChange={() => updateForm({ conclusao: o })}
+                      className="h-4 w-4 accent-[#1A56DB]"
+                    />
+                    {o}
+                  </label>
+                ))}
               </div>
             </div>
 
-            {/* Questionário S/N */}
-            <div className="space-y-3 rounded-md border border-border bg-[#F4F5F7] p-4">
-              <h4 className="text-sm font-semibold">Avaliação (Sim / Não)</h4>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-sm">Dano ao erário?</Label>
-                  <SimNaoRadios
-                    name="ci-dano"
-                    value={form.danoErario}
-                    disabled={readOnly}
-                    onChange={(v) => updateForm({ danoErario: v })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-sm">Quantificado?</Label>
-                  <SimNaoRadios
-                    name="ci-quant"
-                    value={form.quantificado}
-                    disabled={readOnly}
-                    onChange={(v) => updateForm({ quantificado: v })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-sm">Relevante ou Material?</Label>
-                  <SimNaoRadios
-                    name="ci-relev"
-                    value={form.relevanteMaterial}
-                    disabled={readOnly}
-                    onChange={(v) => updateForm({ relevanteMaterial: v })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-sm">
-                    Enquadra-se nos incisos II ou III (art. 48 da LC 102/2008)?
-                  </Label>
-                  <SimNaoRadios
-                    name="ci-incisos"
-                    value={form.enquadraIncisos}
-                    disabled={readOnly}
-                    onChange={(v) => updateForm({ enquadraIncisos: v })}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Conclusão e encaminhamento */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Conclusão</Label>
-                <select
-                  value={form.conclusao}
-                  disabled={readOnly}
-                  onChange={(e) =>
-                    updateForm({ conclusao: e.target.value as CIConclusao })
-                  }
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option>Regular</option>
-                  <option>Regular com ressalvas</option>
-                  <option>Irregular</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  Tipo de encaminhamento
-                </Label>
-                <select
-                  value={form.encaminhamento}
-                  disabled={readOnly}
-                  onChange={(e) =>
-                    updateForm({
-                      encaminhamento: e.target.value as CIEncaminhamento,
-                    })
-                  }
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option>Nenhum</option>
-                  <option>Recomendação</option>
-                  <option>Determinação</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Descrição do encaminhamento (IA ou manual, editável) */}
+            {/* Tipo de encaminhamento */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold">
-                Descrição do encaminhamento
+                Tipo de encaminhamento
               </Label>
+              <div className="flex flex-wrap gap-6">
+                {(
+                  ["Nenhum", "Recomendação", "Determinação"] as CIEncaminhamento[]
+                ).map((o) => (
+                  <label key={o} className="inline-flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="ci-tipo-enc"
+                      checked={form.encaminhamento === o}
+                      disabled={readOnly}
+                      onChange={() => updateForm({ encaminhamento: o })}
+                      className="h-4 w-4 accent-[#1A56DB]"
+                    />
+                    {o}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Descrição da inadequação */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Descrição da inadequação
+              </Label>
+              <textarea
+                value={form.avaliacao}
+                readOnly={readOnly}
+                onChange={(e) => updateForm({ avaliacao: e.target.value })}
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            {/* Encaminhamento (IA ou manual, editável) */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Encaminhamento</Label>
               <p className="text-xs text-muted-foreground">
                 Texto sugerido pela IA ou inserido manualmente. Ajuste conforme
                 necessário.
