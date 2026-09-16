@@ -3685,32 +3685,7 @@ function CreditoDespesasContent({
           </div>
 
           {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
-          <ConclusaoItemRadios
-            scope="credito-despesas-prg"
-            readOnly={readOnly}
-            onChange={(e) => {
-              setDespesaEncaminhamento(e.encaminhamento as DespesaEncaminhamento | null);
-            }}
-
-          />
-
-
-          {/* Editor Encaminhamento */}
-          <div className="mt-6 space-y-2">
-            <Label className="text-sm font-semibold">Encaminhamento:</Label>
-            <textarea
-              value={encTexto}
-              readOnly={encDisabled}
-              maxLength={CREDITO_DESPESAS_MAX_TEXTO}
-              onChange={(e) => setEncTexto(e.target.value)}
-              className={`min-h-[140px] w-full rounded-md border border-border p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30 ${
-                encDisabled ? "bg-[#F4F5F7]" : "bg-white"
-              }`}
-            />
-            <p className="text-right text-xs text-muted-foreground">
-              {encRestantes.toLocaleString("pt-BR")} caracteres restantes
-            </p>
-          </div>
+          <ConclusaoItemRadios scope="credito-despesas-prg" readOnly={readOnly} />
 
           {/* Editor Considerações */}
           <ConsideracoesAdicionais readOnly={readOnly} title="Considerações:" printTitle="Considerações — Crédito e despesas por programa" />
