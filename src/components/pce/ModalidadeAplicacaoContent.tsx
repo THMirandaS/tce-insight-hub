@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,14 +54,14 @@ const LINHAS_MOCK: ModalidadeLinha[] = [
   { id: "ma12", programa: "88", categoria: "Despesas de Capital", grupo: "Investimentos", modalidade: MODALIDADE_3, valorPago: 95_000_000 },
 ];
 
-function groupByModalidade(linhas: ModalidadeLinha[]) {
-  const grupos = new Map<string, ModalidadeLinha[]>();
+function buildResumo(linhas: ModalidadeLinha[]) {
+  const totais = new Map<string, number>();
   for (const l of linhas) {
-    const arr = grupos.get(l.modalidade) ?? [];
-    arr.push(l);
-    grupos.set(l.modalidade, arr);
+    totais.set(l.modalidade, (totais.get(l.modalidade) ?? 0) + l.valorPago);
   }
-  return grupos;
+  return Array.from(totais.entries())
+    .map(([modalidade, valor]) => ({ modalidade, valor }))
+    .sort((a, b) => a.modalidade.localeCompare(b.modalidade, "pt-BR"));
 }
 
 
@@ -100,7 +100,10 @@ export function ModalidadeAplicacaoContent({
   }
 
   const totalGeral = memoria.reduce((s, l) => s + l.valorPago, 0);
-  const grupos = groupByModalidade(memoria);
+  const resumo = buildResumo(memoria);
+  const memoriaOrdenada = [...memoria].sort((a, b) =>
+    a.modalidade.localeCompare(b.modalidade, "pt-BR")
+  );
 
   return (
     <>
