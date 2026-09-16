@@ -4740,7 +4740,10 @@ function DespesasPessoalContent({
         />
       )}
 
+      <ConclusaoItemRadios scope="despesas-pessoal" />
+
       <ConsideracoesAdicionais />
+
     </>
   );
 }
