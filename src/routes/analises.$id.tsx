@@ -3471,6 +3471,11 @@ function CreditoDespesasContent({
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
 
+  // Indicador automático: NÃO CONFORME se qualquer programa empenhou mais que o crédito autorizado.
+  const naoConformeCredito = CREDITO_DESPESAS_CONSOLIDADO.some(
+    (l) => l.empenhada > l.autorizado
+  );
+
   const encRestantes = CREDITO_DESPESAS_MAX_TEXTO - encTexto.length;
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
@@ -3558,6 +3563,27 @@ function CreditoDespesasContent({
 
       {tab === "principal" ? (
         <>
+          {/* Indicador automático Despesa x crédito autorizado */}
+          <div className="mb-4 space-y-2">
+            <div
+              className={`flex items-center gap-3 rounded-md border p-3 ${
+                naoConformeCredito
+                  ? "border-red-300 bg-red-50 text-red-800"
+                  : "border-green-300 bg-green-50 text-green-800"
+              }`}
+            >
+              {naoConformeCredito ? (
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+              )}
+              <p className="text-sm font-semibold">
+                Despesa x crédito autorizado:{" "}
+                {naoConformeCredito ? "NÃO CONFORME" : "CONFORME"}
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">
