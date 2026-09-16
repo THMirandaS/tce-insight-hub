@@ -781,6 +781,8 @@ function AnaliseDetalhePage() {
             />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
+          ) : active === "apontamento-rci" ? (
+            <ApontamentoRciContent processo={processoLabel} orgao={orgao} />
           ) : active === "outros-assuntos" ? (
             <OutrosAssuntosContent processo={processoLabel} orgao={orgao} />
           ) : active === "outras-inconformidades" ? (
