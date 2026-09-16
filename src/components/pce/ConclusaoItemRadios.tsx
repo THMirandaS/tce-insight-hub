@@ -21,6 +21,11 @@ export function getConclusaoItem(scope: string): ConclusaoItemEstado {
   return STORE[scope] ?? { conclusao: null, encaminhamento: null, encaminhamentoTexto: "" };
 }
 
+/** Todos os escopos preenchidos (usado pela tabela da Conclusão — RF22). */
+export function listConclusaoItens(): (ConclusaoItemEstado & { scope: string })[] {
+  return Object.entries(STORE).map(([scope, est]) => ({ scope, ...est }));
+}
+
 export const MSG_CONCLUSAO_OBRIGATORIA =
   "Selecione a conclusão do item e o tipo de encaminhamento";
 
