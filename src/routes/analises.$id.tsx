@@ -5283,8 +5283,8 @@ function ControleInternoContent({
                           }
                           title={
                             dim
-                              ? "Reconsiderar apontamento"
-                              : "Desconsiderar apontamento"
+                              ? "Considerar inadequação"
+                              : "Desconsiderar inadequação"
                           }
                         >
                           {dim ? (
@@ -5321,7 +5321,7 @@ function ControleInternoContent({
 
       <ConclusaoItemRadios scope="controle-interno" readOnly={readOnly} />
 
-      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação dos relatórios" />
+      <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação do RCI" />
 
 
       {/* Diálogo de edição do apontamento */}
@@ -5332,7 +5332,7 @@ function ControleInternoContent({
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editId === "__new__" ? "Novo apontamento" : "Editar apontamento"}
+              {editId === "__new__" ? "Nova inadequação" : "Editar inadequação"}
             </DialogTitle>
             <DialogDescription>
               Campos pré-preenchidos pela IA e editáveis pelo auditor.
@@ -5342,7 +5342,7 @@ function ControleInternoContent({
           <div className="space-y-5">
             {/* Descrição */}
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">Apontamento</Label>
+              <Label className="text-sm font-semibold">Título</Label>
               <textarea
                 value={form.apontamento}
                 readOnly={readOnly}
@@ -5451,10 +5451,27 @@ function ControleInternoContent({
               </div>
             </div>
 
-            {/* Encaminhamento */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Conclusão e encaminhamento */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">Encaminhamento</Label>
+                <Label className="text-sm font-semibold">Conclusão</Label>
+                <select
+                  value={form.conclusao}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    updateForm({ conclusao: e.target.value as CIConclusao })
+                  }
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option>Regular</option>
+                  <option>Regular com ressalvas</option>
+                  <option>Irregular</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Tipo de encaminhamento
+                </Label>
                 <select
                   value={form.encaminhamento}
                   disabled={readOnly}
@@ -5470,20 +5487,26 @@ function ControleInternoContent({
                   <option>Determinação</option>
                 </select>
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label className="text-sm font-semibold">
-                  Descrição do encaminhamento
-                </Label>
-                <textarea
-                  value={form.descEncaminhamento}
-                  readOnly={readOnly}
-                  onChange={(e) =>
-                    updateForm({ descEncaminhamento: e.target.value })
-                  }
-                  rows={2}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
+            </div>
+
+            {/* Descrição do encaminhamento (IA ou manual, editável) */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Descrição do encaminhamento
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Texto sugerido pela IA ou inserido manualmente. Ajuste conforme
+                necessário.
+              </p>
+              <textarea
+                value={form.descEncaminhamento}
+                readOnly={readOnly}
+                onChange={(e) =>
+                  updateForm({ descEncaminhamento: e.target.value })
+                }
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </div>
 
             {/* Entendimento técnico — nunca exibido no relatório/PDF */}
