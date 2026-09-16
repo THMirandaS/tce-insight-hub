@@ -52,6 +52,7 @@ import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionai
 import {
   ConclusaoItemRadios,
   validarConclusaoItemAtiva,
+  listConclusaoItens,
 } from "@/components/pce/ConclusaoItemRadios";
 
 import { toast } from "sonner";
