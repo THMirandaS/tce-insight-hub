@@ -4321,6 +4321,24 @@ function RestosPagarContent({
         </div>
       )}
 
+      {/* Indicador automático RF16: RPs com mais de 5 anos */}
+      <div
+        className={`mb-4 flex items-center gap-3 rounded-md border p-3 ${
+          temAnoAntigo
+            ? "border-red-300 bg-red-50 text-red-800"
+            : "border-green-300 bg-green-50 text-green-800"
+        }`}
+      >
+        {temAnoAntigo ? (
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+        ) : (
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+        )}
+        <p className="text-sm font-semibold">
+          RP com mais de 5 anos: {temAnoAntigo ? "NÃO CONFORME" : "CONFORME"}
+        </p>
+      </div>
+
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold underline">Restos a pagar:</h2>
         <div className="flex items-center gap-2" data-pdf-hide>
@@ -4349,8 +4367,8 @@ function RestosPagarContent({
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
               <th className="px-3 py-2 text-left">Ano Origem</th>
-              <th className="px-3 py-2 text-right">Rap's Processados</th>
-              <th className="px-3 py-2 text-right">Rap's Não Processados</th>
+              <th className="px-3 py-2 text-right">RP's Processados</th>
+              <th className="px-3 py-2 text-right">RP's Não Processados</th>
               {!readOnly && <th className="px-3 py-2 text-center">Ações</th>}
             </tr>
           </thead>
