@@ -5681,9 +5681,12 @@ function OutrosAssuntosContent({
           Este texto deverá constar no relatório de conclusão do processo.
         </Label>
       </div>
+
+      <ConclusaoItemRadios scope="outros-assuntos" />
     </>
   );
 }
+
 
 // ============ Outras Inconformidades ============
 
