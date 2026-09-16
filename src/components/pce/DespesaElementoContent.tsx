@@ -270,7 +270,10 @@ export function DespesaElementoContent({
             <AvaliacaoInconformidadeElemento tipo="pago-liquidado" />
           )}
 
+          <ConclusaoItemRadios scope="despesa-elemento" />
+
           <ConsideracoesAdicionais />
+
         </>
       ) : (
         <>
