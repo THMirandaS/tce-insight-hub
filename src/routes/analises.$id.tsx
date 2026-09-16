@@ -3335,7 +3335,8 @@ const CREDITO_DESPESAS_RESUMO_IA =
   "A execução orçamentária apresentou índice médio de empenho de 94% em relação ao crédito autorizado. O programa 88 apresentou execução acima do autorizado (110%), configurando situação de atenção que requer encaminhamento específico. Os demais programas mantiveram execução dentro dos limites autorizados.";
 
 type DespesaConclusao = "regular" | "ressalvas" | "irregular" | "";
-type DespesaEncaminhamento = "nenhum" | "recomendacao" | "determinacao" | "";
+
+
 
 type DespesaMemoriaLinha = {
   id: string;
@@ -3458,11 +3459,6 @@ function CreditoDespesasContent({
   const [memoria, setMemoria] = useState<DespesaMemoriaLinha[]>(
     CREDITO_DESPESAS_MEMORIA
   );
-  // Iniciam sem nenhuma opção selecionada (obrigatórios para concluir o item).
-  const [encaminhamentoTipo, setDespesaEncaminhamento] =
-    useState<DespesaEncaminhamento | null>(null);
-
-  const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -3476,11 +3472,9 @@ function CreditoDespesasContent({
     (l) => l.empenhada > l.autorizado
   );
 
-  const encRestantes = CREDITO_DESPESAS_MAX_TEXTO - encTexto.length;
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
-  const encDisabled =
-    readOnly || !encaminhamentoTipo || encaminhamentoTipo === "nenhum";
+
 
 
   function updateMemoria(id: string, patch: Partial<DespesaMemoriaLinha>) {
@@ -3691,32 +3685,7 @@ function CreditoDespesasContent({
           </div>
 
           {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
-          <ConclusaoItemRadios
-            scope="credito-despesas-prg"
-            readOnly={readOnly}
-            onChange={(e) => {
-              setDespesaEncaminhamento(e.encaminhamento as DespesaEncaminhamento | null);
-            }}
-
-          />
-
-
-          {/* Editor Encaminhamento */}
-          <div className="mt-6 space-y-2">
-            <Label className="text-sm font-semibold">Encaminhamento:</Label>
-            <textarea
-              value={encTexto}
-              readOnly={encDisabled}
-              maxLength={CREDITO_DESPESAS_MAX_TEXTO}
-              onChange={(e) => setEncTexto(e.target.value)}
-              className={`min-h-[140px] w-full rounded-md border border-border p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#0D1B2A]/30 ${
-                encDisabled ? "bg-[#F4F5F7]" : "bg-white"
-              }`}
-            />
-            <p className="text-right text-xs text-muted-foreground">
-              {encRestantes.toLocaleString("pt-BR")} caracteres restantes
-            </p>
-          </div>
+          <ConclusaoItemRadios scope="credito-despesas-prg" readOnly={readOnly} />
 
           {/* Editor Considerações */}
           <ConsideracoesAdicionais readOnly={readOnly} title="Considerações:" printTitle="Considerações — Crédito e despesas por programa" />
@@ -4033,8 +4002,6 @@ const DSP_DOTACAO_READ_ONLY =
   DSP_DOTACAO_SITUACAO_CONCLUIDA ||
   !DSP_DOTACAO_USUARIO_AUTORIZADO;
 
-const DSP_DOTACAO_MAX_TEXTO = 4000;
-
 type DspDotacaoAcao = {
   id: string;
   codigo: string;
@@ -4099,51 +4066,6 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
   },
 ];
 
-function DspDotacaoInconformidade({ acoes }: { acoes: DspDotacaoAcao[] }) {
-  const [providencias, setProvidencias] = useState("");
-  return (
-    <div className="mt-6 rounded-md border border-red-300 bg-red-50 p-4">
-      <div className="mb-3 flex items-start gap-3">
-        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
-        <div>
-          <h3 className="text-base font-semibold text-red-800">
-            Avaliação da Inconformidade
-          </h3>
-          <p className="mt-1 text-sm text-red-800">
-            {acoes.length === 1
-              ? "A ação abaixo apresenta despesa empenhada superior ao crédito autorizado:"
-              : "As ações abaixo apresentam despesa empenhada superior ao crédito autorizado:"}
-          </p>
-          <ul className="mt-2 list-disc pl-5 text-sm text-red-800">
-            {acoes.map((a) => (
-              <li key={a.id}>
-                {a.codigo} - {a.nome} — excesso de{" "}
-                <span className="font-semibold">
-                  {fmtBRL(a.empenhado - a.autorizado)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      <Label className="text-sm font-semibold text-red-900">
-        Providências / Justificativas:
-      </Label>
-      <textarea
-        value={providencias}
-        onChange={(e) =>
-          setProvidencias(e.target.value.slice(0, DSP_DOTACAO_MAX_TEXTO))
-        }
-        maxLength={DSP_DOTACAO_MAX_TEXTO}
-        rows={4}
-        className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-      />
-      <div className="text-right text-xs text-red-700">
-        {DSP_DOTACAO_MAX_TEXTO - providencias.length} caracteres restantes
-      </div>
-    </div>
-  );
-}
 
 function DspDotacaoContent({
   processo,
@@ -4266,8 +4188,6 @@ function DspDotacaoContent({
           </tfoot>
         </table>
       </div>
-
-      {naoConforme && <DspDotacaoInconformidade acoes={naoConformes} />}
 
       <ConclusaoItemRadios scope="dsp-dotacao" readOnly={readOnly} />
 
@@ -4577,8 +4497,6 @@ function RestosPagarContent({
 
 /* ===================== Despesas com Pessoal ===================== */
 
-const DESPESAS_PESSOAL_MAX_TEXTO = 4000;
-
 type DespesaPessoalMock = {
   limiteLegal: number; // %
   limitePrudencial: number; // %
@@ -4651,48 +4569,6 @@ function DespCard({
   );
 }
 
-function AvaliacaoInconformidade({
-  percentualRcl,
-  limiteLegal,
-}: {
-  percentualRcl: number;
-  limiteLegal: number;
-}) {
-  const [providencias, setProvidencias] = useState("");
-  const excedente = percentualRcl - limiteLegal;
-  return (
-    <div className="mt-6 rounded-md border border-red-300 bg-red-50 p-4">
-      <div className="mb-3 flex items-start gap-3">
-        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
-        <div>
-          <h3 className="text-base font-semibold text-red-800">
-            Avaliação da Inconformidade
-          </h3>
-          <p className="mt-1 text-sm text-red-800">
-            A despesa com pessoal corresponde a {fmtPct(percentualRcl)} da RCL,
-            excedendo em {fmtPct(excedente)} o limite legal de{" "}
-            {fmtPct(limiteLegal)}.
-          </p>
-        </div>
-      </div>
-      <Label className="text-sm font-semibold text-red-900">
-        Providências / Justificativas:
-      </Label>
-      <textarea
-        value={providencias}
-        onChange={(e) =>
-          setProvidencias(e.target.value.slice(0, DESPESAS_PESSOAL_MAX_TEXTO))
-        }
-        maxLength={DESPESAS_PESSOAL_MAX_TEXTO}
-        rows={4}
-        className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-      />
-      <div className="text-right text-xs text-red-700">
-        {DESPESAS_PESSOAL_MAX_TEXTO - providencias.length} caracteres restantes
-      </div>
-    </div>
-  );
-}
 
 
 function DespesasPessoalContent({
@@ -4777,13 +4653,6 @@ function DespesasPessoalContent({
             {conforme ? "CONFORME" : "NÃO CONFORME"}
           </p>
         </div>
-      )}
-
-      {!ocultarConformidade && !conforme && (
-        <AvaliacaoInconformidade
-          percentualRcl={percentualRcl}
-          limiteLegal={mock.limiteLegal}
-        />
       )}
 
       <ConclusaoItemRadios scope="despesas-pessoal" />
@@ -5491,35 +5360,6 @@ function ControleInternoContent({
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 />
               </div>
-            </div>
-
-            {/* Bloco de avaliação da inconformidade */}
-            <div className="rounded-md border border-red-300 bg-red-50 p-4">
-              <div className="mb-3 flex items-start gap-3">
-                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
-                <div>
-                  <h4 className="text-base font-semibold text-red-800">
-                    Avaliação da Inconformidade
-                  </h4>
-                  <p className="mt-1 text-sm text-red-800">
-                    Registre as providências e justificativas relativas ao
-                    apontamento identificado.
-                  </p>
-                </div>
-              </div>
-              <Label className="text-sm font-semibold text-red-900">
-                Providências / Justificativas:
-              </Label>
-              <textarea
-                value={form.avaliacao}
-                readOnly={readOnly}
-                onChange={(e) =>
-                  updateForm({ avaliacao: e.target.value.slice(0, CI_MAX_TEXTO) })
-                }
-                maxLength={CI_MAX_TEXTO}
-                rows={3}
-                className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
             </div>
 
             {/* Entendimento técnico — nunca exibido no relatório/PDF */}

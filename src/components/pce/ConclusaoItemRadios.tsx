@@ -102,42 +102,41 @@ export function ConclusaoItemRadios({
 
       <div className="mt-4 space-y-2">
         <Label className="text-sm font-semibold">Tipo de encaminhamento:</Label>
-        <div className="flex flex-wrap items-start gap-6">
-          <div className="flex flex-wrap gap-6 pt-1">
-            {ENC_OPCOES.map((o) => (
-              <label key={o.v} className="inline-flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name={`encaminhamento-${scope}`}
-                  value={o.v}
-                  checked={estado.encaminhamento === o.v}
-                  disabled={readOnly}
-                  onChange={() => commit({ ...estado, encaminhamento: o.v })}
-                  className="h-4 w-4 accent-[#1A56DB]"
-                />
-                {o.label}
-              </label>
-            ))}
-          </div>
-
-          {/* Caixa "Encaminhamento": visível só com Recomendação ou Determinação */}
-          {(estado.encaminhamento === "recomendacao" ||
-            estado.encaminhamento === "determinacao") && (
-            <div className="min-w-[280px] flex-1 space-y-1">
-              <Label className="text-sm font-semibold">Encaminhamento:</Label>
-              <textarea
-                value={estado.encaminhamentoTexto}
-                readOnly={readOnly}
-                onChange={(e) =>
-                  commit({ ...estado, encaminhamentoTexto: e.target.value })
-                }
-                rows={3}
-                placeholder="Descreva o encaminhamento..."
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+        <div className="flex flex-wrap gap-6">
+          {ENC_OPCOES.map((o) => (
+            <label key={o.v} className="inline-flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name={`encaminhamento-${scope}`}
+                value={o.v}
+                checked={estado.encaminhamento === o.v}
+                disabled={readOnly}
+                onChange={() => commit({ ...estado, encaminhamento: o.v })}
+                className="h-4 w-4 accent-[#1A56DB]"
               />
-            </div>
-          )}
+              {o.label}
+            </label>
+          ))}
         </div>
+
+        {/* Caixa "Encaminhamento" (largura total, abaixo dos rádios):
+            visível só com Recomendação ou Determinação */}
+        {(estado.encaminhamento === "recomendacao" ||
+          estado.encaminhamento === "determinacao") && (
+          <div className="mt-4 space-y-1">
+            <Label className="text-sm font-semibold">Encaminhamento:</Label>
+            <textarea
+              value={estado.encaminhamentoTexto}
+              readOnly={readOnly}
+              onChange={(e) =>
+                commit({ ...estado, encaminhamentoTexto: e.target.value })
+              }
+              rows={3}
+              placeholder="Descreva o encaminhamento..."
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+            />
+          </div>
+        )}
       </div>
     </>
   );
