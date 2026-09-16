@@ -768,7 +768,11 @@ function AnaliseDetalhePage() {
               poder={atributos.poder}
             />
           ) : active === "restos-pagar" ? (
-            <RestosPagarContent processo={processoLabel} orgao={orgao} />
+            <RestosPagarContent
+              processo={processoLabel}
+              orgao={orgao}
+              anoReferencia={anoReferencia}
+            />
           ) : active === "controle-interno" ? (
             <ControleInternoContent processo={processoLabel} orgao={orgao} />
           ) : active === "outros-assuntos" ? (
