@@ -5623,6 +5623,11 @@ const APRCI_INICIAL: CIApontamento[] = [
   },
 ];
 
+// Store compartilhado para que a Conclusão (RF22) reflita os apontamentos vigentes.
+const APRCI_STORE: { apontamentos: CIApontamento[] } = {
+  apontamentos: APRCI_INICIAL,
+};
+
 const APRCI_HISTORICO: ReceitasHistorico[] = [
   {
     ts: "20/05/2026 10:16",
