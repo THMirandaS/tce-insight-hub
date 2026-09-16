@@ -10,7 +10,11 @@ import { ALL_ROWS } from "@/routes/analises";
 
 // Perfis do sistema. "Executor" e "Revisor" trabalham os processos;
 // o "Coordenador" atribui, valida e tramita (papel de validador).
-export type Perfil = "Coordenador" | "Executor" | "Revisor";
+export type Perfil =
+  | "Coordenador"
+  | "Administrador (DTII)"
+  | "Executor"
+  | "Revisor";
 
 export type Atribuicao = {
   executor: string | null;
@@ -90,6 +94,13 @@ function buildUsuarios(): Usuario[] {
       nome: "Coordenador 01",
       email: emailDe("Coordenador 01"),
       perfil: "Coordenador",
+      ativo: true,
+    },
+    {
+      id: "u-adm-dtii",
+      nome: "Administrador DTII",
+      email: emailDe("Administrador DTII"),
+      perfil: "Administrador (DTII)",
       ativo: true,
     },
   ];

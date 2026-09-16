@@ -35,6 +35,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useAtribuicoes } from "@/lib/atribuicoes";
+import {
+  getLimitesSalvos,
+  salvarLimites,
+  type LimitesPessoal,
+} from "@/lib/limites-pessoal";
 import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
 import { useJurisdicionados } from "@/lib/jurisdicionados-store";
@@ -4599,6 +4604,57 @@ function DespCard({
 
 
 
+// Campo de limite (%) editável apenas para Coordenador/Administrador (DTII).
+function LimiteCard({
+  label,
+  value,
+  editavel,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  editavel: boolean;
+  onChange: (n: number) => void;
+}) {
+  const [texto, setTexto] = useState<string>(
+    value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+  );
+
+  if (!editavel) return <DespCard label={label} value={fmtPct(value)} />;
+
+  const commit = (raw: string) => {
+    const n = Number(raw.replace(/\./g, "").replace(",", "."));
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+      setTexto(value.toLocaleString("pt-BR", { minimumFractionDigits: 2 }));
+      return;
+    }
+    onChange(n);
+    setTexto(n.toLocaleString("pt-BR", { minimumFractionDigits: 2 }));
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-white p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <div className="mt-1 flex items-center gap-1">
+        <Input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit((e.target as HTMLInputElement).value);
+          }}
+          inputMode="decimal"
+          aria-label={label}
+          className="h-9 w-28 text-xl font-bold"
+        />
+        <span className="text-xl font-bold">%</span>
+      </div>
+    </div>
+  );
+}
+
 function DespesasPessoalContent({
   processo,
   orgao,
@@ -4610,13 +4666,35 @@ function DespesasPessoalContent({
   jurisdicionado: Jurisdicionado;
   poder: Poder;
 }) {
+  const { perfil } = useAtribuicoes();
+  const podeEditarLimites =
+    perfil === "Coordenador" || perfil === "Administrador (DTII)";
+
   const mock = useMemo(
     () => getDespesaPessoalMock(jurisdicionado),
     [jurisdicionado]
   );
+
+  const [limites, setLimites] = useState<LimitesPessoal>(() => {
+    const salvos = getLimitesSalvos(jurisdicionado.sigla);
+    return {
+      limiteLegal: salvos.limiteLegal ?? mock.limiteLegal,
+      limitePrudencial: salvos.limitePrudencial ?? mock.limitePrudencial,
+      limiteAlerta: salvos.limiteAlerta ?? mock.limiteAlerta,
+    };
+  });
+
+  const atualizarLimite = (campo: keyof LimitesPessoal, valor: number) => {
+    setLimites((prev) => {
+      const next = { ...prev, [campo]: valor };
+      salvarLimites(jurisdicionado.sigla, next);
+      return next;
+    });
+  };
+
   const percentualRcl = (mock.despesaPessoal / mock.rcl) * 100;
   const ocultarConformidade = poder === "DEFENSORIA PÚBLICA";
-  const conforme = percentualRcl <= mock.limiteLegal;
+  const conforme = percentualRcl <= limites.limiteLegal;
 
   return (
     <>
@@ -4640,12 +4718,24 @@ function DespesasPessoalContent({
       </h2>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <DespCard label="Limite legal (%)" value={fmtPct(mock.limiteLegal)} />
-        <DespCard
-          label="Limite prudencial (%)"
-          value={fmtPct(mock.limitePrudencial)}
+        <LimiteCard
+          label="Limite legal (%)"
+          value={limites.limiteLegal}
+          editavel={podeEditarLimites}
+          onChange={(n) => atualizarLimite("limiteLegal", n)}
         />
-        <DespCard label="Limite de alerta (%)" value={fmtPct(mock.limiteAlerta)} />
+        <LimiteCard
+          label="Limite prudencial (%)"
+          value={limites.limitePrudencial}
+          editavel={podeEditarLimites}
+          onChange={(n) => atualizarLimite("limitePrudencial", n)}
+        />
+        <LimiteCard
+          label="Limite de alerta (%)"
+          value={limites.limiteAlerta}
+          editavel={podeEditarLimites}
+          onChange={(n) => atualizarLimite("limiteAlerta", n)}
+        />
         <DespCard
           label="Despesa com pessoal (R$)"
           value={fmtBRL(mock.despesaPessoal)}
