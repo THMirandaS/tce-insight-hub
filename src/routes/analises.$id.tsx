@@ -5280,7 +5280,10 @@ function ControleInternoContent({
         </div>
       )}
 
+      <ConclusaoItemRadios scope="controle-interno" readOnly={readOnly} />
+
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação dos relatórios" />
+
 
       {/* Diálogo de edição do apontamento */}
       <Dialog
