@@ -3649,9 +3649,9 @@ function CreditoDespesasContent({
             scope="credito-despesas-prg"
             readOnly={readOnly}
             onChange={(e) => {
-              setConclusao(e.conclusao as DespesaConclusao | null);
               setDespesaEncaminhamento(e.encaminhamento as DespesaEncaminhamento | null);
             }}
+
           />
 
 
