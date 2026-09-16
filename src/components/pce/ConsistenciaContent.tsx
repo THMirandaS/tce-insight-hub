@@ -15,8 +15,6 @@ function fmtBRL(n: number): string {
   });
 }
 
-const MAX_TEXTO = 4000;
-
 type ItemLinha = {
   letra: string;
   descricao: string;
@@ -156,44 +154,8 @@ const SUB_ABAS: SubAba[] = [
   },
 ];
 
-function AvaliacaoInconformidade({
-  subAbaLabel,
-  mensagem,
-}: {
-  subAbaLabel: string;
-  mensagem?: string;
-}) {
-  const [providencias, setProvidencias] = useState("");
-  return (
-    <div className="mt-4 rounded-md border border-red-300 bg-red-50 p-4">
-      <div className="mb-3 flex items-start gap-3">
-        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-700" />
-        <div>
-          <h3 className="text-base font-semibold text-red-800">
-            Avaliação da Inconformidade
-          </h3>
-          <p className="mt-1 text-sm text-red-800">
-            {mensagem ??
-              `Inconsistência identificada em "${subAbaLabel}": a diferença apurada é diferente de zero.`}
-          </p>
-        </div>
-      </div>
-      <Label className="text-sm font-semibold text-red-900">
-        Providências / Justificativas:
-      </Label>
-      <textarea
-        value={providencias}
-        onChange={(e) => setProvidencias(e.target.value.slice(0, MAX_TEXTO))}
-        maxLength={MAX_TEXTO}
-        rows={4}
-        className="mt-2 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-      />
-      <div className="text-right text-xs text-red-700">
-        {MAX_TEXTO - providencias.length} caracteres restantes
-      </div>
-    </div>
-  );
-}
+
+
 
 
 
