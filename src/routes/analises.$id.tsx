@@ -4244,9 +4244,11 @@ const RESTOS_PAGAR_HISTORICO: ReceitasHistorico[] = [
 function RestosPagarContent({
   processo,
   orgao,
+  anoReferencia,
 }: {
   processo: string;
   orgao: string;
+  anoReferencia: string;
 }) {
   const readOnly = RESTOS_PAGAR_READ_ONLY;
 
@@ -4261,7 +4263,11 @@ function RestosPagarContent({
 
   const textoRestantes = RESTOS_PAGAR_MAX_TEXTO - texto.length;
 
-  const temAnoAntigo = linhas.some((l) => l.ano < RESTOS_PAGAR_ANO_ATUAL - 5);
+  // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
+  // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
+  // igual ou anterior a (ano de referência − 5).
+  const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
+  const temAnoAntigo = linhas.some((l) => l.ano <= anoRef - 5);
   const naoProcMaiorProc = totalNaoProcessados > totalProcessados;
   const exibirResumoIA = temAnoAntigo || naoProcMaiorProc;
 
