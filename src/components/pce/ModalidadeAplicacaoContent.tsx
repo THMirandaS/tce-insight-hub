@@ -148,44 +148,30 @@ export function ModalidadeAplicacaoContent({
             <table className="w-full text-sm">
               <thead className="bg-[#0D1B2A] text-white">
                 <tr>
-                  <th className="px-3 py-2 text-left">Programa</th>
-                  <th className="px-3 py-2 text-left">Categoria</th>
-                  <th className="px-3 py-2 text-left">Grupo</th>
                   <th className="px-3 py-2 text-left">Modalidade</th>
                   <th className="px-3 py-2 text-right">Valor pago (R$)</th>
+                  <th className="px-3 py-2 text-right">Percentual</th>
                 </tr>
               </thead>
               <tbody>
-                {/* TOTAL geral no topo */}
+                {resumo.map((r, i) => (
+                  <tr key={r.modalidade} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    <td className="px-3 py-2">{r.modalidade}</td>
+                    <td className="px-3 py-2 text-right">{fmtBRL(r.valor)}</td>
+                    <td className="px-3 py-2 text-right">
+                      {totalGeral > 0
+                        ? `${((r.valor / totalGeral) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+                        : "0,00%"}
+                    </td>
+                  </tr>
+                ))}
                 <tr className="bg-[#F4F5F7] font-semibold">
-                  <td colSpan={4} className="px-3 py-2">TOTAL</td>
+                  <td className="px-3 py-2">TOTAL</td>
                   <td className="px-3 py-2 text-right">{fmtBRL(totalGeral)}</td>
+                  <td className="px-3 py-2 text-right">
+                    {totalGeral > 0 ? "100,00%" : "0,00%"}
+                  </td>
                 </tr>
-                {Array.from(grupos.entries()).flatMap(([modalidade, linhas]) => {
-                  const subtotal = linhas.reduce((s, l) => s + l.valorPago, 0);
-                  const rows: ReactElement[] = [];
-                  linhas.forEach((l, i) => {
-                    rows.push(
-                      <tr
-                        key={l.id}
-                        className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                      >
-                        <td className="px-3 py-2">{l.programa}</td>
-                        <td className="px-3 py-2">{l.categoria}</td>
-                        <td className="px-3 py-2">{l.grupo}</td>
-                        <td className="px-3 py-2">{l.modalidade}</td>
-                        <td className="px-3 py-2 text-right">{fmtBRL(l.valorPago)}</td>
-                      </tr>
-                    );
-                  });
-                  rows.push(
-                    <tr key={`sub-${modalidade}`} className="bg-[#F4F5F7] font-semibold">
-                      <td colSpan={4} className="px-3 py-2">SUBTOTAL — {modalidade}</td>
-                      <td className="px-3 py-2 text-right">{fmtBRL(subtotal)}</td>
-                    </tr>
-                  );
-                  return rows;
-                })}
               </tbody>
             </table>
           </div>
