@@ -6837,6 +6837,10 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
           Coordenador da CACGEAF – TC {ASSINATURA.tcCoordenador}
         </p>
       </div>
+
+      <ConclusaoItemRadios scope="conclusao" readOnly={readOnly} />
+
+      </div>
     </>
   );
 }
