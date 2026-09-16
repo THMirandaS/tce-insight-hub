@@ -3335,7 +3335,8 @@ const CREDITO_DESPESAS_RESUMO_IA =
   "A execução orçamentária apresentou índice médio de empenho de 94% em relação ao crédito autorizado. O programa 88 apresentou execução acima do autorizado (110%), configurando situação de atenção que requer encaminhamento específico. Os demais programas mantiveram execução dentro dos limites autorizados.";
 
 type DespesaConclusao = "regular" | "ressalvas" | "irregular" | "";
-type DespesaEncaminhamento = "nenhum" | "recomendacao" | "determinacao" | "";
+
+
 
 type DespesaMemoriaLinha = {
   id: string;
@@ -3458,11 +3459,6 @@ function CreditoDespesasContent({
   const [memoria, setMemoria] = useState<DespesaMemoriaLinha[]>(
     CREDITO_DESPESAS_MEMORIA
   );
-  // Iniciam sem nenhuma opção selecionada (obrigatórios para concluir o item).
-  const [encaminhamentoTipo, setDespesaEncaminhamento] =
-    useState<DespesaEncaminhamento | null>(null);
-
-  const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -3476,11 +3472,9 @@ function CreditoDespesasContent({
     (l) => l.empenhada > l.autorizado
   );
 
-  const encRestantes = CREDITO_DESPESAS_MAX_TEXTO - encTexto.length;
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
-  const encDisabled =
-    readOnly || !encaminhamentoTipo || encaminhamentoTipo === "nenhum";
+
 
 
   function updateMemoria(id: string, patch: Partial<DespesaMemoriaLinha>) {
