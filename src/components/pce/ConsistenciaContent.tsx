@@ -270,7 +270,10 @@ function SubAbaPainel({ subAba }: { subAba: SubAba }) {
         />
       )}
 
+      <ConclusaoItemRadios scope={`consistencia:${subAba.key}`} />
+
       <ConsideracoesAdicionais printTitle={`Considerações adicionais — ${subAba.label}`} />
+
     </>
   );
 }
