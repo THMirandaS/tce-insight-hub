@@ -6998,12 +6998,6 @@ type ConclusaoApontamento = {
   encaminhamento: string;
 };
 
-// Enquadramento legal padrão conforme o tipo de encaminhamento.
-function enquadramentoPorEncaminhamento(tipo: string): string {
-  if (tipo === "Determinação") return "art. 48, III, da LC 102/2008";
-  return "art. 48, II, da LC 102/2008";
-}
-
 // RF22 — validações automáticas dos tópicos (mock). Cada item já representa
 // uma inconformidade detectada automaticamente com proposta de encaminhamento.
 const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
@@ -7011,14 +7005,14 @@ const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
     topico: "Crédito e Despesas por programa",
     titulo:
       "Despesa empenhada superior ao crédito autorizado no programa 88 (execução de 110%)",
-    enquadramento: "art. 48, II, da LC 102/2008",
+    enquadramento: "Regular com ressalvas",
     encaminhamento:
       "Recomendar à gestão a observância dos limites de crédito autorizado por programa",
   },
   {
     topico: "Despesa por dotação orçamentária",
     titulo: "Execução de despesa acima da dotação em unidade orçamentária",
-    enquadramento: "art. 48, II, da LC 102/2008",
+    enquadramento: "Regular com ressalvas",
     encaminhamento:
       "Recomendar o aprimoramento do controle da execução por dotação orçamentária",
   },
@@ -7026,14 +7020,14 @@ const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
     topico: "Despesa por elemento",
     titulo:
       "Valor liquidado superior ao empenhado no elemento Sentenças Judiciais",
-    enquadramento: "art. 48, III, da LC 102/2008",
+    enquadramento: "Irregular",
     encaminhamento:
       "Determinar a regularização dos registros de liquidação do elemento de despesa",
   },
   {
     topico: "Despesas com pessoal",
     titulo: "Despesa com pessoal próxima ao limite prudencial",
-    enquadramento: "art. 48, II, da LC 102/2008",
+    enquadramento: "Regular com ressalvas",
     encaminhamento:
       "Recomendar o monitoramento contínuo da despesa com pessoal",
   },
@@ -7041,7 +7035,7 @@ const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
     topico: "Consistência das demonstrações",
     titulo:
       "Divergência nos Restos a Pagar Processados (Balanço Financeiro x Balanço Orçamentário)",
-    enquadramento: "art. 48, II, da LC 102/2008",
+    enquadramento: "Regular com ressalvas",
     encaminhamento:
       "Recomendar a conciliação das demonstrações contábeis divergentes",
   },
@@ -7049,30 +7043,83 @@ const CONCLUSAO_VALIDACOES_AUTO: ConclusaoApontamento[] = [
     topico: "Restos a Pagar",
     titulo:
       "Registros de Restos a Pagar com ano-origem mais antigo que 5 anos anteriores ao exercício avaliado",
-    enquadramento: "art. 48, II, da LC 102/2008",
+    enquadramento: "Regular com ressalvas",
     encaminhamento:
       "Recomendar que a gestão reavalie a real persistência desses saldos e o eventual cancelamento dos saldos indevidos",
   },
 ];
 
+// Rótulo do tópico a partir do escopo dos radios da tela principal.
+const CONCLUSAO_SCOPE_LABEL: Record<string, string> = {
+  "credito-despesas-prg": "Crédito e Despesas por programa",
+  "dsp-dotacao": "Despesa por dotação orçamentária",
+  "despesa-elemento": "Despesa por elemento",
+  "despesas-pessoal": "Despesas com pessoal",
+  "outros-assuntos": "Outros Assuntos Relevantes",
+  "outras-inconformidades": "Outras Inconformidades",
+};
+
+function labelDoScope(scope: string): string | null {
+  if (scope === "conclusao") return null;
+  if (scope.startsWith("consistencia:")) return "Consistência das demonstrações";
+  return CONCLUSAO_SCOPE_LABEL[scope] ?? null;
+}
+
+const CONCLUSAO_ENQ_LABEL: Record<string, string> = {
+  regular: "Regular",
+  ressalvas: "Regular com ressalvas",
+  irregular: "Irregular",
+};
+
 // Monta a tabela de conclusão agregando TODAS as fontes (RF22): validações
-// automáticas dos tópicos, apontamentos do RCI (não desconsiderados) e Outras
-// Inconformidades — exibindo somente as com encaminhamento Recomendação ou
-// Determinação.
+// automáticas dos tópicos, inadequações da Adequação do RCI, apontamentos do
+// Apontamento do RCI, Outras Inconformidades e Outros Assuntos Relevantes.
+// Só entram itens com encaminhamento (Recomendação/Determinação) e que não
+// estejam marcados como "Desconsiderar".
 function getConclusaoApontamentos(): ConclusaoApontamento[] {
-  const auto = CONCLUSAO_VALIDACOES_AUTO;
+  // Avaliações da tela principal dos tópicos (radios + texto do encaminhamento)
+  const doScopes: ConclusaoApontamento[] = [];
+  for (const item of listConclusaoItens()) {
+    const topico = labelDoScope(item.scope);
+    if (!topico) continue;
+    if (item.encaminhamento !== "recomendacao" && item.encaminhamento !== "determinacao")
+      continue;
+    doScopes.push({
+      topico,
+      titulo:
+        item.encaminhamento === "determinacao"
+          ? "Inconformidade com proposta de determinação"
+          : "Inconformidade com proposta de recomendação",
+      enquadramento: item.conclusao ? CONCLUSAO_ENQ_LABEL[item.conclusao] : "—",
+      encaminhamento: item.encaminhamentoTexto,
+    });
+  }
+
+  // Validações automáticas (mock) — não repetem tópicos já avaliados na tela.
+  const topicosAvaliados = new Set(doScopes.map((d) => d.topico));
+  const auto = CONCLUSAO_VALIDACOES_AUTO.filter(
+    (a) => !topicosAvaliados.has(a.topico),
+  );
+
+  const comEncaminhamento = (a: CIApontamento) =>
+    !a.desconsiderado &&
+    (a.encaminhamento === "Recomendação" || a.encaminhamento === "Determinação");
 
   const ci: ConclusaoApontamento[] = CI_STORE.apontamentos
-    .filter(
-      (a) =>
-        !a.desconsiderado &&
-        (a.encaminhamento === "Recomendação" ||
-          a.encaminhamento === "Determinação"),
-    )
+    .filter(comEncaminhamento)
     .map((a) => ({
       topico: "Adequação do RCI",
       titulo: a.apontamento,
-      enquadramento: enquadramentoPorEncaminhamento(a.encaminhamento),
+      enquadramento: a.conclusao ?? "—",
+      encaminhamento: a.descEncaminhamento,
+    }));
+
+  const apRci: ConclusaoApontamento[] = APRCI_STORE.apontamentos
+    .filter(comEncaminhamento)
+    .map((a) => ({
+      topico: "Apontamento do RCI",
+      titulo: a.apontamento,
+      enquadramento: a.conclusao ?? "—",
       encaminhamento: a.descEncaminhamento,
     }));
 
@@ -7085,11 +7132,11 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
     .map((o) => ({
       topico: "Outras Inconformidades",
       titulo: o.titulo,
-      enquadramento: enquadramentoPorEncaminhamento(o.encaminhamento),
+      enquadramento: o.conclusao,
       encaminhamento: o.descEncaminhamento,
     }));
 
-  return [...auto, ...ci, ...oi];
+  return [...auto, ...doScopes, ...ci, ...apRci, ...oi];
 }
 
 
