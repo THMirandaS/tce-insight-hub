@@ -5323,8 +5323,6 @@ function ControleInternoContent({
         </div>
       )}
 
-      <ConclusaoItemRadios scope="controle-interno" readOnly={readOnly} />
-
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação do RCI" />
 
 
