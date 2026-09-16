@@ -5651,7 +5651,14 @@ function ApontamentoRciContent({
 }) {
   const readOnly = CI_READ_ONLY;
 
-  const [apontamentos, setApontamentos] = useState<CIApontamento[]>(APRCI_INICIAL);
+  const [apontamentos, setApontamentos] = useState<CIApontamento[]>(
+    APRCI_STORE.apontamentos,
+  );
+
+  // Persiste no store compartilhado (usado pela tabela da Conclusão)
+  useEffect(() => {
+    APRCI_STORE.apontamentos = apontamentos;
+  }, [apontamentos]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
