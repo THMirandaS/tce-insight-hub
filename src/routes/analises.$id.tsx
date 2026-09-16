@@ -44,6 +44,11 @@ import { ModalidadeAplicacaoContent } from "@/components/pce/ModalidadeAplicacao
 import { DespesaElementoContent } from "@/components/pce/DespesaElementoContent";
 import { ConsistenciaContent } from "@/components/pce/ConsistenciaContent";
 import { ConsideracoesAdicionais } from "@/components/pce/ConsideracoesAdicionais";
+import {
+  ConclusaoItemRadios,
+  validarConclusaoItemAtiva,
+} from "@/components/pce/ConclusaoItemRadios";
+
 import { toast } from "sonner";
 import {
   getJurisdicionado,
@@ -263,10 +268,19 @@ function AnaliseDetalhePage() {
 
   function handleSalvar() {
     if (currentStatus === null) return;
+    const s = statuses[active];
+    // Concluir o item exige conclusão e tipo de encaminhamento selecionados.
+    if (s === "em-andamento" || s === "em-correcao") {
+      const erro = validarConclusaoItemAtiva();
+      if (erro) {
+        toast.error(erro);
+        return;
+      }
+    }
     setStatuses((p) => {
-      const s = p[active];
-      if (s === "em-andamento") return { ...p, [active]: "concluido" };
-      if (s === "em-correcao") return { ...p, [active]: "corrigido" };
+      const st = p[active];
+      if (st === "em-andamento") return { ...p, [active]: "concluido" };
+      if (st === "em-correcao") return { ...p, [active]: "corrigido" };
       return p;
     });
   }
@@ -282,8 +296,14 @@ function AnaliseDetalhePage() {
 
   function handleConcluir() {
     if (currentStatus === null) return;
+    const erro = validarConclusaoItemAtiva();
+    if (erro) {
+      toast.error(erro);
+      return;
+    }
     setStatuses((p) => ({ ...p, [active]: "concluido" }));
   }
+
 
   function handleMarcarRevisado() {
     if (currentStatus === null) return;
@@ -3438,9 +3458,10 @@ function CreditoDespesasContent({
   const [memoria, setMemoria] = useState<DespesaMemoriaLinha[]>(
     CREDITO_DESPESAS_MEMORIA
   );
-  const [conclusao, setConclusao] = useState<DespesaConclusao>("ressalvas");
+  // Iniciam sem nenhuma opção selecionada (obrigatórios para concluir o item).
   const [encaminhamentoTipo, setDespesaEncaminhamento] =
-    useState<DespesaEncaminhamento>("recomendacao");
+    useState<DespesaEncaminhamento | null>(null);
+
   const [encTexto, setEncTexto] = useState("");
   const [consideracoes, setConsideracoes] = useState("");
   const [incluir, setIncluir] = useState(true);
@@ -3454,22 +3475,8 @@ function CreditoDespesasContent({
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
 
   const encDisabled =
-    readOnly || encaminhamentoTipo === "nenhum" || encaminhamentoTipo === "";
+    readOnly || !encaminhamentoTipo || encaminhamentoTipo === "nenhum";
 
-  function isEncOptionEnabled(opt: DespesaEncaminhamento) {
-    if (opt === "nenhum") return conclusao === "regular";
-    if (opt === "recomendacao") return conclusao === "ressalvas";
-    if (opt === "determinacao") return conclusao === "irregular";
-    return false;
-  }
-
-  function onConclusaoChange(v: DespesaConclusao) {
-    setConclusao(v);
-    // ajustar encaminhamento automaticamente para o habilitado
-    if (v === "regular") setDespesaEncaminhamento("nenhum");
-    else if (v === "ressalvas") setDespesaEncaminhamento("recomendacao");
-    else if (v === "irregular") setDespesaEncaminhamento("determinacao");
-  }
 
   function updateMemoria(id: string, patch: Partial<DespesaMemoriaLinha>) {
     setMemoria((arr) => arr.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -3657,72 +3664,16 @@ function CreditoDespesasContent({
             />
           </div>
 
-          {/* Conclusão do item */}
-          <div className="mt-6 space-y-2">
-            <Label className="text-sm font-semibold">Conclusão do item:</Label>
-            <div className="flex flex-wrap gap-6">
-              {(
-                [
-                  { v: "regular", label: "Regular" },
-                  { v: "ressalvas", label: "Regular com ressalvas" },
-                  { v: "irregular", label: "Irregular" },
-                ] as const
-              ).map((o) => (
-                <label
-                  key={o.v}
-                  className="inline-flex items-center gap-2 text-sm"
-                >
-                  <input
-                    type="radio"
-                    name="conclusao"
-                    value={o.v}
-                    checked={conclusao === o.v}
-                    disabled={readOnly}
-                    onChange={() => onConclusaoChange(o.v)}
-                    className="h-4 w-4 accent-[#1A56DB]"
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-          </div>
+          {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
+          <ConclusaoItemRadios
+            scope="credito-despesas-prg"
+            readOnly={readOnly}
+            onChange={(e) => {
+              setDespesaEncaminhamento(e.encaminhamento as DespesaEncaminhamento | null);
+            }}
 
-          {/* Tipo de encaminhamento */}
-          <div className="mt-4 space-y-2">
-            <Label className="text-sm font-semibold">
-              Tipo de encaminhamento:
-            </Label>
-            <div className="flex flex-wrap gap-6">
-              {(
-                [
-                  { v: "nenhum", label: "Nenhum" },
-                  { v: "recomendacao", label: "Recomendação" },
-                  { v: "determinacao", label: "Determinação" },
-                ] as const
-              ).map((o) => {
-                const enabled = !readOnly && isEncOptionEnabled(o.v);
-                return (
-                  <label
-                    key={o.v}
-                    className={`inline-flex items-center gap-2 text-sm ${
-                      enabled ? "" : "opacity-50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="encaminhamento"
-                      value={o.v}
-                      checked={encaminhamentoTipo === o.v}
-                      disabled={!enabled}
-                      onChange={() => setDespesaEncaminhamento(o.v)}
-                      className="h-4 w-4 accent-[#1A56DB]"
-                    />
-                    {o.label}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+          />
+
 
           {/* Editor Encaminhamento */}
           <div className="mt-6 space-y-2">
@@ -4292,10 +4243,13 @@ function DspDotacaoContent({
 
       {naoConforme && <DspDotacaoInconformidade acoes={naoConformes} />}
 
+      <ConclusaoItemRadios scope="dsp-dotacao" readOnly={readOnly} />
+
       <ConsideracoesAdicionais
         readOnly={readOnly}
         printTitle="Considerações adicionais — Despesa por dotação orçamentária"
       />
+
     </>
   );
 }
@@ -4806,7 +4760,10 @@ function DespesasPessoalContent({
         />
       )}
 
+      <ConclusaoItemRadios scope="despesas-pessoal" />
+
       <ConsideracoesAdicionais />
+
     </>
   );
 }
@@ -5343,7 +5300,10 @@ function ControleInternoContent({
         </div>
       )}
 
+      <ConclusaoItemRadios scope="controle-interno" readOnly={readOnly} />
+
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação dos relatórios" />
+
 
       {/* Diálogo de edição do apontamento */}
       <Dialog
@@ -5741,9 +5701,12 @@ function OutrosAssuntosContent({
           Este texto deverá constar no relatório de conclusão do processo.
         </Label>
       </div>
+
+      <ConclusaoItemRadios scope="outros-assuntos" />
     </>
   );
 }
+
 
 // ============ Outras Inconformidades ============
 
@@ -6350,7 +6313,10 @@ function OutrasInconformidadesContent({
         </table>
       </div>
 
+      <ConclusaoItemRadios scope="outras-inconformidades" readOnly={readOnly} />
+
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Outras inconformidades" />
+
 
       {/* Modal histórico */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -6894,6 +6860,9 @@ ${consideracoes ? `<h3>Considerações finais</h3><p>${escapeHTML(consideracoes)
           Coordenador da CACGEAF – TC {ASSINATURA.tcCoordenador}
         </p>
       </div>
+
+      <ConclusaoItemRadios scope="conclusao" readOnly={readOnly} />
+
     </>
   );
 }
