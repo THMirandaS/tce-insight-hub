@@ -2265,11 +2265,6 @@ function ReceitasContent({
         Podem existir outras fontes não exibidas nesta tela.
       </p>
 
-      {/* Resumo IA */}
-      <div className="mt-6">
-        <ResumoIA texto={RECEITAS_RESUMO_IA} processo={processo} orgao={orgao} />
-      </div>
-
       {/* Considerações adicionais */}
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Receitas" />
 
@@ -2558,14 +2553,6 @@ function CreditoInicialContent({
                 className="bg-[#F4F5F7] font-semibold"
               />
             </div>
-          </div>
-
-          <div className="mt-6">
-            <ResumoIA
-              texto={CREDITO_INICIAL_RESUMO_IA}
-              processo={processo}
-              orgao={orgao}
-            />
           </div>
 
           <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Crédito inicial" />
@@ -3238,16 +3225,6 @@ function ProgramasContent({
         </table>
       </div>
 
-      {showResumoIA && (
-        <div className="mt-6">
-          <ResumoIA
-            texto={resumoIATexto}
-            processo={processo}
-            orgao={orgao}
-          />
-        </div>
-      )}
-
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Programas" />
 
       {/* Modal histórico */}
@@ -3717,14 +3694,6 @@ function CreditoDespesasContent({
                 </tr>
               </tfoot>
             </table>
-          </div>
-
-          <div className="mt-6">
-            <ResumoIA
-              texto={CREDITO_DESPESAS_RESUMO_IA}
-              processo={processo}
-              orgao={orgao}
-            />
           </div>
 
           {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
@@ -4544,16 +4513,6 @@ function RestosPagarContent({
           </tfoot>
         </table>
       </div>
-
-      {exibirResumoIA && (
-        <div className="mt-6">
-          <ResumoIA
-            texto={RESTOS_PAGAR_RESUMO_IA}
-            processo={processo}
-            orgao={orgao}
-          />
-        </div>
-      )}
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Restos a pagar" />
 
@@ -5419,12 +5378,6 @@ function ControleInternoContent({
           </tbody>
         </table>
       </div>
-
-      {exibirResumoIA && (
-        <div className="mt-6">
-          <ResumoIA texto={CI_RESUMO_IA} processo={processo} orgao={orgao} />
-        </div>
-      )}
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação do RCI" />
 
