@@ -3737,7 +3737,6 @@ function CreditoDespesasContent({
                   <th className="px-3 py-2 text-left">Modalidade</th>
                   <th className="px-3 py-2 text-right">Crédito autorizado</th>
                   <th className="px-3 py-2 text-right">Despesa empenhada</th>
-                  <th className="px-3 py-2 text-center">Resultado</th>
                   {!readOnly && (
                     <th className="px-3 py-2 text-center">Ações</th>
                   )}
@@ -3757,7 +3756,6 @@ function CreditoDespesasContent({
                   return (
                     <Fragment key={g.programa}>
                       {g.linhas.map((l) => {
-                        const conforme = l.despesa <= l.autorizado;
                         return (
                           <tr key={l.id} className="bg-white">
                             <td className="px-2 py-1.5">
@@ -3842,17 +3840,6 @@ function CreditoDespesasContent({
                                 }
                               />
                             </td>
-                            <td className="px-2 py-1.5 text-center">
-                              <span
-                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                  conforme
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {conforme ? "Conforme" : "Não Conforme"}
-                              </span>
-                            </td>
                             {!readOnly && (
                               <td className="px-2 py-1.5">
                                 <div className="flex items-center justify-center gap-2">
@@ -3891,17 +3878,6 @@ function CreditoDespesasContent({
                         >
                           {fmtBRL(subDesp)}
                         </td>
-                        <td className="px-2 py-1.5 text-center">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              subConforme
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {subConforme ? "Conforme" : "Não Conforme"}
-                          </span>
-                        </td>
                         {!readOnly && <td />}
                       </tr>
                     </Fragment>
@@ -3918,17 +3894,6 @@ function CreditoDespesasContent({
                   </td>
                   <td className="px-3 py-2 text-right">
                     {fmtBRL(totalDespesa)}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        naoConformeCredito
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {naoConformeCredito ? "Não Conforme" : "Conforme"}
-                    </span>
                   </td>
                   {!readOnly && <td />}
                 </tr>
