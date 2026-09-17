@@ -4230,7 +4230,15 @@ function RestosPagarContent({
 }) {
   const readOnly = RESTOS_PAGAR_READ_ONLY;
 
-  const [linhas, setLinhas] = useState<RestoPagarLinha[]>(RESTOS_PAGAR_INICIAL);
+  // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
+  // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
+  // anterior a (ano de referência − 5). RP nunca tem ano >= ano do processo.
+  const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
+  const anoMaxRP = anoRef - 1;
+
+  const [linhas, setLinhas] = useState<RestoPagarLinha[]>(() =>
+    buildRestosPagarInicial(anoRef)
+  );
   const [texto, setTexto] = useState("");
   const [incluir, setIncluir] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -4241,10 +4249,6 @@ function RestosPagarContent({
 
   const textoRestantes = RESTOS_PAGAR_MAX_TEXTO - texto.length;
 
-  // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
-  // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
-  // anterior a (ano de referência − 5).
-  const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
   const temAnoAntigo = linhas.some((l) => l.ano < anoRef - 5);
   const naoProcMaiorProc = totalNaoProcessados > totalProcessados;
   const exibirResumoIA = temAnoAntigo || naoProcMaiorProc;
