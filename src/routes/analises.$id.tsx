@@ -6913,7 +6913,7 @@ function OutrasInconformidadesContent({
         </table>
       </div>
 
-      <ConclusaoItemRadios scope="outras-inconformidades" readOnly={readOnly} />
+      
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Outras inconformidades" />
 
