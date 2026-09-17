@@ -6462,6 +6462,8 @@ function OutrasInconformidadesContent({
     return (
       form.titulo.trim().length > 0 &&
       form.descricao.trim().length > 0 &&
+      form.conclusao !== null &&
+      form.encaminhamento !== null &&
       (form.encaminhamento === "Nenhum" ||
         form.descEncaminhamento.trim().length > 0)
     );
@@ -6524,18 +6526,24 @@ function OutrasInconformidadesContent({
     setForm((f) => ({
       ...f,
       encaminhamento: e,
-      conclusao: inferConclusao(e),
       descEncaminhamento: e === "Nenhum" ? "" : f.descEncaminhamento,
     }));
   }
   function setConc(c: OIConclusao) {
-    setForm((f) => ({
-      ...f,
-      conclusao: c,
-      encaminhamento: inferEncaminhamento(c),
-      descEncaminhamento:
-        inferEncaminhamento(c) === "Nenhum" ? "" : f.descEncaminhamento,
-    }));
+    setForm((f) => {
+      const restringido = c === "Regular com ressalvas" || c === "Irregular";
+      const enc: OIEncaminhamento | null =
+        restringido && f.encaminhamento !== "Determinação"
+          ? "Determinação"
+          : f.encaminhamento;
+      return {
+        ...f,
+        conclusao: c,
+        encaminhamento: enc,
+        descEncaminhamento:
+          enc === "Nenhum" || enc === null ? "" : f.descEncaminhamento,
+      };
+    });
   }
 
   const header = (
