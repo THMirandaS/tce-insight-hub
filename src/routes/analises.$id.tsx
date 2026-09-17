@@ -4239,9 +4239,9 @@ function RestosPagarContent({
 
   // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
   // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
-  // igual ou anterior a (ano de referência − 5).
+  // anterior a (ano de referência − 5).
   const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
-  const temAnoAntigo = linhas.some((l) => l.ano <= anoRef - 5);
+  const temAnoAntigo = linhas.some((l) => l.ano < anoRef - 5);
   const naoProcMaiorProc = totalNaoProcessados > totalProcessados;
   const exibirResumoIA = temAnoAntigo || naoProcMaiorProc;
 
@@ -4348,7 +4348,7 @@ function RestosPagarContent({
           </thead>
           <tbody>
             {linhas.map((l, i) => {
-              const anoAntigo = l.ano <= anoRef - 5;
+              const anoAntigo = l.ano < anoRef - 5;
               return (
               <tr
                 key={l.id}
@@ -4415,7 +4415,7 @@ function RestosPagarContent({
           <tfoot>
             <tr className="bg-[#F4F5F7] font-bold">
               <td className="px-3 py-2">
-                Total antes das inscrições de {RESTOS_PAGAR_ANO_ATUAL}
+                Total antes das inscrições de {anoRef}
               </td>
               <td className="px-3 py-2 text-right">{fmtBRL(totalProcessados)}</td>
               <td className="px-3 py-2 text-right">{fmtBRL(totalNaoProcessados)}</td>
