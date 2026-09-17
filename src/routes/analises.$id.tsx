@@ -1998,9 +1998,6 @@ const RECEITAS_READ_ONLY =
 
 const RECEITAS_MAX_TEXTO = 4000;
 
-const RECEITAS_RESUMO_IA =
-  "A arrecadação efetiva do exercício atingiu 94,3% da previsão orçamentária, demonstrando desempenho satisfatório na realização das receitas. A principal fonte de recursos representou 68% do total arrecadado, com execução acima do previsto. Foi identificada insuficiência de recursos na ordem de R$ 12.500.000,00, concentrada no segundo semestre do exercício, demandando atenção no planejamento orçamentário do próximo exercício.";
-
 type ReceitasHistorico = {
   ts: string;
   usuario: string;
@@ -2265,11 +2262,6 @@ function ReceitasContent({
         Podem existir outras fontes não exibidas nesta tela.
       </p>
 
-      {/* Resumo IA */}
-      <div className="mt-6">
-        <ResumoIA texto={RECEITAS_RESUMO_IA} processo={processo} orgao={orgao} />
-      </div>
-
       {/* Considerações adicionais */}
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Receitas" />
 
@@ -2332,9 +2324,6 @@ const CREDITO_INICIAL_READ_ONLY =
   !CREDITO_INICIAL_USUARIO_AUTORIZADO;
 
 const CREDITO_INICIAL_MAX_TEXTO = 4000;
-
-const CREDITO_INICIAL_RESUMO_IA =
-  "O crédito autorizado apresentou variação de 3,2% em relação ao crédito inicial, reflexo de suplementações orçamentárias realizadas no exercício. As despesas de capital representaram 62% do total autorizado, com destaque para os investimentos em infraestrutura. Foram identificadas inconsistências em duas modalidades de aplicação que merecem atenção na análise.";
 
 const CATEGORIAS_ECONOMICAS = [
   "Despesas Correntes",
@@ -2558,14 +2547,6 @@ function CreditoInicialContent({
                 className="bg-[#F4F5F7] font-semibold"
               />
             </div>
-          </div>
-
-          <div className="mt-6">
-            <ResumoIA
-              texto={CREDITO_INICIAL_RESUMO_IA}
-              processo={processo}
-              orgao={orgao}
-            />
           </div>
 
           <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Crédito inicial" />
@@ -2950,25 +2931,7 @@ function ProgramasContent({
   const [incluir, setIncluir] = useState(true);
 
   const restantes = PROGRAMAS_MAX_TEXTO - texto.length;
-  const quantidade = linhas.length;
 
-  const hasTemporario = linhas.some((l) => l.horizonte === "Temporário");
-  const hasMuitos = linhas.length > 5;
-  const hasIncompleto = linhas.some(
-    (l) => !l.justificativa.trim() || !l.objetivo.trim()
-  );
-  const showResumoIA = hasTemporario || hasMuitos || hasIncompleto;
-
-  const resumoIATexto = [
-    hasTemporario &&
-      "Foram identificados programas com Horizonte Temporal 'Temporário', o que demanda verificação quanto à vigência e ao cronograma de execução.",
-    hasMuitos &&
-      `O órgão apresenta ${quantidade} programas, número acima do usual, sugerindo revisão da consolidação programática.`,
-    hasIncompleto &&
-      "Há programas com campos de Justificativa ou Objetivo não preenchidos, comprometendo a transparência da política pública.",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   function updateLinha(id: string, patch: Partial<ProgramaLinha>) {
     setLinhas((arr) =>
@@ -3056,7 +3019,7 @@ function ProgramasContent({
       </div>
 
       <p className="mt-3 text-sm font-medium text-foreground">
-        Quantidade de programas: {quantidade}
+        Quantidade de programas: {linhas.length}
       </p>
 
       <div className="mt-3 overflow-x-auto rounded-md border border-border">
@@ -3238,16 +3201,6 @@ function ProgramasContent({
         </table>
       </div>
 
-      {showResumoIA && (
-        <div className="mt-6">
-          <ResumoIA
-            texto={resumoIATexto}
-            processo={processo}
-            orgao={orgao}
-          />
-        </div>
-      )}
-
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Programas" />
 
       {/* Modal histórico */}
@@ -3343,9 +3296,6 @@ const CREDITO_DESPESAS_READ_ONLY =
   !CREDITO_DESPESAS_USUARIO_AUTORIZADO;
 
 const CREDITO_DESPESAS_MAX_TEXTO = 4000;
-
-const CREDITO_DESPESAS_RESUMO_IA =
-  "A execução orçamentária apresentou índice médio de empenho de 94% em relação ao crédito autorizado. O programa 88 apresentou execução acima do autorizado (110%), configurando situação de atenção que requer encaminhamento específico. Os demais programas mantiveram execução dentro dos limites autorizados.";
 
 type DespesaConclusao = "regular" | "ressalvas" | "irregular" | "";
 
@@ -3717,14 +3667,6 @@ function CreditoDespesasContent({
                 </tr>
               </tfoot>
             </table>
-          </div>
-
-          <div className="mt-6">
-            <ResumoIA
-              texto={CREDITO_DESPESAS_RESUMO_IA}
-              processo={processo}
-              orgao={orgao}
-            />
           </div>
 
           {/* Conclusão do item + Tipo de encaminhamento (sem seleção inicial) */}
@@ -4313,9 +4255,6 @@ const RESTOS_PAGAR_READ_ONLY =
 const RESTOS_PAGAR_MAX_TEXTO = 4000;
 const RESTOS_PAGAR_ANO_ATUAL = 2025;
 
-const RESTOS_PAGAR_RESUMO_IA =
-  "Foram identificados Restos a Pagar com anos de origem anteriores a 2018, indicando pendências orçamentárias de longa data que merecem atenção. Os RAPs não processados superam os processados em 34%, configurando situação que requer encaminhamento específico quanto à execução orçamentária pendente do órgão.";
-
 type RestoPagarLinha = {
   id: string;
   ano: number;
@@ -4544,16 +4483,6 @@ function RestosPagarContent({
           </tfoot>
         </table>
       </div>
-
-      {exibirResumoIA && (
-        <div className="mt-6">
-          <ResumoIA
-            texto={RESTOS_PAGAR_RESUMO_IA}
-            processo={processo}
-            orgao={orgao}
-          />
-        </div>
-      )}
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Restos a pagar" />
 
@@ -5044,9 +4973,6 @@ const CI_STORE: { apontamentos: CIApontamento[]; adequado: "sim" | "nao" } = {
   adequado: "sim",
 };
 
-const CI_RESUMO_IA =
-  "A análise do RCI identificou 5 apontamentos relevantes, sendo 2 de alta materialidade relacionados a imóveis contabilizados incorretamente e divergência de conciliação contábil. Não foram identificados danos ao erário. Recomenda-se atenção especial aos apontamentos que demandam encaminhamento com determinação.";
-
 const CI_HISTORICO: ReceitasHistorico[] = [
   {
     ts: "20/05/2026 10:14",
@@ -5161,10 +5087,6 @@ function ControleInternoContent({
   }, [adequado]);
 
   const textoRestantes = CI_MAX_TEXTO - texto.length;
-
-  const exibirResumoIA = apontamentos.some(
-    (a) => !a.desconsiderado && (ciIsMaterial(a.valor) || a.danoErario === "Sim"),
-  );
 
   function updateForm(patch: Partial<typeof form>) {
     setForm((f) => ({ ...f, ...patch }));
@@ -5419,12 +5341,6 @@ function ControleInternoContent({
           </tbody>
         </table>
       </div>
-
-      {exibirResumoIA && (
-        <div className="mt-6">
-          <ResumoIA texto={CI_RESUMO_IA} processo={processo} orgao={orgao} />
-        </div>
-      )}
 
       <ConsideracoesAdicionais readOnly={readOnly} printTitle="Considerações adicionais — Adequação do RCI" />
 
