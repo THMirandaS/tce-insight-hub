@@ -3809,7 +3809,7 @@ function CreditoDespesasContent({
                   );
                   const subConforme = subDesp <= subAut;
                   return (
-                    <>
+                    <Fragment key={g.programa}>
                       {g.linhas.map((l) => {
                         const conforme = l.despesa <= l.autorizado;
                         return (
@@ -3958,7 +3958,7 @@ function CreditoDespesasContent({
                         </td>
                         {!readOnly && <td />}
                       </tr>
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
