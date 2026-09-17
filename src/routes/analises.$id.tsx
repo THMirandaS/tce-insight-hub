@@ -3624,7 +3624,7 @@ function CreditoDespesasContent({
               </Label>
               <Input
                 readOnly
-                value={fmtBRL(CREDITO_DESPESAS_TOTAL.autorizado)}
+                value={fmtBRL(totalAutorizado)}
                 className="bg-[#F4F5F7] font-semibold"
               />
             </div>
@@ -3653,36 +3653,40 @@ function CreditoDespesasContent({
                   <th className="px-3 py-2 text-left">Programa</th>
                   <th className="px-3 py-2 text-right">Crédito Autorizado</th>
                   <th className="px-3 py-2 text-right">Despesa Empenhada</th>
-                  <th className="px-3 py-2 text-right">% Empenho</th>
+                  <th className="px-3 py-2 text-center">Resultado</th>
                 </tr>
               </thead>
               <tbody>
-                {CREDITO_DESPESAS_CONSOLIDADO.map((r, i) => {
-                  const overflow = r.empenhada > r.autorizado;
+                {gruposPrograma.map((g, i) => {
+                  const overflow = g.despesa > g.autorizado;
                   return (
                     <tr
-                      key={r.id}
-                      className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
-                        overflow ? "bg-red-50" : ""
-                      }`}
+                      key={g.programa}
+                      className={`${
+                        i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } ${overflow ? "bg-red-50" : ""}`}
                     >
-                      <td className="px-3 py-2">{r.programa}</td>
+                      <td className="px-3 py-2 font-medium">{g.programa}</td>
                       <td className="px-3 py-2 text-right">
-                        {fmtBRL(r.autorizado)}
+                        {fmtBRL(g.autorizado)}
                       </td>
                       <td
                         className={`px-3 py-2 text-right ${
                           overflow ? "font-semibold text-red-700" : ""
                         }`}
                       >
-                        {fmtBRL(r.empenhada)}
+                        {fmtBRL(g.despesa)}
                       </td>
-                      <td
-                        className={`px-3 py-2 text-right font-semibold ${
-                          overflow ? "text-red-700" : "text-green-700"
-                        }`}
-                      >
-                        {r.percent}%
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            overflow
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {overflow ? "Não Conforme" : "Conforme"}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -3692,19 +3696,19 @@ function CreditoDespesasContent({
                 <tr className="bg-[#F4F5F7] font-semibold">
                   <td className="px-3 py-2">TOTAL</td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(CREDITO_DESPESAS_TOTAL.autorizado)}
+                    {fmtBRL(totalAutorizado)}
                   </td>
-                  <td className="px-3 py-2 text-right">
-                    {fmtBRL(CREDITO_DESPESAS_TOTAL.empenhada)}
-                  </td>
-                  <td
-                    className={`px-3 py-2 text-right ${
-                      CREDITO_DESPESAS_TOTAL.percent > 100
-                        ? "text-red-700"
-                        : "text-green-700"
-                    }`}
-                  >
-                    {CREDITO_DESPESAS_TOTAL.percent}%
+                  <td className="px-3 py-2 text-right">{fmtBRL(totalDespesa)}</td>
+                  <td className="px-3 py-2 text-center">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        naoConformeCredito
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {naoConformeCredito ? "Não Conforme" : "Conforme"}
+                    </span>
                   </td>
                 </tr>
               </tfoot>
