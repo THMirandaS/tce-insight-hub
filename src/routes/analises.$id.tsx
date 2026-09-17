@@ -4203,17 +4203,23 @@ type RestoPagarLinha = {
   naoProcessados: number;
 };
 
-const RESTOS_PAGAR_INICIAL: RestoPagarLinha[] = [
-  { id: "rp1", ano: 2016, processados: 12_500_000, naoProcessados: 8_300_000 },
-  { id: "rp2", ano: 2017, processados: 9_800_000, naoProcessados: 15_200_000 },
-  { id: "rp3", ano: 2023, processados: 45_000_000, naoProcessados: 32_000_000 },
-  { id: "rp4", ano: 2024, processados: 78_500_000, naoProcessados: 95_000_000 },
-];
+// RP nunca pode ser de ano >= ano do processo; o máximo é (ano de referência − 1).
+// As linhas iniciais são derivadas do ano de referência para garantir coerência.
+function buildRestosPagarInicial(anoRef: number): RestoPagarLinha[] {
+  return [
+    { id: "rp1", ano: anoRef - 9, processados: 12_500_000, naoProcessados: 8_300_000 },
+    { id: "rp2", ano: anoRef - 8, processados: 9_800_000, naoProcessados: 15_200_000 },
+    { id: "rp3", ano: anoRef - 2, processados: 45_000_000, naoProcessados: 32_000_000 },
+    { id: "rp4", ano: anoRef - 1, processados: 78_500_000, naoProcessados: 95_000_000 },
+  ];
+}
 
-const RESTOS_PAGAR_HISTORICO: ReceitasHistorico[] = [
-  { ts: "18/03/2025 10:15", usuario: "Auditor 01", campo: "Linha 2024 - Não Processados", anterior: "90.000.000,00", novo: "95.000.000,00" },
-  { ts: "17/03/2025 14:32", usuario: "Auditor 02", campo: "Adição de linha", anterior: "-", novo: "Ano 2016" },
-];
+function buildRestosPagarHistorico(anoRef: number): ReceitasHistorico[] {
+  return [
+    { ts: `18/03/${anoRef} 10:15`, usuario: "Auditor 01", campo: `Linha ${anoRef - 1} - Não Processados`, anterior: "90.000.000,00", novo: "95.000.000,00" },
+    { ts: `17/03/${anoRef} 14:32`, usuario: "Auditor 02", campo: "Adição de linha", anterior: "-", novo: `Ano ${anoRef - 9}` },
+  ];
+}
 
 function RestosPagarContent({
   processo,
@@ -4226,7 +4232,15 @@ function RestosPagarContent({
 }) {
   const readOnly = RESTOS_PAGAR_READ_ONLY;
 
-  const [linhas, setLinhas] = useState<RestoPagarLinha[]>(RESTOS_PAGAR_INICIAL);
+  // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
+  // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
+  // anterior a (ano de referência − 5). RP nunca tem ano >= ano do processo.
+  const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
+  const anoMaxRP = anoRef - 1;
+
+  const [linhas, setLinhas] = useState<RestoPagarLinha[]>(() =>
+    buildRestosPagarInicial(anoRef)
+  );
   const [texto, setTexto] = useState("");
   const [incluir, setIncluir] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -4237,10 +4251,6 @@ function RestosPagarContent({
 
   const textoRestantes = RESTOS_PAGAR_MAX_TEXTO - texto.length;
 
-  // RF16 (ER01): período conforme = ano de referência + 4 anteriores.
-  // NÃO CONFORME se houver qualquer saldo (RPP ou RPNP) inscrito em ano
-  // anterior a (ano de referência − 5).
-  const anoRef = Number(anoReferencia) || RESTOS_PAGAR_ANO_ATUAL;
   const temAnoAntigo = linhas.some((l) => l.ano < anoRef - 5);
   const naoProcMaiorProc = totalNaoProcessados > totalProcessados;
   const exibirResumoIA = temAnoAntigo || naoProcMaiorProc;
@@ -4253,7 +4263,7 @@ function RestosPagarContent({
       ...arr,
       {
         id: `rp${Date.now()}`,
-        ano: RESTOS_PAGAR_ANO_ATUAL - 1,
+        ano: anoMaxRP,
         processados: 0,
         naoProcessados: 0,
       },
@@ -4364,9 +4374,12 @@ function RestosPagarContent({
                   <Input
                     type="number"
                     value={l.ano}
+                    max={anoMaxRP}
                     readOnly={readOnly}
                     onChange={(e) =>
-                      updateLinha(l.id, { ano: Number(e.target.value) || 0 })
+                      updateLinha(l.id, {
+                        ano: Math.min(Number(e.target.value) || 0, anoMaxRP),
+                      })
                     }
                     className="w-24"
                   />
@@ -4453,7 +4466,7 @@ function RestosPagarContent({
                 </tr>
               </thead>
               <tbody>
-                {RESTOS_PAGAR_HISTORICO.map((h, i) => (
+                {buildRestosPagarHistorico(anoRef).map((h, i) => (
                   <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     <td className="px-3 py-2">{h.ts}</td>
                     <td className="px-3 py-2">{h.usuario}</td>
