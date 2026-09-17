@@ -4450,7 +4450,8 @@ function RestosPagarContent({
                   </td>
                 )}
               </tr>
-            ))}
+              );
+            })}
           </tbody>
           <tfoot>
             <tr className="bg-[#F4F5F7] font-bold">
