@@ -6298,8 +6298,8 @@ type OIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
 type OutrasInco = {
   id: string;
   titulo: string;
-  conclusao: OIConclusao;
-  encaminhamento: OIEncaminhamento;
+  conclusao: OIConclusao | null;
+  encaminhamento: OIEncaminhamento | null;
   descricao: string;
   descEncaminhamento: string;
   entendimento: string;
@@ -6354,27 +6354,18 @@ const OUTRAS_INCO_HISTORICO_STORE: ReceitasHistorico[] = [
   },
 ];
 
-function conclusaoBadge(c: OIConclusao) {
+function conclusaoBadge(c: OIConclusao | null) {
+  if (!c) return "bg-gray-100 text-gray-500 border border-gray-300";
   if (c === "Regular") return "bg-green-100 text-green-800 border border-green-300";
   if (c === "Regular com ressalvas")
     return "bg-yellow-100 text-yellow-800 border border-yellow-300";
   return "bg-red-100 text-red-800 border border-red-300";
 }
-function encaminhamentoBadge(e: OIEncaminhamento) {
+function encaminhamentoBadge(e: OIEncaminhamento | null) {
+  if (!e) return "bg-gray-100 text-gray-500 border border-gray-300";
   if (e === "Nenhum") return "bg-gray-100 text-gray-700 border border-gray-300";
   if (e === "Recomendação") return "bg-blue-100 text-blue-800 border border-blue-300";
   return "bg-orange-100 text-orange-800 border border-orange-300";
-}
-
-function inferConclusao(e: OIEncaminhamento): OIConclusao {
-  if (e === "Nenhum") return "Regular";
-  if (e === "Recomendação") return "Regular com ressalvas";
-  return "Irregular";
-}
-function inferEncaminhamento(c: OIConclusao): OIEncaminhamento {
-  if (c === "Regular") return "Nenhum";
-  if (c === "Regular com ressalvas") return "Recomendação";
-  return "Determinação";
 }
 
 function OutrasInconformidadesContent({
@@ -6403,8 +6394,8 @@ function OutrasInconformidadesContent({
   // Form state
   const emptyForm = {
     titulo: "",
-    conclusao: "Regular" as OIConclusao,
-    encaminhamento: "Nenhum" as OIEncaminhamento,
+    conclusao: null as OIConclusao | null,
+    encaminhamento: null as OIEncaminhamento | null,
     descricao: "",
     descEncaminhamento: "",
     entendimento: "",
@@ -6471,6 +6462,8 @@ function OutrasInconformidadesContent({
     return (
       form.titulo.trim().length > 0 &&
       form.descricao.trim().length > 0 &&
+      form.conclusao !== null &&
+      form.encaminhamento !== null &&
       (form.encaminhamento === "Nenhum" ||
         form.descEncaminhamento.trim().length > 0)
     );
@@ -6533,18 +6526,24 @@ function OutrasInconformidadesContent({
     setForm((f) => ({
       ...f,
       encaminhamento: e,
-      conclusao: inferConclusao(e),
       descEncaminhamento: e === "Nenhum" ? "" : f.descEncaminhamento,
     }));
   }
   function setConc(c: OIConclusao) {
-    setForm((f) => ({
-      ...f,
-      conclusao: c,
-      encaminhamento: inferEncaminhamento(c),
-      descEncaminhamento:
-        inferEncaminhamento(c) === "Nenhum" ? "" : f.descEncaminhamento,
-    }));
+    setForm((f) => {
+      const restringido = c === "Regular com ressalvas" || c === "Irregular";
+      const enc: OIEncaminhamento | null =
+        restringido && f.encaminhamento !== "Determinação"
+          ? "Determinação"
+          : f.encaminhamento;
+      return {
+        ...f,
+        conclusao: c,
+        encaminhamento: enc,
+        descEncaminhamento:
+          enc === "Nenhum" || enc === null ? "" : f.descEncaminhamento,
+      };
+    });
   }
 
   const header = (
@@ -6582,10 +6581,16 @@ function OutrasInconformidadesContent({
     const descRest = OUTRAS_INCO_MAX - form.descricao.length;
     const encRest = OUTRAS_INCO_MAX - form.descEncaminhamento.length;
     const entRest = OUTRAS_INCO_MAX - form.entendimento.length;
-    const encDisabled = form.encaminhamento === "Nenhum";
+
 
     const errTitulo = touched && !form.titulo.trim();
     const errDesc = touched && !form.descricao.trim();
+    const errConc = touched && !form.conclusao;
+    const errEncRadio = touched && !form.encaminhamento;
+    const encDisabled = form.encaminhamento === "Nenhum";
+    const encRestrito =
+      form.conclusao === "Regular com ressalvas" ||
+      form.conclusao === "Irregular";
     const errEnc =
       touched && !encDisabled && !form.descEncaminhamento.trim();
 
@@ -6622,7 +6627,9 @@ function OutrasInconformidadesContent({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-md border border-border p-3">
+            <div
+              className={`rounded-md border p-3 ${errConc ? "border-red-500" : "border-border"}`}
+            >
               <Label className="text-sm font-semibold">
                 Conclusão do item:
               </Label>
@@ -6645,9 +6652,16 @@ function OutrasInconformidadesContent({
                   </label>
                 ))}
               </div>
+              {errConc && (
+                <p className="mt-2 text-xs text-red-600">
+                  Selecione a conclusão do item.
+                </p>
+              )}
             </div>
 
-            <div className="rounded-md border border-border p-3">
+            <div
+              className={`rounded-md border p-3 ${errEncRadio ? "border-red-500" : "border-border"}`}
+            >
               <Label className="text-sm font-semibold">
                 Tipo de encaminhamento:
               </Label>
@@ -6658,18 +6672,30 @@ function OutrasInconformidadesContent({
                     "Recomendação",
                     "Determinação",
                   ] as OIEncaminhamento[]
-                ).map((e) => (
-                  <label key={e} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="oi-enc"
-                      checked={form.encaminhamento === e}
-                      onChange={() => setEnc(e)}
-                    />
-                    {e}
-                  </label>
-                ))}
+                ).map((e) => {
+                  const disabled = encRestrito && e !== "Determinação";
+                  return (
+                    <label
+                      key={e}
+                      className={`flex items-center gap-2 ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="oi-enc"
+                        checked={form.encaminhamento === e}
+                        disabled={disabled}
+                        onChange={() => setEnc(e)}
+                      />
+                      {e}
+                    </label>
+                  );
+                })}
               </div>
+              {errEncRadio && (
+                <p className="mt-2 text-xs text-red-600">
+                  Selecione o tipo de encaminhamento.
+                </p>
+              )}
             </div>
           </div>
 
@@ -6792,7 +6818,7 @@ function OutrasInconformidadesContent({
         <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Inconformidade</th>
+              <th className="px-3 py-2 text-left">Título</th>
               <th className="px-3 py-2 text-left">Conclusão</th>
               <th className="px-3 py-2 text-left">Encaminhamento</th>
               <th className="px-3 py-2 text-left">Descrição</th>
@@ -6829,14 +6855,14 @@ function OutrasInconformidadesContent({
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs ${conclusaoBadge(row.conclusao)}`}
                     >
-                      {row.conclusao}
+                      {row.conclusao ?? "—"}
                     </span>
                   </td>
                   <td className="px-3 py-2 align-top">
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs ${encaminhamentoBadge(row.encaminhamento)}`}
                     >
-                      {row.encaminhamento}
+                      {row.encaminhamento ?? "—"}
                     </span>
                   </td>
                   <td
@@ -7133,7 +7159,7 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
     .map((o) => ({
       topico: "Outras Inconformidades",
       titulo: o.titulo,
-      enquadramento: o.conclusao,
+      enquadramento: o.conclusao ?? "—",
       encaminhamento: o.descEncaminhamento,
     }));
 
