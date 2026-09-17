@@ -6818,7 +6818,7 @@ function OutrasInconformidadesContent({
         <table className="w-full text-sm">
           <thead className="bg-[#0D1B2A] text-white">
             <tr>
-              <th className="px-3 py-2 text-left">Inconformidade</th>
+              <th className="px-3 py-2 text-left">Título</th>
               <th className="px-3 py-2 text-left">Conclusão</th>
               <th className="px-3 py-2 text-left">Encaminhamento</th>
               <th className="px-3 py-2 text-left">Descrição</th>
@@ -6855,14 +6855,14 @@ function OutrasInconformidadesContent({
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs ${conclusaoBadge(row.conclusao)}`}
                     >
-                      {row.conclusao}
+                      {row.conclusao ?? "—"}
                     </span>
                   </td>
                   <td className="px-3 py-2 align-top">
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs ${encaminhamentoBadge(row.encaminhamento)}`}
                     >
-                      {row.encaminhamento}
+                      {row.encaminhamento ?? "—"}
                     </span>
                   </td>
                   <td
@@ -7159,7 +7159,7 @@ function getConclusaoApontamentos(): ConclusaoApontamento[] {
     .map((o) => ({
       topico: "Outras Inconformidades",
       titulo: o.titulo,
-      enquadramento: o.conclusao,
+      enquadramento: o.conclusao ?? "—",
       encaminhamento: o.descEncaminhamento,
     }));
 
