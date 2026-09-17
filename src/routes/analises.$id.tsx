@@ -3642,17 +3642,23 @@ function CreditoDespesasContent({
               </thead>
               <tbody>
                 {CREDITO_DESPESAS_CONSOLIDADO.map((r, i) => {
-                  const overflow = r.percent > 100;
+                  const overflow = r.empenhada > r.autorizado;
                   return (
                     <tr
                       key={r.id}
-                      className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                        overflow ? "bg-red-50" : ""
+                      }`}
                     >
                       <td className="px-3 py-2">{r.programa}</td>
                       <td className="px-3 py-2 text-right">
                         {fmtBRL(r.autorizado)}
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td
+                        className={`px-3 py-2 text-right ${
+                          overflow ? "font-semibold text-red-700" : ""
+                        }`}
+                      >
                         {fmtBRL(r.empenhada)}
                       </td>
                       <td
@@ -4382,8 +4388,15 @@ function RestosPagarContent({
             </tr>
           </thead>
           <tbody>
-            {linhas.map((l, i) => (
-              <tr key={l.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+            {linhas.map((l, i) => {
+              const anoAntigo = l.ano <= anoRef - 5;
+              return (
+              <tr
+                key={l.id}
+                className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                  anoAntigo ? "bg-red-50" : ""
+                }`}
+              >
                 <td className="px-2 py-1.5">
                   <Input
                     type="number"
@@ -4399,6 +4412,9 @@ function RestosPagarContent({
                   <MoneyInput
                     value={l.processados}
                     readOnly={readOnly}
+                    highlight={
+                      anoAntigo && l.processados > 0 ? "red" : null
+                    }
                     onChange={(n) => updateLinha(l.id, { processados: n })}
                   />
                 </td>
@@ -4406,6 +4422,9 @@ function RestosPagarContent({
                   <MoneyInput
                     value={l.naoProcessados}
                     readOnly={readOnly}
+                    highlight={
+                      anoAntigo && l.naoProcessados > 0 ? "red" : null
+                    }
                     onChange={(n) => updateLinha(l.id, { naoProcessados: n })}
                   />
                 </td>
