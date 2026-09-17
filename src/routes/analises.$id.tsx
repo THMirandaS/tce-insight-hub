@@ -6581,7 +6581,7 @@ function OutrasInconformidadesContent({
     const descRest = OUTRAS_INCO_MAX - form.descricao.length;
     const encRest = OUTRAS_INCO_MAX - form.descEncaminhamento.length;
     const entRest = OUTRAS_INCO_MAX - form.entendimento.length;
-    const encDisabled = form.encaminhamento === "Nenhum";
+
 
     const errTitulo = touched && !form.titulo.trim();
     const errDesc = touched && !form.descricao.trim();
@@ -6627,7 +6627,9 @@ function OutrasInconformidadesContent({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-md border border-border p-3">
+            <div
+              className={`rounded-md border p-3 ${errConc ? "border-red-500" : "border-border"}`}
+            >
               <Label className="text-sm font-semibold">
                 Conclusão do item:
               </Label>
@@ -6650,9 +6652,16 @@ function OutrasInconformidadesContent({
                   </label>
                 ))}
               </div>
+              {errConc && (
+                <p className="mt-2 text-xs text-red-600">
+                  Selecione a conclusão do item.
+                </p>
+              )}
             </div>
 
-            <div className="rounded-md border border-border p-3">
+            <div
+              className={`rounded-md border p-3 ${errEncRadio ? "border-red-500" : "border-border"}`}
+            >
               <Label className="text-sm font-semibold">
                 Tipo de encaminhamento:
               </Label>
@@ -6663,18 +6672,30 @@ function OutrasInconformidadesContent({
                     "Recomendação",
                     "Determinação",
                   ] as OIEncaminhamento[]
-                ).map((e) => (
-                  <label key={e} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="oi-enc"
-                      checked={form.encaminhamento === e}
-                      onChange={() => setEnc(e)}
-                    />
-                    {e}
-                  </label>
-                ))}
+                ).map((e) => {
+                  const disabled = encRestrito && e !== "Determinação";
+                  return (
+                    <label
+                      key={e}
+                      className={`flex items-center gap-2 ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="oi-enc"
+                        checked={form.encaminhamento === e}
+                        disabled={disabled}
+                        onChange={() => setEnc(e)}
+                      />
+                      {e}
+                    </label>
+                  );
+                })}
               </div>
+              {errEncRadio && (
+                <p className="mt-2 text-xs text-red-600">
+                  Selecione o tipo de encaminhamento.
+                </p>
+              )}
             </div>
           </div>
 
