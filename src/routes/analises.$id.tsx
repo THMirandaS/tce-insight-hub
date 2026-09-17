@@ -3417,27 +3417,6 @@ const CREDITO_DESPESAS_MEMORIA: DespesaMemoriaLinha[] = [
   },
 ];
 
-type DespesaConsolidada = {
-  id: string;
-  programa: string;
-  autorizado: number;
-  empenhada: number;
-  percent: number; // display fixo
-};
-
-const CREDITO_DESPESAS_CONSOLIDADO: DespesaConsolidada[] = [
-  { id: "x1", programa: "47", autorizado: 999_999_999.99, empenhada: 888_888_888.88, percent: 90 },
-  { id: "x2", programa: "55", autorizado: 999_999_999.99, empenhada: 999_999_999.99, percent: 100 },
-  { id: "x3", programa: "68", autorizado: 999_999_999.99, empenhada: 999_999_999.99, percent: 100 },
-  { id: "x4", programa: "88", autorizado: 888_888_888.88, empenhada: 999_999_999.99, percent: 110 },
-  { id: "x5", programa: "88", autorizado: 777_777_777.77, empenhada: 699_999_999.99, percent: 48 },
-];
-
-const CREDITO_DESPESAS_TOTAL = {
-  autorizado: 999_999_999.99,
-  empenhada: 888_888_888.88,
-  percent: 94,
-};
 
 const CREDITO_DESPESAS_HISTORICO: ReceitasHistorico[] = [
   {
@@ -3480,9 +3459,46 @@ function CreditoDespesasContent({
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
 
+  // Agrupamento por programa (subtotais a partir da memória de cálculo)
+  const gruposPrograma = useMemo(() => {
+    const map = new Map<
+      string,
+      { programa: string; autorizado: number; despesa: number }
+    >();
+    memoria.forEach((l) => {
+      const key = l.programa.trim() || "(sem programa)";
+      const g = map.get(key) ?? { programa: key, autorizado: 0, despesa: 0 };
+      g.autorizado += l.autorizado || 0;
+      g.despesa += l.despesa || 0;
+      map.set(key, g);
+    });
+    return Array.from(map.values()).sort((a, b) =>
+      a.programa.localeCompare(b.programa, "pt-BR", { numeric: true })
+    );
+  }, [memoria]);
+
+  // Grupos da memória de cálculo preservando as linhas originais
+  const memoriaGrupos = useMemo(() => {
+    const grupos: { programa: string; linhas: DespesaMemoriaLinha[] }[] = [];
+    memoria.forEach((l) => {
+      const key = l.programa.trim() || "(sem programa)";
+      let g = grupos.find((x) => x.programa === key);
+      if (!g) {
+        g = { programa: key, linhas: [] };
+        grupos.push(g);
+      }
+      g.linhas.push(l);
+    });
+    return grupos.sort((a, b) =>
+      a.programa.localeCompare(b.programa, "pt-BR", { numeric: true })
+    );
+  }, [memoria]);
+
+  const totalAutorizado = memoria.reduce((s, l) => s + (l.autorizado || 0), 0);
+
   // Indicador automático: NÃO CONFORME se qualquer programa empenhou mais que o crédito autorizado.
-  const naoConformeCredito = CREDITO_DESPESAS_CONSOLIDADO.some(
-    (l) => l.empenhada > l.autorizado
+  const naoConformeCredito = gruposPrograma.some(
+    (g) => g.despesa > g.autorizado
   );
 
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
