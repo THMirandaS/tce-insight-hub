@@ -6585,6 +6585,12 @@ function OutrasInconformidadesContent({
 
     const errTitulo = touched && !form.titulo.trim();
     const errDesc = touched && !form.descricao.trim();
+    const errConc = touched && !form.conclusao;
+    const errEncRadio = touched && !form.encaminhamento;
+    const encDisabled = form.encaminhamento === "Nenhum";
+    const encRestrito =
+      form.conclusao === "Regular com ressalvas" ||
+      form.conclusao === "Irregular";
     const errEnc =
       touched && !encDisabled && !form.descEncaminhamento.trim();
 
