@@ -3789,146 +3789,201 @@ function CreditoDespesasContent({
                   <th className="px-3 py-2 text-left">Categoria Econômica</th>
                   <th className="px-3 py-2 text-left">Grupo</th>
                   <th className="px-3 py-2 text-left">Modalidade</th>
-                  <th className="px-3 py-2 text-right">Crédito inicial</th>
                   <th className="px-3 py-2 text-right">Crédito autorizado</th>
-                  <th className="px-3 py-2 text-center">Apontamento</th>
+                  <th className="px-3 py-2 text-right">Despesa empenhada</th>
+                  <th className="px-3 py-2 text-center">Resultado</th>
                   {!readOnly && (
                     <th className="px-3 py-2 text-center">Ações</th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {memoria.map((l, i) => {
-                  const conforme = l.despesa <= l.autorizado;
+                {memoriaGrupos.map((g) => {
+                  const subAut = g.linhas.reduce(
+                    (s, l) => s + (l.autorizado || 0),
+                    0
+                  );
+                  const subDesp = g.linhas.reduce(
+                    (s, l) => s + (l.despesa || 0),
+                    0
+                  );
+                  const subConforme = subDesp <= subAut;
                   return (
-                    <tr
-                      key={l.id}
-                      className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                    >
-                      <td className="px-2 py-1.5">
-                        <Input
-                          value={l.programa}
-                          readOnly={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { programa: e.target.value })
-                          }
-                          className="h-8"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.categoria}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { categoria: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {CATEGORIAS_ECONOMICAS.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.grupo}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { grupo: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {GRUPOS_DESPESA.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.modalidade}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { modalidade: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {MODALIDADES_APLICACAO.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <MoneyInput
-                          value={l.inicial}
-                          readOnly={readOnly}
-                          onChange={(n) => updateMemoria(l.id, { inicial: n })}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <MoneyInput
-                          value={l.autorizado}
-                          readOnly={readOnly}
-                          onChange={(n) =>
-                            updateMemoria(l.id, { autorizado: n })
-                          }
-                        />
-                      </td>
-                      <td className="px-2 py-1.5 text-center">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            conforme
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                    <>
+                      {g.linhas.map((l) => {
+                        const conforme = l.despesa <= l.autorizado;
+                        return (
+                          <tr key={l.id} className="bg-white">
+                            <td className="px-2 py-1.5">
+                              <Input
+                                value={l.programa}
+                                readOnly={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    programa: e.target.value,
+                                  })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.categoria}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    categoria: e.target.value,
+                                  })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {CATEGORIAS_ECONOMICAS.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.grupo}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, { grupo: e.target.value })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {GRUPOS_DESPESA.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.modalidade}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    modalidade: e.target.value,
+                                  })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {MODALIDADES_APLICACAO.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <MoneyInput
+                                value={l.autorizado}
+                                readOnly={readOnly}
+                                onChange={(n) =>
+                                  updateMemoria(l.id, { autorizado: n })
+                                }
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <MoneyInput
+                                value={l.despesa}
+                                readOnly={readOnly}
+                                onChange={(n) =>
+                                  updateMemoria(l.id, { despesa: n })
+                                }
+                              />
+                            </td>
+                            <td className="px-2 py-1.5 text-center">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                  conforme
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {conforme ? "Conforme" : "Não Conforme"}
+                              </span>
+                            </td>
+                            {!readOnly && (
+                              <td className="px-2 py-1.5">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    className="text-[#1A56DB] hover:opacity-80"
+                                    title="Editar"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDelete(l.id)}
+                                    className="text-red-600 hover:opacity-80"
+                                    title="Excluir"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                      <tr key={`sub-${g.programa}`} className="bg-[#F4F5F7] font-semibold">
+                        <td className="px-2 py-1.5" colSpan={4}>
+                          Subtotal — Programa {g.programa}
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          {fmtBRL(subAut)}
+                        </td>
+                        <td
+                          className={`px-2 py-1.5 text-right ${
+                            subConforme ? "" : "font-semibold text-red-700"
                           }`}
                         >
-                          {conforme ? "Conforme" : "Não Conforme"}
-                        </span>
-                      </td>
-                      {!readOnly && (
-                        <td className="px-2 py-1.5">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              type="button"
-                              className="text-[#1A56DB] hover:opacity-80"
-                              title="Editar"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setConfirmDelete(l.id)}
-                              className="text-red-600 hover:opacity-80"
-                              title="Excluir"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
+                          {fmtBRL(subDesp)}
                         </td>
-                      )}
-                    </tr>
+                        <td className="px-2 py-1.5 text-center">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              subConforme
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {subConforme ? "Conforme" : "Não Conforme"}
+                          </span>
+                        </td>
+                        {!readOnly && <td />}
+                      </tr>
+                    </>
                   );
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-[#F4F5F7] font-semibold">
+                <tr className="bg-[#0D1B2A] font-semibold text-white">
                   <td className="px-3 py-2" colSpan={4}>
                     TOTAL
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(totalInicial)}
+                    {fmtBRL(totalAutorizado)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(
-                      memoria.reduce((s, l) => s + (l.autorizado || 0), 0)
-                    )}
+                    {fmtBRL(totalDespesa)}
                   </td>
-                  <td />
+                  <td className="px-3 py-2 text-center">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        naoConformeCredito
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {naoConformeCredito ? "Não Conforme" : "Conforme"}
+                    </span>
+                  </td>
                   {!readOnly && <td />}
                 </tr>
               </tfoot>
