@@ -5801,6 +5801,8 @@ function ApontamentoRciContent({
               <th className="px-3 py-2 text-left">Título</th>
               <th className="px-3 py-2 text-left">Descrição</th>
               <th className="px-3 py-2 text-left">Relatório de origem</th>
+              <th className="px-3 py-2 text-center">Conclusão</th>
+              <th className="px-3 py-2 text-center">Tipo de encaminhamento</th>
               <th className="px-3 py-2 text-center" data-pdf-hide>
                 Ações
               </th>
