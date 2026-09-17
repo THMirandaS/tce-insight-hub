@@ -4214,10 +4214,12 @@ function buildRestosPagarInicial(anoRef: number): RestoPagarLinha[] {
   ];
 }
 
-const RESTOS_PAGAR_HISTORICO: ReceitasHistorico[] = [
-  { ts: "18/03/2025 10:15", usuario: "Auditor 01", campo: "Linha 2024 - Não Processados", anterior: "90.000.000,00", novo: "95.000.000,00" },
-  { ts: "17/03/2025 14:32", usuario: "Auditor 02", campo: "Adição de linha", anterior: "-", novo: "Ano 2016" },
-];
+function buildRestosPagarHistorico(anoRef: number): ReceitasHistorico[] {
+  return [
+    { ts: `18/03/${anoRef} 10:15`, usuario: "Auditor 01", campo: `Linha ${anoRef - 1} - Não Processados`, anterior: "90.000.000,00", novo: "95.000.000,00" },
+    { ts: `17/03/${anoRef} 14:32`, usuario: "Auditor 02", campo: "Adição de linha", anterior: "-", novo: `Ano ${anoRef - 9}` },
+  ];
+}
 
 function RestosPagarContent({
   processo,
@@ -4464,7 +4466,7 @@ function RestosPagarContent({
                 </tr>
               </thead>
               <tbody>
-                {RESTOS_PAGAR_HISTORICO.map((h, i) => (
+                {buildRestosPagarHistorico(anoRef).map((h, i) => (
                   <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     <td className="px-3 py-2">{h.ts}</td>
                     <td className="px-3 py-2">{h.usuario}</td>
