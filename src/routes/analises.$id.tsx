@@ -3744,16 +3744,8 @@ function CreditoDespesasContent({
               </thead>
               <tbody>
                 {memoriaGrupos.map((g) => {
-                  const subAut = g.linhas.reduce(
-                    (s, l) => s + (l.autorizado || 0),
-                    0
-                  );
-                  const subDesp = g.linhas.reduce(
-                    (s, l) => s + (l.despesa || 0),
-                    0
-                  );
-                  const subConforme = subDesp <= subAut;
                   return (
+
                     <Fragment key={g.programa}>
                       {g.linhas.map((l) => {
                         return (
