@@ -4261,7 +4261,7 @@ function RestosPagarContent({
       ...arr,
       {
         id: `rp${Date.now()}`,
-        ano: RESTOS_PAGAR_ANO_ATUAL - 1,
+        ano: anoMaxRP,
         processados: 0,
         naoProcessados: 0,
       },
@@ -4372,9 +4372,12 @@ function RestosPagarContent({
                   <Input
                     type="number"
                     value={l.ano}
+                    max={anoMaxRP}
                     readOnly={readOnly}
                     onChange={(e) =>
-                      updateLinha(l.id, { ano: Number(e.target.value) || 0 })
+                      updateLinha(l.id, {
+                        ano: Math.min(Number(e.target.value) || 0, anoMaxRP),
+                      })
                     }
                     className="w-24"
                   />
