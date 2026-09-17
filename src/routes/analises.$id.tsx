@@ -3019,7 +3019,7 @@ function ProgramasContent({
       </div>
 
       <p className="mt-3 text-sm font-medium text-foreground">
-        Quantidade de programas: {quantidade}
+        Quantidade de programas: {linhas.length}
       </p>
 
       <div className="mt-3 overflow-x-auto rounded-md border border-border">
