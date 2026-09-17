@@ -5319,7 +5319,7 @@ function ControleInternoContent({
           </DialogHeader>
 
           <div className="space-y-5">
-            {/* Descrição */}
+            {/* Título */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Título</Label>
               <textarea
@@ -5331,7 +5331,22 @@ function ControleInternoContent({
               />
             </div>
 
+            {/* Descrição da inadequação */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Descrição da inadequação
+              </Label>
+              <textarea
+                value={form.avaliacao}
+                readOnly={readOnly}
+                onChange={(e) => updateForm({ avaliacao: e.target.value })}
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
             {/* Conclusão */}
+
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Conclusão</Label>
               <div className="flex flex-wrap gap-6">
@@ -5375,20 +5390,6 @@ function ControleInternoContent({
                   </label>
                 ))}
               </div>
-            </div>
-
-            {/* Descrição da inadequação */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                Descrição da inadequação
-              </Label>
-              <textarea
-                value={form.avaliacao}
-                readOnly={readOnly}
-                onChange={(e) => updateForm({ avaliacao: e.target.value })}
-                rows={4}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              />
             </div>
 
             {/* Encaminhamento (IA ou manual, editável) */}
