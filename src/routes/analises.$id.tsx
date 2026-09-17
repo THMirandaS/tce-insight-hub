@@ -6298,8 +6298,8 @@ type OIEncaminhamento = "Nenhum" | "Recomendação" | "Determinação";
 type OutrasInco = {
   id: string;
   titulo: string;
-  conclusao: OIConclusao;
-  encaminhamento: OIEncaminhamento;
+  conclusao: OIConclusao | null;
+  encaminhamento: OIEncaminhamento | null;
   descricao: string;
   descEncaminhamento: string;
   entendimento: string;
@@ -6354,27 +6354,18 @@ const OUTRAS_INCO_HISTORICO_STORE: ReceitasHistorico[] = [
   },
 ];
 
-function conclusaoBadge(c: OIConclusao) {
+function conclusaoBadge(c: OIConclusao | null) {
+  if (!c) return "bg-gray-100 text-gray-500 border border-gray-300";
   if (c === "Regular") return "bg-green-100 text-green-800 border border-green-300";
   if (c === "Regular com ressalvas")
     return "bg-yellow-100 text-yellow-800 border border-yellow-300";
   return "bg-red-100 text-red-800 border border-red-300";
 }
-function encaminhamentoBadge(e: OIEncaminhamento) {
+function encaminhamentoBadge(e: OIEncaminhamento | null) {
+  if (!e) return "bg-gray-100 text-gray-500 border border-gray-300";
   if (e === "Nenhum") return "bg-gray-100 text-gray-700 border border-gray-300";
   if (e === "Recomendação") return "bg-blue-100 text-blue-800 border border-blue-300";
   return "bg-orange-100 text-orange-800 border border-orange-300";
-}
-
-function inferConclusao(e: OIEncaminhamento): OIConclusao {
-  if (e === "Nenhum") return "Regular";
-  if (e === "Recomendação") return "Regular com ressalvas";
-  return "Irregular";
-}
-function inferEncaminhamento(c: OIConclusao): OIEncaminhamento {
-  if (c === "Regular") return "Nenhum";
-  if (c === "Regular com ressalvas") return "Recomendação";
-  return "Determinação";
 }
 
 function OutrasInconformidadesContent({
@@ -6403,8 +6394,8 @@ function OutrasInconformidadesContent({
   // Form state
   const emptyForm = {
     titulo: "",
-    conclusao: "Regular" as OIConclusao,
-    encaminhamento: "Nenhum" as OIEncaminhamento,
+    conclusao: null as OIConclusao | null,
+    encaminhamento: null as OIEncaminhamento | null,
     descricao: "",
     descEncaminhamento: "",
     entendimento: "",
