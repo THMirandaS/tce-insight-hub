@@ -3662,9 +3662,13 @@ function CreditoDespesasContent({
                   return (
                     <tr
                       key={g.programa}
-                      className={`${
-                        i % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      } ${overflow ? "bg-red-50" : ""}`}
+                      className={
+                        overflow
+                          ? "bg-red-50"
+                          : i % 2 === 0
+                            ? "bg-white"
+                            : "bg-gray-50"
+                      }
                     >
                       <td className="px-3 py-2 font-medium">{g.programa}</td>
                       <td className="px-3 py-2 text-right">
