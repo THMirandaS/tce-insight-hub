@@ -3864,22 +3864,6 @@ function CreditoDespesasContent({
                           </tr>
                         );
                       })}
-                      <tr key={`sub-${g.programa}`} className="bg-[#F4F5F7] font-semibold">
-                        <td className="px-2 py-1.5" colSpan={4}>
-                          Subtotal — Programa {g.programa}
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          {fmtBRL(subAut)}
-                        </td>
-                        <td
-                          className={`px-2 py-1.5 text-right ${
-                            subConforme ? "" : "font-semibold text-red-700"
-                          }`}
-                        >
-                          {fmtBRL(subDesp)}
-                        </td>
-                        {!readOnly && <td />}
-                      </tr>
                     </Fragment>
                   );
                 })}
