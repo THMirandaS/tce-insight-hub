@@ -4203,12 +4203,16 @@ type RestoPagarLinha = {
   naoProcessados: number;
 };
 
-const RESTOS_PAGAR_INICIAL: RestoPagarLinha[] = [
-  { id: "rp1", ano: 2016, processados: 12_500_000, naoProcessados: 8_300_000 },
-  { id: "rp2", ano: 2017, processados: 9_800_000, naoProcessados: 15_200_000 },
-  { id: "rp3", ano: 2023, processados: 45_000_000, naoProcessados: 32_000_000 },
-  { id: "rp4", ano: 2024, processados: 78_500_000, naoProcessados: 95_000_000 },
-];
+// RP nunca pode ser de ano >= ano do processo; o máximo é (ano de referência − 1).
+// As linhas iniciais são derivadas do ano de referência para garantir coerência.
+function buildRestosPagarInicial(anoRef: number): RestoPagarLinha[] {
+  return [
+    { id: "rp1", ano: anoRef - 9, processados: 12_500_000, naoProcessados: 8_300_000 },
+    { id: "rp2", ano: anoRef - 8, processados: 9_800_000, naoProcessados: 15_200_000 },
+    { id: "rp3", ano: anoRef - 2, processados: 45_000_000, naoProcessados: 32_000_000 },
+    { id: "rp4", ano: anoRef - 1, processados: 78_500_000, naoProcessados: 95_000_000 },
+  ];
+}
 
 const RESTOS_PAGAR_HISTORICO: ReceitasHistorico[] = [
   { ts: "18/03/2025 10:15", usuario: "Auditor 01", campo: "Linha 2024 - Não Processados", anterior: "90.000.000,00", novo: "95.000.000,00" },
