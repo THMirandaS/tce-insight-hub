@@ -5906,10 +5906,22 @@ function ApontamentoRciContent({
                   </td>
                   <td className="px-3 py-2 align-top">{a.relatorio}</td>
                   <td className="px-3 py-2 text-center align-top">
-                    {a.conclusao ?? "—"}
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${conclusaoBadge(
+                        a.conclusao,
+                      )}`}
+                    >
+                      {a.conclusao ?? "—"}
+                    </span>
                   </td>
                   <td className="px-3 py-2 text-center align-top">
-                    {a.encaminhamento ?? "—"}
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${encaminhamentoBadge(
+                        a.encaminhamento,
+                      )}`}
+                    >
+                      {a.encaminhamento ?? "—"}
+                    </span>
                   </td>
                   <td className="px-2 py-2 align-top" data-pdf-hide>
                     <div className="flex items-center justify-center gap-2">
