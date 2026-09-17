@@ -5392,20 +5392,6 @@ function ControleInternoContent({
               </div>
             </div>
 
-            {/* Descrição da inadequação */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                Descrição da inadequação
-              </Label>
-              <textarea
-                value={form.avaliacao}
-                readOnly={readOnly}
-                onChange={(e) => updateForm({ avaliacao: e.target.value })}
-                rows={4}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              />
-            </div>
-
             {/* Encaminhamento (IA ou manual, editável) */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Encaminhamento</Label>
