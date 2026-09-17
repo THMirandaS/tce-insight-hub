@@ -3744,16 +3744,8 @@ function CreditoDespesasContent({
               </thead>
               <tbody>
                 {memoriaGrupos.map((g) => {
-                  const subAut = g.linhas.reduce(
-                    (s, l) => s + (l.autorizado || 0),
-                    0
-                  );
-                  const subDesp = g.linhas.reduce(
-                    (s, l) => s + (l.despesa || 0),
-                    0
-                  );
-                  const subConforme = subDesp <= subAut;
                   return (
+
                     <Fragment key={g.programa}>
                       {g.linhas.map((l) => {
                         return (
@@ -3864,22 +3856,6 @@ function CreditoDespesasContent({
                           </tr>
                         );
                       })}
-                      <tr key={`sub-${g.programa}`} className="bg-[#F4F5F7] font-semibold">
-                        <td className="px-2 py-1.5" colSpan={4}>
-                          Subtotal — Programa {g.programa}
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          {fmtBRL(subAut)}
-                        </td>
-                        <td
-                          className={`px-2 py-1.5 text-right ${
-                            subConforme ? "" : "font-semibold text-red-700"
-                          }`}
-                        >
-                          {fmtBRL(subDesp)}
-                        </td>
-                        {!readOnly && <td />}
-                      </tr>
                     </Fragment>
                   );
                 })}
