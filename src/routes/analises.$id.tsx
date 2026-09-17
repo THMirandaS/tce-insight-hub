@@ -5826,6 +5826,12 @@ function ApontamentoRciContent({
                     {a.avaliacao || "—"}
                   </td>
                   <td className="px-3 py-2 align-top">{a.relatorio}</td>
+                  <td className="px-3 py-2 text-center align-top">
+                    {a.conclusao ?? "—"}
+                  </td>
+                  <td className="px-3 py-2 text-center align-top">
+                    {a.encaminhamento ?? "—"}
+                  </td>
                   <td className="px-2 py-2 align-top" data-pdf-hide>
                     <div className="flex items-center justify-center gap-2">
                       <button
