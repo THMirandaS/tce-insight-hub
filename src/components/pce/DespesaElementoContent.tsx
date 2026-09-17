@@ -198,18 +198,36 @@ export function DespesaElementoContent({
                 </tr>
               </thead>
               <tbody>
-                {dados.map((r, i) => (
+                {dados.map((r, i) => {
+                  const excLiquidado = r.liquidado > r.empenhado;
+                  const excPago = r.pago > r.liquidado;
+                  return (
                   <tr
                     key={r.id}
-                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                      excLiquidado || excPago ? "bg-red-50" : ""
+                    }`}
                   >
                     <td className="px-3 py-2">{r.codigo}</td>
                     <td className="px-3 py-2">{r.nome}</td>
                     <td className="px-3 py-2 text-right">{fmtBRL(r.empenhado)}</td>
-                    <td className="px-3 py-2 text-right">{fmtBRL(r.liquidado)}</td>
-                    <td className="px-3 py-2 text-right">{fmtBRL(r.pago)}</td>
+                    <td
+                      className={`px-3 py-2 text-right ${
+                        excLiquidado ? "font-semibold text-red-700" : ""
+                      }`}
+                    >
+                      {fmtBRL(r.liquidado)}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right ${
+                        excPago ? "font-semibold text-red-700" : ""
+                      }`}
+                    >
+                      {fmtBRL(r.pago)}
+                    </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
               <tfoot>
                 <tr className="bg-[#F4F5F7] font-semibold">
