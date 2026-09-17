@@ -36,10 +36,24 @@ const ELEMENTOS_MOCK: ElementoLinha[] = [
   { id: "el8", codigo: "37", nome: "Locação de Mão de Obra", empenhado: 210_000_000, liquidado: 210_000_000, pago: 210_000_000 },
 ];
 
-
-
-
-
+function ConformeBadge({ conforme }: { conforme: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${
+        conforme
+          ? "border-green-300 bg-green-50 text-green-800"
+          : "border-red-300 bg-red-50 text-red-800"
+      }`}
+    >
+      {conforme ? (
+        <CheckCircle2 className="h-3.5 w-3.5" />
+      ) : (
+        <AlertTriangle className="h-3.5 w-3.5" />
+      )}
+      {conforme ? "CONFORME" : "NÃO CONFORME"}
+    </span>
+  );
+}
 
 
 export function DespesaElementoContent({
@@ -132,44 +146,6 @@ export function DespesaElementoContent({
 
       {tab === "principal" ? (
         <>
-          {/* Conclusões automáticas no topo */}
-          <div className="mb-4 space-y-2">
-            <div
-              className={`flex items-center gap-3 rounded-md border p-3 ${
-                naoConformeLiquidado
-                  ? "border-red-300 bg-red-50 text-red-800"
-                  : "border-green-300 bg-green-50 text-green-800"
-              }`}
-            >
-              {naoConformeLiquidado ? (
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-              ) : (
-                <CheckCircle2 className="h-5 w-5 shrink-0" />
-              )}
-              <p className="text-sm font-semibold">
-                Valor liquidado x valor empenhado:{" "}
-                {naoConformeLiquidado ? "NÃO CONFORME" : "CONFORME"}
-              </p>
-            </div>
-            <div
-              className={`flex items-center gap-3 rounded-md border p-3 ${
-                naoConformePago
-                  ? "border-red-300 bg-red-50 text-red-800"
-                  : "border-green-300 bg-green-50 text-green-800"
-              }`}
-            >
-              {naoConformePago ? (
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-              ) : (
-                <CheckCircle2 className="h-5 w-5 shrink-0" />
-              )}
-              <p className="text-sm font-semibold">
-                Valor pago x valor liquidado:{" "}
-                {naoConformePago ? "NÃO CONFORME" : "CONFORME"}
-              </p>
-            </div>
-          </div>
-
           <div className="mt-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
               <span className="border-b-2 border-[#0D1B2A] pb-1">
@@ -195,6 +171,12 @@ export function DespesaElementoContent({
                   <th className="px-3 py-2 text-right">Valor empenhado</th>
                   <th className="px-3 py-2 text-right">Valor liquidado</th>
                   <th className="px-3 py-2 text-right">Valor pago</th>
+                  <th className="px-3 py-2 text-center">
+                    Valor liquidado x valor empenhado
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    Valor pago x valor liquidado
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -225,6 +207,12 @@ export function DespesaElementoContent({
                     >
                       {fmtBRL(r.pago)}
                     </td>
+                    <td className="px-3 py-2 text-center">
+                      <ConformeBadge conforme={!excLiquidado} />
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      <ConformeBadge conforme={!excPago} />
+                    </td>
                   </tr>
                   );
                 })}
@@ -241,10 +229,17 @@ export function DespesaElementoContent({
                     {fmtBRL(totalLiquidado)}
                   </td>
                   <td className="px-3 py-2 text-right">{fmtBRL(totalPago)}</td>
+                  <td className="px-3 py-2 text-center">
+                    <ConformeBadge conforme={!naoConformeLiquidado} />
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <ConformeBadge conforme={!naoConformePago} />
+                  </td>
                 </tr>
               </tfoot>
             </table>
           </div>
+
 
           <ConclusaoItemRadios scope="despesa-elemento" />
 
