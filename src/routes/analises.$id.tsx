@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   FileText,
   Save,
@@ -3417,27 +3417,6 @@ const CREDITO_DESPESAS_MEMORIA: DespesaMemoriaLinha[] = [
   },
 ];
 
-type DespesaConsolidada = {
-  id: string;
-  programa: string;
-  autorizado: number;
-  empenhada: number;
-  percent: number; // display fixo
-};
-
-const CREDITO_DESPESAS_CONSOLIDADO: DespesaConsolidada[] = [
-  { id: "x1", programa: "47", autorizado: 999_999_999.99, empenhada: 888_888_888.88, percent: 90 },
-  { id: "x2", programa: "55", autorizado: 999_999_999.99, empenhada: 999_999_999.99, percent: 100 },
-  { id: "x3", programa: "68", autorizado: 999_999_999.99, empenhada: 999_999_999.99, percent: 100 },
-  { id: "x4", programa: "88", autorizado: 888_888_888.88, empenhada: 999_999_999.99, percent: 110 },
-  { id: "x5", programa: "88", autorizado: 777_777_777.77, empenhada: 699_999_999.99, percent: 48 },
-];
-
-const CREDITO_DESPESAS_TOTAL = {
-  autorizado: 999_999_999.99,
-  empenhada: 888_888_888.88,
-  percent: 94,
-};
 
 const CREDITO_DESPESAS_HISTORICO: ReceitasHistorico[] = [
   {
@@ -3480,9 +3459,46 @@ function CreditoDespesasContent({
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
 
+  // Agrupamento por programa (subtotais a partir da memória de cálculo)
+  const gruposPrograma = useMemo(() => {
+    const map = new Map<
+      string,
+      { programa: string; autorizado: number; despesa: number }
+    >();
+    memoria.forEach((l) => {
+      const key = l.programa.trim() || "(sem programa)";
+      const g = map.get(key) ?? { programa: key, autorizado: 0, despesa: 0 };
+      g.autorizado += l.autorizado || 0;
+      g.despesa += l.despesa || 0;
+      map.set(key, g);
+    });
+    return Array.from(map.values()).sort((a, b) =>
+      a.programa.localeCompare(b.programa, "pt-BR", { numeric: true })
+    );
+  }, [memoria]);
+
+  // Grupos da memória de cálculo preservando as linhas originais
+  const memoriaGrupos = useMemo(() => {
+    const grupos: { programa: string; linhas: DespesaMemoriaLinha[] }[] = [];
+    memoria.forEach((l) => {
+      const key = l.programa.trim() || "(sem programa)";
+      let g = grupos.find((x) => x.programa === key);
+      if (!g) {
+        g = { programa: key, linhas: [] };
+        grupos.push(g);
+      }
+      g.linhas.push(l);
+    });
+    return grupos.sort((a, b) =>
+      a.programa.localeCompare(b.programa, "pt-BR", { numeric: true })
+    );
+  }, [memoria]);
+
+  const totalAutorizado = memoria.reduce((s, l) => s + (l.autorizado || 0), 0);
+
   // Indicador automático: NÃO CONFORME se qualquer programa empenhou mais que o crédito autorizado.
-  const naoConformeCredito = CREDITO_DESPESAS_CONSOLIDADO.some(
-    (l) => l.empenhada > l.autorizado
+  const naoConformeCredito = gruposPrograma.some(
+    (g) => g.despesa > g.autorizado
   );
 
   const consRestantes = CREDITO_DESPESAS_MAX_TEXTO - consideracoes.length;
@@ -3608,7 +3624,7 @@ function CreditoDespesasContent({
               </Label>
               <Input
                 readOnly
-                value={fmtBRL(CREDITO_DESPESAS_TOTAL.autorizado)}
+                value={fmtBRL(totalAutorizado)}
                 className="bg-[#F4F5F7] font-semibold"
               />
             </div>
@@ -3637,36 +3653,44 @@ function CreditoDespesasContent({
                   <th className="px-3 py-2 text-left">Programa</th>
                   <th className="px-3 py-2 text-right">Crédito Autorizado</th>
                   <th className="px-3 py-2 text-right">Despesa Empenhada</th>
-                  <th className="px-3 py-2 text-right">% Empenho</th>
+                  <th className="px-3 py-2 text-center">Resultado</th>
                 </tr>
               </thead>
               <tbody>
-                {CREDITO_DESPESAS_CONSOLIDADO.map((r, i) => {
-                  const overflow = r.empenhada > r.autorizado;
+                {gruposPrograma.map((g, i) => {
+                  const overflow = g.despesa > g.autorizado;
                   return (
                     <tr
-                      key={r.id}
-                      className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
-                        overflow ? "bg-red-50" : ""
-                      }`}
+                      key={g.programa}
+                      className={
+                        overflow
+                          ? "bg-red-50"
+                          : i % 2 === 0
+                            ? "bg-white"
+                            : "bg-gray-50"
+                      }
                     >
-                      <td className="px-3 py-2">{r.programa}</td>
+                      <td className="px-3 py-2 font-medium">{g.programa}</td>
                       <td className="px-3 py-2 text-right">
-                        {fmtBRL(r.autorizado)}
+                        {fmtBRL(g.autorizado)}
                       </td>
                       <td
                         className={`px-3 py-2 text-right ${
                           overflow ? "font-semibold text-red-700" : ""
                         }`}
                       >
-                        {fmtBRL(r.empenhada)}
+                        {fmtBRL(g.despesa)}
                       </td>
-                      <td
-                        className={`px-3 py-2 text-right font-semibold ${
-                          overflow ? "text-red-700" : "text-green-700"
-                        }`}
-                      >
-                        {r.percent}%
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            overflow
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {overflow ? "Não Conforme" : "Conforme"}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -3676,19 +3700,19 @@ function CreditoDespesasContent({
                 <tr className="bg-[#F4F5F7] font-semibold">
                   <td className="px-3 py-2">TOTAL</td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(CREDITO_DESPESAS_TOTAL.autorizado)}
+                    {fmtBRL(totalAutorizado)}
                   </td>
-                  <td className="px-3 py-2 text-right">
-                    {fmtBRL(CREDITO_DESPESAS_TOTAL.empenhada)}
-                  </td>
-                  <td
-                    className={`px-3 py-2 text-right ${
-                      CREDITO_DESPESAS_TOTAL.percent > 100
-                        ? "text-red-700"
-                        : "text-green-700"
-                    }`}
-                  >
-                    {CREDITO_DESPESAS_TOTAL.percent}%
+                  <td className="px-3 py-2 text-right">{fmtBRL(totalDespesa)}</td>
+                  <td className="px-3 py-2 text-center">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        naoConformeCredito
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {naoConformeCredito ? "Não Conforme" : "Conforme"}
+                    </span>
                   </td>
                 </tr>
               </tfoot>
@@ -3769,146 +3793,201 @@ function CreditoDespesasContent({
                   <th className="px-3 py-2 text-left">Categoria Econômica</th>
                   <th className="px-3 py-2 text-left">Grupo</th>
                   <th className="px-3 py-2 text-left">Modalidade</th>
-                  <th className="px-3 py-2 text-right">Crédito inicial</th>
                   <th className="px-3 py-2 text-right">Crédito autorizado</th>
-                  <th className="px-3 py-2 text-center">Apontamento</th>
+                  <th className="px-3 py-2 text-right">Despesa empenhada</th>
+                  <th className="px-3 py-2 text-center">Resultado</th>
                   {!readOnly && (
                     <th className="px-3 py-2 text-center">Ações</th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {memoria.map((l, i) => {
-                  const conforme = l.despesa <= l.autorizado;
+                {memoriaGrupos.map((g) => {
+                  const subAut = g.linhas.reduce(
+                    (s, l) => s + (l.autorizado || 0),
+                    0
+                  );
+                  const subDesp = g.linhas.reduce(
+                    (s, l) => s + (l.despesa || 0),
+                    0
+                  );
+                  const subConforme = subDesp <= subAut;
                   return (
-                    <tr
-                      key={l.id}
-                      className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                    >
-                      <td className="px-2 py-1.5">
-                        <Input
-                          value={l.programa}
-                          readOnly={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { programa: e.target.value })
-                          }
-                          className="h-8"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.categoria}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { categoria: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {CATEGORIAS_ECONOMICAS.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.grupo}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { grupo: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {GRUPOS_DESPESA.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <select
-                          value={l.modalidade}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            updateMemoria(l.id, { modalidade: e.target.value })
-                          }
-                          className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
-                        >
-                          {MODALIDADES_APLICACAO.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <MoneyInput
-                          value={l.inicial}
-                          readOnly={readOnly}
-                          onChange={(n) => updateMemoria(l.id, { inicial: n })}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <MoneyInput
-                          value={l.autorizado}
-                          readOnly={readOnly}
-                          onChange={(n) =>
-                            updateMemoria(l.id, { autorizado: n })
-                          }
-                        />
-                      </td>
-                      <td className="px-2 py-1.5 text-center">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            conforme
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                    <Fragment key={g.programa}>
+                      {g.linhas.map((l) => {
+                        const conforme = l.despesa <= l.autorizado;
+                        return (
+                          <tr key={l.id} className="bg-white">
+                            <td className="px-2 py-1.5">
+                              <Input
+                                value={l.programa}
+                                readOnly={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    programa: e.target.value,
+                                  })
+                                }
+                                className="h-8"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.categoria}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    categoria: e.target.value,
+                                  })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {CATEGORIAS_ECONOMICAS.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.grupo}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, { grupo: e.target.value })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {GRUPOS_DESPESA.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <select
+                                value={l.modalidade}
+                                disabled={readOnly}
+                                onChange={(e) =>
+                                  updateMemoria(l.id, {
+                                    modalidade: e.target.value,
+                                  })
+                                }
+                                className="h-8 w-full rounded-md border border-border bg-white px-2 text-sm disabled:bg-[#F4F5F7]"
+                              >
+                                {MODALIDADES_APLICACAO.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <MoneyInput
+                                value={l.autorizado}
+                                readOnly={readOnly}
+                                onChange={(n) =>
+                                  updateMemoria(l.id, { autorizado: n })
+                                }
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <MoneyInput
+                                value={l.despesa}
+                                readOnly={readOnly}
+                                onChange={(n) =>
+                                  updateMemoria(l.id, { despesa: n })
+                                }
+                              />
+                            </td>
+                            <td className="px-2 py-1.5 text-center">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                  conforme
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {conforme ? "Conforme" : "Não Conforme"}
+                              </span>
+                            </td>
+                            {!readOnly && (
+                              <td className="px-2 py-1.5">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    className="text-[#1A56DB] hover:opacity-80"
+                                    title="Editar"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDelete(l.id)}
+                                    className="text-red-600 hover:opacity-80"
+                                    title="Excluir"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                      <tr key={`sub-${g.programa}`} className="bg-[#F4F5F7] font-semibold">
+                        <td className="px-2 py-1.5" colSpan={4}>
+                          Subtotal — Programa {g.programa}
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          {fmtBRL(subAut)}
+                        </td>
+                        <td
+                          className={`px-2 py-1.5 text-right ${
+                            subConforme ? "" : "font-semibold text-red-700"
                           }`}
                         >
-                          {conforme ? "Conforme" : "Não Conforme"}
-                        </span>
-                      </td>
-                      {!readOnly && (
-                        <td className="px-2 py-1.5">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              type="button"
-                              className="text-[#1A56DB] hover:opacity-80"
-                              title="Editar"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setConfirmDelete(l.id)}
-                              className="text-red-600 hover:opacity-80"
-                              title="Excluir"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
+                          {fmtBRL(subDesp)}
                         </td>
-                      )}
-                    </tr>
+                        <td className="px-2 py-1.5 text-center">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              subConforme
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {subConforme ? "Conforme" : "Não Conforme"}
+                          </span>
+                        </td>
+                        {!readOnly && <td />}
+                      </tr>
+                    </Fragment>
                   );
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-[#F4F5F7] font-semibold">
+                <tr className="bg-[#0D1B2A] font-semibold text-white">
                   <td className="px-3 py-2" colSpan={4}>
                     TOTAL
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(totalInicial)}
+                    {fmtBRL(totalAutorizado)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {fmtBRL(
-                      memoria.reduce((s, l) => s + (l.autorizado || 0), 0)
-                    )}
+                    {fmtBRL(totalDespesa)}
                   </td>
-                  <td />
+                  <td className="px-3 py-2 text-center">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        naoConformeCredito
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {naoConformeCredito ? "Não Conforme" : "Conforme"}
+                    </span>
+                  </td>
                   {!readOnly && <td />}
                 </tr>
               </tfoot>
