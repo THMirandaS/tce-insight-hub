@@ -4352,9 +4352,13 @@ function RestosPagarContent({
               return (
               <tr
                 key={l.id}
-                className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
-                  anoAntigo ? "bg-red-50" : ""
-                }`}
+                className={
+                  anoAntigo
+                    ? "bg-red-50"
+                    : i % 2 === 0
+                      ? "bg-white"
+                      : "bg-gray-50"
+                }
               >
                 <td className="px-2 py-1.5">
                   <Input
