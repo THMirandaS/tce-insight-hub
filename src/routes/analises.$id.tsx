@@ -3756,7 +3756,6 @@ function CreditoDespesasContent({
                   return (
                     <Fragment key={g.programa}>
                       {g.linhas.map((l) => {
-                        const conforme = l.despesa <= l.autorizado;
                         return (
                           <tr key={l.id} className="bg-white">
                             <td className="px-2 py-1.5">
