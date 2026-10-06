@@ -706,7 +706,7 @@ function AnaliseDetalhePage() {
                 Despesa Empenhada
               </span>
               <span className="text-sm font-bold tabular-nums text-[#0D1B2A]">
-                {fmtBRL(totalDespesaEmpenhada)}
+                R$ {fmtBRL(totalDespesaEmpenhada)}
               </span>
             </div>
             <Divider />
