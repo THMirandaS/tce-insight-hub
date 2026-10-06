@@ -246,9 +246,15 @@ function AnaliseDetalhePage() {
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
-  
+
   const [modalidadeTab, setModalidadeTab] = useState<"principal" | "memoria">("principal");
   const [elementoTab, setElementoTab] = useState<"principal" | "memoria">("principal");
+
+  // Total de Despesa Empenhada do processo (soma da memória de "Crédito e
+  // Despesas por programa"), exibido na faixa de dados analisados do cabeçalho.
+  const [totalDespesaEmpenhada, setTotalDespesaEmpenhada] = useState<number>(() =>
+    CREDITO_DESPESAS_MEMORIA.reduce((s, l) => s + (l.despesa || 0), 0)
+  );
   const [outrasView, setOutrasView] = useState<"form" | "lista">("lista");
 
   const currentStatus: SubmenuStatus | null =
