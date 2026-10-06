@@ -2047,10 +2047,6 @@ function InfoCell({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Divider() {
-  return <span className="h-8 w-px self-center bg-border" aria-hidden />;
-}
-
 // ============================================================
 // Receitas
 // ============================================================
