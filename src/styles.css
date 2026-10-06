@@ -146,3 +146,36 @@
     color: var(--color-foreground);
   }
 }
+
+.analysis-process-header {
+  background: color-mix(in oklab, var(--primary) 12%, var(--card));
+}
+
+.analysis-header-field {
+  min-width: 0;
+  padding: 2px 10px;
+  border-right: 1px solid color-mix(in oklab, var(--primary) 20%, transparent);
+}
+
+.analysis-header-field:last-child {
+  border-right: 0;
+}
+
+.analysis-header-label,
+.analysis-process-header .analysis-header-field span:first-child {
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.analysis-process-header .analysis-header-field span[title] {
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.analysis-header-process {
+  background: color-mix(in oklab, var(--accent) 25%, var(--card));
+}

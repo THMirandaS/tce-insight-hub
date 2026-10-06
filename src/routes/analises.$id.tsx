@@ -636,113 +636,47 @@ function AnaliseDetalhePage() {
           </div>
         </div>
 
-        {/* Cabeçalho fixo do processo — 3 faixas: identidade, metadados, dados analisados */}
-        <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
-          {/* Faixa 1 — identidade: processo, órgão, ano, categoria */}
-          <div className="flex items-start gap-4 border-b border-border px-6 py-3">
-            <Link
-              to="/analises"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-[#0D1B2A] shadow-sm hover:bg-gray-50"
-            >
-              <ArrowLeft className="h-4 w-4" /> Voltar
-            </Link>
-            <div className="h-11 w-px shrink-0 bg-border" aria-hidden />
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center rounded-md bg-[#1A56DB]/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#1A56DB]">
-                  Processo {processoLabel}
-                </span>
-                <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight text-indigo-700 ring-1 ring-indigo-200">
-                  {GRUPO_ABREVIADO[atributos.grupoEntidade]}
-                </span>
-                {atributos.entidadePrevidenciaria && (
-                  <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight text-purple-700 ring-1 ring-purple-200">
-                    Previdenciária
-                  </span>
-                )}
-              </div>
-              <h1 className="truncate text-xl font-bold text-[#0D1B2A]">
-                {orgao}
-                {jurisdicionado.sigla && (
-                  <span className="font-semibold text-muted-foreground">
-                    {" "}
-                    ({jurisdicionado.sigla})
-                  </span>
-                )}
-              </h1>
-            </div>
-            <div className="flex shrink-0 items-center gap-8 text-right">
-              <div className="flex flex-col leading-tight">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Ano de Referência
-                </span>
-                <span className="text-lg font-semibold tabular-nums text-[#0D1B2A]">
-                  {anoReferencia}
-                </span>
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Categoria
-                </span>
-                <span className="text-lg font-semibold text-[#0D1B2A]">
-                  {categoria}
-                </span>
-              </div>
+        {/* Cabeçalho fixo: duas linhas com seis campos cada. */}
+        <header className="analysis-process-header sticky top-[37px] z-30 border-b-2 border-primary">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-primary/15 px-4 py-1.5">
+            <div className="flex min-w-0 items-center gap-2 text-[10px] font-semibold text-primary">
+              <span>{GRUPO_ABREVIADO[atributos.grupoEntidade]}</span>
+              {atributos.entidadePrevidenciaria && <span>· Previdenciária</span>}
               {!isDefesa && currentStatus && (
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_META[currentStatus].pillBg}`}
-                >
+                <span className={`inline-flex shrink-0 items-center gap-1 rounded px-2 py-0.5 ${STATUS_META[currentStatus].pillBg}`}>
                   <StatusIcon status={currentStatus} />
                   {STATUS_META[currentStatus].label}
                 </span>
               )}
             </div>
+            <Link to="/analises" className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline">
+              <ArrowLeft className="h-3.5 w-3.5" /> Voltar
+            </Link>
           </div>
-
-          {/* Faixa 2 — grade de metadados operacionais */}
-          <div className="grid grid-cols-4 gap-x-8 gap-y-2 border-b border-border bg-muted/50 px-6 py-2.5">
-            <InfoCell label="Relator" value={relator} />
-            <InfoCell label="Responsável" value={executor} />
-            <InfoCell label="Revisor" value={revisor} />
-            <InfoCell label="Tipo de Análise" value={tipoAnalise} />
-            <InfoCell label="Data de Autuação" value={dataAutuacao} />
-            <InfoCell label="Data de Início da Análise" value={dataInicioAnalise} />
+          <div className="analysis-header-grid grid grid-cols-6 px-2 py-2">
+            <div className="analysis-header-field analysis-header-process">
+              <span className="analysis-header-label">Nº Processo</span>
+              <h1 className="truncate text-base font-bold tabular-nums text-primary" title={processoLabel}>{processoLabel}</h1>
+            </div>
+            <div className="analysis-header-field">
+              <InfoCell label="Órgão" value={`${orgao}${jurisdicionado.sigla ? ` (${jurisdicionado.sigla})` : ""}`} />
+            </div>
+            <div className="analysis-header-field"><InfoCell label="Ano de referência" value={String(anoReferencia)} /></div>
+            <div className="analysis-header-field"><InfoCell label="Categoria" value={categoria} /></div>
+            <div className="analysis-header-field">
+              <InfoCell label="Despesa Empenhada" value={`R$ ${fmtBRL(totalDespesaEmpenhada)}`} />
+            </div>
+            <div className="analysis-header-field">
+              <InfoCell label="Materialidade (1%)" value={`R$ ${fmtBRL(totalDespesaEmpenhada * 0.01)}`} />
+            </div>
           </div>
-
-          {/* Faixa 3 — dados analisados: aba lateral + valores em destaque */}
-          <div className="flex border-t border-[#1A56DB]/20">
-            <div className="flex items-center bg-[#1A56DB] px-2.5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white [writing-mode:vertical-rl] rotate-180">
-                Dados analisados
-              </span>
-            </div>
-            <div className="grid flex-1 grid-cols-2 divide-x divide-[#1A56DB]/15 bg-[#1A56DB]/[0.05]">
-              <div className="flex flex-col justify-center px-6 py-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A56DB]/80">
-                  Despesa Empenhada
-                </span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs font-medium text-[#1A56DB]/70">R$</span>
-                  <span className="text-lg font-bold tabular-nums tracking-tight text-[#0D1B2A]">
-                    {fmtBRL(totalDespesaEmpenhada)}
-                  </span>
-                </div>
-              </div>
-              <div className="relative flex flex-col justify-center px-6 py-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A56DB]/80">
-                  Materialidade (1%)
-                </span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs font-medium text-[#1A56DB]/70">R$</span>
-                  <span className="text-lg font-bold tabular-nums tracking-tight text-[#1A56DB]">
-                    {fmtBRL(totalDespesaEmpenhada * 0.01)}
-                  </span>
-                </div>
-                <span className="absolute right-6 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border-2 border-[#1A56DB]/25 text-[10px] font-black text-[#1A56DB]">
-                  1%
-                </span>
-              </div>
-            </div>
+          <div className="analysis-header-grid grid grid-cols-6 border-t border-primary/15 px-2 py-2">
+            <div className="analysis-header-field"><InfoCell label="Relator" value={relator} /></div>
+            <div className="analysis-header-field"><InfoCell label="Responsável" value={executor} /></div>
+            <div className="analysis-header-field"><InfoCell label="Revisor" value={revisor} /></div>
+            <div className="analysis-header-field"><InfoCell label="Tipo de Análise" value={tipoAnalise} /></div>
+            <div className="analysis-header-field"><InfoCell label="Data de Autuação" value={dataAutuacao} /></div>
+            <div className="analysis-header-field"><InfoCell label="Data de Início da Análise" value={dataInicioAnalise} /></div>
           </div>
         </header>
 
@@ -2040,7 +1974,7 @@ function InfoCell({ label, value }: { label: string; value: string }) {
       <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
-      <span className="truncate text-sm font-medium text-foreground">
+      <span title={value} className="truncate text-sm font-medium text-foreground">
         {value}
       </span>
     </div>
