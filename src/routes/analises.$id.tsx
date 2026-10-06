@@ -637,7 +637,7 @@ function AnaliseDetalhePage() {
         </div>
 
         {/* Cabeçalho fixo do processo */}
-        <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-white shadow-sm">
+        <header className="sticky top-[37px] z-30 border-b-2 border-[#1A56DB] bg-[#1A56DB]/[0.04] shadow-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3 text-sm">
             <Link
               to="/analises"
@@ -696,7 +696,7 @@ function AnaliseDetalhePage() {
           </div>
 
           {/* Faixa de dados analisados — separada visualmente do cabeçalho */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#1A56DB]/15 bg-[#1A56DB]/[0.04] px-6 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#1A56DB]/15 px-6 py-2 text-sm">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A56DB]">
               Dados analisados
             </span>
