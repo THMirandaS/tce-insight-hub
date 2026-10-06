@@ -45,6 +45,16 @@ import {
 } from "@/lib/consolidacao-store";
 
 export const Route = createFileRoute("/consolidacao")({
+  head: () => ({
+    meta: [
+      { title: "Consolidação — PCE" },
+      { name: "description", content: "Consolidação dos processos e confirmação da classificação dos órgãos por exercício." },
+      { property: "og:title", content: "Consolidação — PCE" },
+      { property: "og:description", content: "Consolidação dos processos e confirmação da classificação dos órgãos por exercício." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: ConsolidacaoPage,
 });
 

@@ -6,6 +6,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/analise/responsavel")({
+  head: () => ({
+    meta: [
+      { title: "Responsável pelo processo — PCE" },
+      { name: "description", content: "Consulta dos responsáveis pela prestação de contas estaduais." },
+      { property: "og:title", content: "Responsável pelo processo — PCE" },
+      { property: "og:description", content: "Consulta dos responsáveis pela prestação de contas estaduais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: ResponsavelPage,
 });
 

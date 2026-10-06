@@ -65,6 +65,16 @@ import {
 } from "@/lib/pce-data";
 
 export const Route = createFileRoute("/analises/$id")({
+  head: () => ({
+    meta: [
+      { title: "Detalhes da análise — PCE" },
+      { name: "description", content: "Análise técnica das contas estaduais por processo e tópico." },
+      { property: "og:title", content: "Detalhes da análise — PCE" },
+      { property: "og:description", content: "Análise técnica das contas estaduais por processo e tópico." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AnaliseDetalhePage,
 });
 
@@ -4126,7 +4136,7 @@ function DspDotacaoContent({
             <tr>
               <th className="px-3 py-2 text-left">Ação</th>
               <th className="px-3 py-2 text-left">Nome ação</th>
-              <th className="px-3 py-2 text-center">C-GD-M</th>
+              <th className="whitespace-nowrap px-3 py-2 text-center">C-GD-M</th>
               <th className="px-3 py-2 text-right">Crédito autorizado</th>
               <th className="px-3 py-2 text-right">Despesa empenhada</th>
               <th className="px-3 py-2 text-center">Resultado</th>
