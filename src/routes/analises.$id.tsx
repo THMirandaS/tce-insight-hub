@@ -694,6 +694,31 @@ function AnaliseDetalhePage() {
               </>
             )}
           </div>
+
+          {/* Faixa de dados analisados — separada visualmente do cabeçalho */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#1A56DB]/15 bg-[#1A56DB]/[0.04] px-6 py-2 text-sm">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A56DB]">
+              Dados analisados
+            </span>
+            <Divider />
+            <div className="flex items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Despesa Empenhada
+              </span>
+              <span className="text-sm font-bold tabular-nums text-[#0D1B2A]">
+                {fmtBRL(totalDespesaEmpenhada)}
+              </span>
+            </div>
+            <Divider />
+            <div className="flex items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Materialidade (1%)
+              </span>
+              <span className="text-sm font-bold tabular-nums text-[#1A56DB]">
+                {fmtBRL(totalDespesaEmpenhada * 0.01)}
+              </span>
+            </div>
+          </div>
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
