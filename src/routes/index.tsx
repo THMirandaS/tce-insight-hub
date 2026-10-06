@@ -8,6 +8,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Acesso — PCE | Prestação de Contas Estaduais" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content:

@@ -26,6 +26,16 @@ import {
 } from "@/lib/atribuicoes";
 
 export const Route = createFileRoute("/usuarios")({
+  head: () => ({
+    meta: [
+      { title: "Usuários — PCE" },
+      { name: "description", content: "Consulta dos auditores, perfis e coordenação da prestação de contas estaduais." },
+      { property: "og:title", content: "Usuários — PCE" },
+      { property: "og:description", content: "Consulta dos auditores, perfis e coordenação da prestação de contas estaduais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: UsuariosPage,
 });
 

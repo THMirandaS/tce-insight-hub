@@ -65,6 +65,16 @@ import { useConsolidacao } from "@/lib/consolidacao-store";
 import { useDefesas } from "@/lib/defesas-store";
 
 export const Route = createFileRoute("/analises")({
+  head: () => ({
+    meta: [
+      { title: "Análises — PCE" },
+      { name: "description", content: "Listagem de análises de prestação de contas estaduais e atribuições dos auditores." },
+      { property: "og:title", content: "Análises — PCE" },
+      { property: "og:description", content: "Listagem de análises de prestação de contas estaduais e atribuições dos auditores." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AnalisesRouteShell,
 });
 

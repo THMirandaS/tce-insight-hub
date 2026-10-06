@@ -10,6 +10,16 @@ import {
 } from "@/components/pce/charts";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Indicadores — PCE" },
+      { name: "description", content: "Indicadores das análises e consolidações de prestação de contas estaduais." },
+      { property: "og:title", content: "Indicadores — PCE" },
+      { property: "og:description", content: "Indicadores das análises e consolidações de prestação de contas estaduais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Dashboard,
 });
 
