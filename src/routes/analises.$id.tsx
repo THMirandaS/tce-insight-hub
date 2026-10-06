@@ -3407,11 +3407,13 @@ function CreditoDespesasContent({
   orgao,
   tab,
   onTabChange,
+  onTotalDespesa,
 }: {
   processo: string;
   orgao: string;
   tab: "principal" | "memoria";
   onTabChange: (t: "principal" | "memoria") => void;
+  onTotalDespesa?: (total: number) => void;
 }) {
   const readOnly = CREDITO_DESPESAS_READ_ONLY;
 
@@ -3425,6 +3427,11 @@ function CreditoDespesasContent({
 
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
+
+  // Sincroniza o total de Despesa Empenhada com o cabeçalho fixo da análise.
+  useEffect(() => {
+    onTotalDespesa?.(totalDespesa);
+  }, [totalDespesa, onTotalDespesa]);
 
   // Agrupamento por programa (subtotais a partir da memória de cálculo)
   const gruposPrograma = useMemo(() => {
