@@ -9,27 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AnalisesRouteImport } from './routes/analises'
-import { Route as ConsolidacaoRouteImport } from './routes/consolidacao'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
-import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ConsolidacaoRouteImport } from './routes/consolidacao'
+import { Route as AnalisesRouteImport } from './routes/analises'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalisesIdRouteImport } from './routes/analises.$id'
+import { Route as AnaliseResponsavelRouteImport } from './routes/analise.responsavel'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnalisesRoute = AnalisesRouteImport.update({
-  id: '/analises',
-  path: '/analises',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsolidacaoRoute = ConsolidacaoRouteImport.update({
-  id: '/consolidacao',
-  path: '/consolidacao',
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -37,20 +27,30 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UsuariosRoute = UsuariosRouteImport.update({
-  id: '/usuarios',
-  path: '/usuarios',
+const ConsolidacaoRoute = ConsolidacaoRouteImport.update({
+  id: '/consolidacao',
+  path: '/consolidacao',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
-  id: '/analise/responsavel',
-  path: '/analise/responsavel',
+const AnalisesRoute = AnalisesRouteImport.update({
+  id: '/analises',
+  path: '/analises',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalisesIdRoute = AnalisesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AnalisesRoute,
+} as any)
+const AnaliseResponsavelRoute = AnaliseResponsavelRouteImport.update({
+  id: '/analise/responsavel',
+  path: '/analise/responsavel',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -122,25 +122,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/analises': {
-      id: '/analises'
-      path: '/analises'
-      fullPath: '/analises'
-      preLoaderRoute: typeof AnalisesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consolidacao': {
-      id: '/consolidacao'
-      path: '/consolidacao'
-      fullPath: '/consolidacao'
-      preLoaderRoute: typeof ConsolidacaoRouteImport
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -150,18 +136,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/usuarios': {
-      id: '/usuarios'
-      path: '/usuarios'
-      fullPath: '/usuarios'
-      preLoaderRoute: typeof UsuariosRouteImport
+    '/consolidacao': {
+      id: '/consolidacao'
+      path: '/consolidacao'
+      fullPath: '/consolidacao'
+      preLoaderRoute: typeof ConsolidacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analise/responsavel': {
-      id: '/analise/responsavel'
-      path: '/analise/responsavel'
-      fullPath: '/analise/responsavel'
-      preLoaderRoute: typeof AnaliseResponsavelRouteImport
+    '/analises': {
+      id: '/analises'
+      path: '/analises'
+      fullPath: '/analises'
+      preLoaderRoute: typeof AnalisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analises/$id': {
@@ -170,6 +163,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/analises/$id'
       preLoaderRoute: typeof AnalisesIdRouteImport
       parentRoute: typeof AnalisesRoute
+    }
+    '/analise/responsavel': {
+      id: '/analise/responsavel'
+      path: '/analise/responsavel'
+      fullPath: '/analise/responsavel'
+      preLoaderRoute: typeof AnaliseResponsavelRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
