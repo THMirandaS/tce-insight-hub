@@ -246,9 +246,15 @@ function AnaliseDetalhePage() {
   const [legendOpen, setLegendOpen] = useState(false);
   const [creditoTab, setCreditoTab] = useState<"principal" | "memoria">("principal");
   const [despesaTab, setDespesaTab] = useState<"principal" | "memoria">("principal");
-  
+
   const [modalidadeTab, setModalidadeTab] = useState<"principal" | "memoria">("principal");
   const [elementoTab, setElementoTab] = useState<"principal" | "memoria">("principal");
+
+  // Total de Despesa Empenhada do processo (soma da memória de "Crédito e
+  // Despesas por programa"), exibido na faixa de dados analisados do cabeçalho.
+  const [totalDespesaEmpenhada, setTotalDespesaEmpenhada] = useState<number>(() =>
+    CREDITO_DESPESAS_MEMORIA.reduce((s, l) => s + (l.despesa || 0), 0)
+  );
   const [outrasView, setOutrasView] = useState<"form" | "lista">("lista");
 
   const currentStatus: SubmenuStatus | null =
@@ -688,6 +694,31 @@ function AnaliseDetalhePage() {
               </>
             )}
           </div>
+
+          {/* Faixa de dados analisados — separada visualmente do cabeçalho */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#1A56DB]/15 bg-[#1A56DB]/[0.04] px-6 py-2 text-sm">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A56DB]">
+              Dados analisados
+            </span>
+            <Divider />
+            <div className="flex items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Despesa Empenhada
+              </span>
+              <span className="text-sm font-bold tabular-nums text-[#0D1B2A]">
+                R$ {fmtBRL(totalDespesaEmpenhada)}
+              </span>
+            </div>
+            <Divider />
+            <div className="flex items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Materialidade (1%)
+              </span>
+              <span className="text-sm font-bold tabular-nums text-[#1A56DB]">
+                R$ {fmtBRL(totalDespesaEmpenhada * 0.01)}
+              </span>
+            </div>
+          </div>
         </header>
 
         <section ref={contentRef} className="min-w-0 flex-1 px-6 py-6 pb-28">
@@ -760,6 +791,7 @@ function AnaliseDetalhePage() {
               orgao={orgao}
               tab={despesaTab}
               onTabChange={setDespesaTab}
+              onTotalDespesa={setTotalDespesaEmpenhada}
             />
           ) : active === "dsp-dotacao" ? (
             <DspDotacaoContent processo={processoLabel} orgao={orgao} />
@@ -3400,11 +3432,13 @@ function CreditoDespesasContent({
   orgao,
   tab,
   onTabChange,
+  onTotalDespesa,
 }: {
   processo: string;
   orgao: string;
   tab: "principal" | "memoria";
   onTabChange: (t: "principal" | "memoria") => void;
+  onTotalDespesa?: (total: number) => void;
 }) {
   const readOnly = CREDITO_DESPESAS_READ_ONLY;
 
@@ -3418,6 +3452,11 @@ function CreditoDespesasContent({
 
   const totalInicial = memoria.reduce((s, l) => s + (l.inicial || 0), 0);
   const totalDespesa = memoria.reduce((s, l) => s + (l.despesa || 0), 0);
+
+  // Sincroniza o total de Despesa Empenhada com o cabeçalho fixo da análise.
+  useEffect(() => {
+    onTotalDespesa?.(totalDespesa);
+  }, [totalDespesa, onTotalDespesa]);
 
   // Agrupamento por programa (subtotais a partir da memória de cálculo)
   const gruposPrograma = useMemo(() => {
