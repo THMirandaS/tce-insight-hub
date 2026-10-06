@@ -715,7 +715,7 @@ function AnaliseDetalhePage() {
                 Materialidade (1%)
               </span>
               <span className="text-sm font-bold tabular-nums text-[#1A56DB]">
-                {fmtBRL(totalDespesaEmpenhada * 0.01)}
+                R$ {fmtBRL(totalDespesaEmpenhada * 0.01)}
               </span>
             </div>
           </div>
