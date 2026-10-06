@@ -3999,9 +3999,9 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
     id: "a1",
     codigo: "4101",
     nome: "Manutenção de Serviços Administrativos",
-    categoria: "Despesas Correntes",
-    grupo: "Outras Despesas Correntes",
-    modalidade: "Aplicação Direta",
+    categoria: "3",
+    grupo: "3",
+    modalidade: "90",
     autorizado: 480_000_000,
     empenhado: 452_310_500.45,
   },
@@ -4009,9 +4009,9 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
     id: "a2",
     codigo: "1234",
     nome: "Construção de Unidade Judicial",
-    categoria: "Despesas de Capital",
-    grupo: "Investimentos",
-    modalidade: "Aplicação Direta",
+    categoria: "4",
+    grupo: "4",
+    modalidade: "90",
     autorizado: 120_000_000,
     empenhado: 98_745_120.9,
   },
@@ -4019,9 +4019,9 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
     id: "a3",
     codigo: "2019",
     nome: "Remuneração de Pessoal Ativo e Encargos Sociais",
-    categoria: "Despesas Correntes",
-    grupo: "Pessoal e Encargos Sociais",
-    modalidade: "Aplicação Direta",
+    categoria: "3",
+    grupo: "1",
+    modalidade: "90",
     autorizado: 950_000_000,
     empenhado: 941_882_004.12,
   },
@@ -4029,9 +4029,9 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
     id: "a4",
     codigo: "3055",
     nome: "Modernização Tecnológica da Rede de Dados",
-    categoria: "Despesas de Capital",
-    grupo: "Investimentos",
-    modalidade: "Aplicação Direta",
+    categoria: "4",
+    grupo: "4",
+    modalidade: "90",
     autorizado: 60_000_000,
     empenhado: 74_530_880.33,
   },
@@ -4039,9 +4039,9 @@ const DSP_DOTACAO_ACOES: DspDotacaoAcao[] = [
     id: "a5",
     codigo: "5088",
     nome: "Capacitação de Servidores",
-    categoria: "Despesas Correntes",
-    grupo: "Outras Despesas Correntes",
-    modalidade: "Transferências a Instituições Privadas sem Fins Lucrativos",
+    categoria: "3",
+    grupo: "3",
+    modalidade: "50",
     autorizado: 18_000_000,
     empenhado: 12_640_310.07,
   },
@@ -4121,13 +4121,15 @@ function DspDotacaoContent({
       </h2>
 
       <div className="mt-3 overflow-x-auto rounded-md border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-[#0D1B2A] text-white">
+        <table className="w-full text-sm" aria-label="Despesa por dotação orçamentária por ação">
+          <thead className="bg-primary text-primary-foreground">
             <tr>
               <th className="px-3 py-2 text-left">Ação</th>
-              <th className="px-3 py-2 text-left">Classificação C/GD/M</th>
-              <th className="px-3 py-2 text-right">Crédito Autorizado</th>
-              <th className="px-3 py-2 text-right">Despesa Empenhada</th>
+              <th className="px-3 py-2 text-left">Nome ação</th>
+              <th className="px-3 py-2 text-center">C-GD-M</th>
+              <th className="px-3 py-2 text-right">Crédito autorizado</th>
+              <th className="px-3 py-2 text-right">Despesa empenhada</th>
+              <th className="px-3 py-2 text-center">Resultado</th>
             </tr>
           </thead>
           <tbody>
@@ -4136,35 +4138,39 @@ function DspDotacaoContent({
               return (
                 <tr
                   key={a.id}
-                  className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
-                    excede ? "bg-red-50" : ""
-                  }`}
+                  className={excede ? "bg-destructive/10" : i % 2 === 0 ? "bg-card" : "bg-muted"}
                 >
-                  <td className="px-3 py-2">
-                    {a.codigo} - {a.nome}
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {a.categoria} / {a.grupo} / {a.modalidade}
+                  <td className="px-3 py-2">{a.codigo}</td>
+                  <td className="px-3 py-2">{a.nome}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-center">
+                    {a.categoria}-{a.grupo}-{a.modalidade}
                   </td>
                   <td className="px-3 py-2 text-right">{fmtBRL(a.autorizado)}</td>
                   <td
                     className={`px-3 py-2 text-right ${
-                      excede ? "font-semibold text-red-700" : ""
+                      excede ? "font-semibold text-destructive" : ""
                     }`}
                   >
                     {fmtBRL(a.empenhado)}
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold ${excede ? "border-destructive/30 bg-destructive/10 text-destructive" : "border-success/30 bg-success/10 text-success"}`}>
+                      {excede ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      {excede ? "NÃO CONFORME" : "CONFORME"}
+                    </span>
                   </td>
                 </tr>
               );
             })}
           </tbody>
           <tfoot>
-            <tr className="bg-[#F4F5F7] font-semibold">
-              <td className="px-3 py-2" colSpan={2}>
+            <tr className="bg-muted font-semibold">
+              <td className="px-3 py-2" colSpan={3}>
                 TOTAL
               </td>
               <td className="px-3 py-2 text-right">{fmtBRL(totalAutorizado)}</td>
               <td className="px-3 py-2 text-right">{fmtBRL(totalEmpenhado)}</td>
+              <td />
             </tr>
           </tfoot>
         </table>
